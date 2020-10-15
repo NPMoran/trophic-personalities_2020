@@ -6,12 +6,15 @@
 
 
 Sys.setenv(LANG = "en")
-
+library(dplyr)
+library(lme4); library(lmerTest)
+library(rptR)
+library(brms)
 
 
 #3. Behavioural Analysis ----
 
-##3.1 Calibration of Toxtrac ----
+##3.1 ACT_Calibration for Toxtrac ----
 #Requires the vertical and horizontal pixel to distance conversion to be known
 #Calibration pixel/mm ratios are calculated manually for each arena
 
@@ -20,42 +23,276 @@ Sys.setenv(LANG = "en")
 cali_arena <- NULL
 cali_arena$arenaID <- c("A","B","C","D","E","F","G","H")
 
-#Finding pixel/cm ratio within arenas using ImageJ (Schneider, C. A.; Rasband, W. S. & Eliceiri, K. W. (2012), "NIH Image to ImageJ: 25 years of image analysis", Nature methods 9(7): 671-675)
-#-using Calibration image with 3x5 grid of 50mm x 50mm black and white squared placed in each arena.
-#-measurements taken at each line on the grid, values optained from Analyze/Set Scale, entering known distances
-#-values are in pixels/cm (note: both calibration images and videos are all 1280 x 720)
-cali_arena$vertical1 <- c(6.0905, 6.0653, 6.1032, 6.0001, 0, 0, 0, 0)
-cali_arena$vertical2 <- c(6.0943, 6.1431, 6.1833, 5.9601, 0, 0, 0, 0)
-cali_arena$vertical3 <- c(6.0916, 6.1840, 6.1042, 6.0412, 0, 0, 0, 0)
-cali_arena$vertical4 <- c(6.0555, 6.1450, 6.1450, 6.0400, 0, 0, 0, 0)
-cali_arena$horiz1 <- c(6.1012, 6.1828, 6.1178, 5.8670, 0, 0, 0, 0)
-cali_arena$horiz2 <- c(6.0916, 6.3158, 6.0502, 5.8004, 0, 0, 0, 0)
-cali_arena$horiz3 <- c(5.9062, 6.1167, 6.1828, 6.0004, 0, 0, 0, 0)
-cali_arena$horiz4 <- c(5.8440, 6.1843, 6.1163, 5.9337, 0, 0, 0, 0)
-cali_arena$horiz5 <- c(5.9065, 6.1167, 6.0499, 5.8701, 0, 0, 0, 0)
-cali_arena$horiz6 <- c(5.9687, 5.9173, 6.0513, 5.7337, 0, 0, 0, 0)
+#Calculating pixel/cm ratio within arenas using ImageJ 
+#(Schneider, C. A.; Rasband, W. S. & Eliceiri, K. W. (2012), "NIH Image to ImageJ: 25 years of image analysis", Nature methods 9(7): 671-675)
+# - using Calibration image with 3x5 grid of 50mm x 50mm black and white squared placed in each arena.
+# - measurements taken at each line on the grid, values optained from Analyze/Set Scale, entering known distances
+# - values are in pixels/cm (note: both calibration images and videos are all 1280 x 720)
+cali_arena$vertical1 <- c(6.0905, 6.0653, 6.1032, 6.0001, 6.1370, 6.1783, 6.1612, 6.0847)
+cali_arena$vertical2 <- c(6.0943, 6.1431, 6.1833, 5.9601, 6.0574, 6.2173, 6.2023, 5.9634)
+cali_arena$vertical3 <- c(6.0916, 6.1840, 6.1042, 6.0412, 6.0971, 6.1777, 6.1612, 6.1264)
+cali_arena$vertical4 <- c(6.0555, 6.1450, 6.1450, 6.0400, 6.0975, 6.1773, 6.2021, 6.1233)
+cali_arena$horiz1 <- c(6.1012, 6.1828, 6.1178, 5.8670, 5.8845, 6.1504, 6.0681, 5.8682)
+cali_arena$horiz2 <- c(6.0916, 6.3158, 6.0502, 5.8004, 5.9592, 6.2176, 6.0670, 6.0004)
+cali_arena$horiz3 <- c(5.9062, 6.1167, 6.1828, 6.0004, 5.8845, 6.2845, 6.2004, 6.0015)
+cali_arena$horiz4 <- c(5.8440, 6.1843, 6.1163, 5.9337, 6.0171, 6.1508, 6.2670, 5.9333)
+cali_arena$horiz5 <- c(5.9065, 6.1167, 6.0499, 5.8701, 5.9499, 6.0839, 6.2000, 5.8667)
+cali_arena$horiz6 <- c(5.9687, 5.9173, 6.0513, 5.7337, 5.9502, 6.2176, 6.2667, 5.9337)
 
-#-calculating the average for each arena, and converting to pixels/mm for input into ToxTrac 
+# - calculating the average for each arena, and converting to pixels/mm for input into ToxTrac 
+# - taken as mean of horizontal and vertical pixel/mm scale entered into Toxtrac/Calibration/Camera matrix for each arena
 cali_arena$vertical.ppmm <- 0.1* (cali_arena$vertical1 + cali_arena$vertical2 + cali_arena$vertical3 + cali_arena$vertical4)/4
 cali_arena$horiz.ppmm <- 0.1* (cali_arena$horiz1 + cali_arena$horiz2 + cali_arena$horiz3 + cali_arena$horiz4 + cali_arena$horiz5 + cali_arena$horiz6)/6
-#sverage of horizontal and vertical pixel/mm scale entered into Toxtrac/Calibration/Camera matrix for each arena
 
-#Calibration images taken during 3rd Activty Trial, ACT3, so minor adjustments made for calibrations of ACT2, ACT1
+
+#Calibration images for each arena were taken during 3rd Activty Trial, ACT3, so minor adjustments made for calibrations of ACT2, ACT1
 #(Note: position of camera and boxes is consistent between all trials, this is adjausting for different levels of zoom)
 cali_trial <- NULL
-cali_trial$trialID <- c("ACT1","ACT2","ACT3")
-#
-cali_trial$vertical1 <- ( 0, 0, 0)
-cali_trial$vertical2 <- ( 0, 0, 0)
-cali_trial$vertical3 <- ( 0, 0, 0)
-cali_trial$vertical4 <- ( 0, 0, 0)
-cali_trial$horiz1 <- ( 0, 0, 0)
-cali_trial$horiz2 <- ( 0, 0, 0)
-cali_trial$horiz3 <- ( 0, 0, 0)
-cali_trial$horiz4 <- ( 0, 0, 0)
-cali_trial$horiz5 <- ( 0, 0, 0)
-cali_trial$horiz6 <- ( 0, 0, 0)
+
+#cali_trial$vertical1 <- (vertical1, vertical2, vertical3, vertical4, horiz1, horiz2, horiz3, horiz4, horiz5, horiz6)
+cali_trial$ACT1 <- c(5.3624, 5.2802, 5.2406, 5.2014, 5.0000, 5.0004, 4.9351, 4.8617, 4.9374, 4.9351)
+cali_trial$ACT2 <- c(5.8400, 5.9605, 5.8401, 5.7601, 5.2734, 5.4066, 5.3371, 5.3400, 5.2772, 5.2705)
+cali_trial$ACT3 <- c(5.9686, 6.0085, 5.8867, 5.8849, 5.5369, 5.4037, 5.4703, 5.6036, 5.5337, 5.5400)
+cali_trial<- as.data.frame(cali_trial)
+cali_trial$ACT3toACT2 <- (cali_trial$ACT2)/(cali_trial$ACT3)
+cali_trial$ACT3toACT1 <- (cali_trial$ACT1)/(cali_trial$ACT3)
+mean(cali_trial$ACT3toACT2) #adjustment ratio between ACT3 and ACT2 calibration coefficient = 0.97279
+mean(cali_trial$ACT3toACT1) #adjustment ratio between ACT3 and ACT1 calibration coefficient = 0.8932541
 
 
-##### Fish tracking and Processing ----
+#Calculating ratio to adjust calibration coefficients for each arena in each trial
+cali_full<-NULL
+cali_full$arenaID <- c("A","B","C","D","E","F","G","H")
+cali_full$ACT3.x <- cali_arena$horiz.ppmm
+cali_full$ACT3.y <- cali_arena$vertical.ppmm
+cali_full$ACT2.x <- 0.97279*(cali_full$ACT3.x)
+cali_full$ACT2.y <- 0.97279*(cali_full$ACT3.y)
+cali_full$ACT1.x <- 0.8932541*(cali_full$ACT3.x)
+cali_full$ACT1.y <- 0.8932541*(cali_full$ACT3.y)
+cali_full <- as.data.frame(cali_full)
+
+
+#Database of calibration coefficients
+write.csv(cali_full, "~/trophicpersonalities_GULD/3_Behaviour_Analysis/Guld_toxtracmanualcalibration.csv")
+
+
+##3.2 ACT ToxTrac Tracking Data ----
+# all videos trimmed to 25:00, staring from the point that all individuals are loaded
+# trimmed using Microsoft Photos app
+
+# Project Initials Settings:
+#  Start at (min/s)- 5:00, Finish at(min/s)- 25:00 
+#  Fill Temp. Holes, Max Size 25 Frames
+#  Fill Spacial Holes, Max Size 25 Frames
+#  Fill Extremes
+
+# Tracking Settings: Use defaults
+
+# Statistics Advanced Options:
+#  Mob min. speed- 10mm/s (originally set to 1mm/s)
+Settings_test <- NULL
+Settings_test$minmobilityspeedset <- c(0, 1, 3, 6, 9, 12, 15, 18, 20) # Frozen event dist set to 10mm
+Settings_test$mobrate_act1_1a <- c(1, 0.94, 0.81, 0.69, 0.62, 0.58, 0.54, 0.51, 0.49) #Relatively active fish
+Settings_test$mobrate_act1_1c <- c(1, 0.74, 0.28, 0.11, 0.05, 0.02, 0.00, 0.00, 0.00) #Very little movement
+Settings_test$mobratediff <- (Settings_test$mobrate_act1_1a - Settings_test$mobrate_act1_1c)
+plot(Settings_test$minmobilityspeedset, Settings_test$mobrate_act1_1a) #Curve begins to flatten around 9mm
+plot(Settings_test$minmobilityspeedset, Settings_test$mobrate_act1_1c) #Min 9mm/s needed to capture lack of movement
+plot(Settings_test$minmobilityspeedset, Settings_test$mobratediff) #Set to 10mm/s capture difference between behaviours 
+
+#  Frozen event. Max. Dist- 20mm (originally set to 5mm)
+Settings_test <- NULL
+Settings_test$frozenmaxdist <- c(0, 1, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30) #Mob min. speed set to 10mm/s
+Settings_test$timefrozen_act1_1a <- c(10, 10, 10, 11, 14, 18, 41, 72, 143, 213, 251, 262) #Relatively active fish
+Settings_test$timefrozen_act1_1c <- c(0, 0, 0, 0, 64, 259, 496, 767, 942, 1032, 1104, 1163) #Very little movement
+Settings_test$timefrozendiff <- (Settings_test$timefrozen_act1_1c - Settings_test$timefrozen_act1_1a)
+plot(Settings_test$frozenmaxdist, Settings_test$timefrozen_act1_1a) #Curve begins to flatten around 20mm
+plot(Settings_test$frozenmaxdist, Settings_test$timefrozen_act1_1c) #Min 20mm/s needed to capture lack of movement
+plot(Settings_test$frozenmaxdist, Settings_test$timefrozendiff) #Set to 20mm capture difference between behaviours 
+
+#  Frozen Event Min. Time- 3s
+#  Transitions time Int.- 7s (not used)
+
+
+     
+##3.3 Preliminary ACT Variance Analysis ----
+GULD_ACT <- read.csv("~/trophicpersonalities_GULD/3_Behaviour_Analysis/GULDACTdat_13102020.csv")
+#Re-creating unique id for each trial 
+GULD_ACT$UniqueID <- paste(GULD_ACT$TrialType, GULD_ACT$TrialDay, sep = "")
+GULD_ACT$UniqueID <- paste(GULD_ACT$UniqueID, GULD_ACT$TrialRound, sep = "_")
+GULD_ACT$UniqueID <- paste(GULD_ACT$UniqueID, GULD_ACT$ArenaID, sep = "")
+
+#Assessing distributions
+hist(GULD_ACT$avespeed_tot)
+hist(GULD_ACT$avespeed_mob)
+hist(GULD_ACT$aveacceler)
+hist(GULD_ACT$propmoving)
+hist(GULD_ACT$dist)
+hist(GULD_ACT$timefrozen_tot)
+hist(GULD_ACT$timefrozen_ave)
+hist(GULD_ACT$centretime)
+
+nrow(GULD_ACT) #136 rows
+
+GULD_ACT <- subset(GULD_ACT, GULD_ACT$PITID != "NOFISH")
+nrow(GULD_ACT) #124 trials
+n_distinct(GULD_ACT$PITID) #for 48 fish
+
+
+#Preliminary data exploration
+GULD_ACT_behmod.avespeed_tot <- lmer(avespeed_tot ~ (1|PITID), data=GULD_ACT)
+GULD_ACT_behmod.avespeed_tot
+confint(GULD_ACT_behmod.avespeed_tot)
+rpt(avespeed_tot ~ (1 | PITID), grname = "PITID", data = GULD_ACT, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+GULD_ACT_behmod.avespeed_mob <- lmer(avespeed_mob ~ (1|PITID), data=GULD_ACT)
+GULD_ACT_behmod.avespeed_mob
+confint(GULD_ACT_behmod.avespeed_mob)
+rpt(avespeed_mob ~ (1 | PITID), grname = "PITID", data = GULD_ACT, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+GULD_ACT_behmod.aveacceler <- lmer(aveacceler ~ (1|PITID), data=GULD_ACT)
+GULD_ACT_behmod.aveacceler
+confint(GULD_ACT_behmod.aveacceler)
+rpt(aveacceler ~ (1 | PITID), grname = "PITID", data = GULD_ACT, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+GULD_ACT_behmod.propmoving <- lmer(propmoving ~ ArenaID + (1|PITID), data=GULD_ACT)
+GULD_ACT_behmod.propmoving
+confint(GULD_ACT_behmod.propmoving)
+rpt(propmoving ~ (1 | PITID), grname = "PITID", data = GULD_ACT, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+GULD_ACT_behmod.dist <- lmer(dist ~ (1|PITID), data=GULD_ACT)
+GULD_ACT_behmod.dist
+confint(GULD_ACT_behmod.dist)
+rpt(dist ~ (1 | PITID), grname = "PITID", data = GULD_ACT, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+GULD_ACT_behmod.timefrozen_tot <- lmer(timefrozen_tot ~ (1|PITID), data=GULD_ACT)
+GULD_ACT_behmod.timefrozen_tot
+confint(GULD_ACT_behmod.timefrozen_tot)
+rpt(timefrozen_tot ~ (1 | PITID), grname = "PITID", data = GULD_ACT, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+GULD_ACT_behmod.timefrozen_ave <- lmer(timefrozen_ave ~ (1|PITID), data=GULD_ACT)
+GULD_ACT_behmod.timefrozen_ave
+confint(GULD_ACT_behmod.timefrozen_ave)
+rpt(timefrozen_ave ~ (1 | PITID), grname = "PITID", data = GULD_ACT, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+GULD_ACT_behmod.centretime <- lmer(centretime ~ (1|PITID), data=GULD_ACT)
+GULD_ACT_behmod.centretime
+confint(GULD_ACT_behmod.centretime)
+rpt(centretime ~ (1 | PITID), grname = "PITID", data = GULD_ACT, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+
+#Excluding some trials due to:
+#Injuries found on individuals following the trials, so data removed
+GULD_ACT.excl <- subset(GULD_ACT, UniqueID != "ACT1_1C")
+GULD_ACT.excl <- subset(GULD_ACT.excl, UniqueID != "ACT1_3F")
+GULD_ACT.excl <- subset(GULD_ACT.excl, UniqueID != "ACT1_4D")
+GULD_ACT.excl <- subset(GULD_ACT.excl, UniqueID != "ACT1_5C")
+GULD_ACT.excl <- subset(GULD_ACT.excl, UniqueID != "ACT2_5A")
+GULD_ACT.excl <- subset(GULD_ACT.excl, UniqueID != "ACT2_5B")
+nrow(GULD_ACT.excl)
+n_distinct(GULD_ACT.excl$PITID) #data for 44 fish
+
+hist(GULD_ACT.excl$avespeed_tot)
+hist(GULD_ACT.excl$avespeed_mob)
+hist(GULD_ACT.excl$aveacceler)
+hist(GULD_ACT.excl$propmoving)
+hist(GULD_ACT.excl$dist)
+hist(GULD_ACT.excl$timefrozen_tot)
+hist(GULD_ACT.excl$timefrozen_ave)
+hist(GULD_ACT.excl$centretime)
+
+                        
+GULD_ACT.excl_behmod.avespeed_tot <- lmer(avespeed_tot ~ (1|PITID), data=GULD_ACT.excl)
+GULD_ACT.excl_behmod.avespeed_tot
+confint(GULD_ACT.excl_behmod.avespeed_tot)
+rpt(avespeed_tot ~ (1 | PITID), grname = "PITID", data = GULD_ACT.excl, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+GULD_ACT.excl_behmod.avespeed_mob <- lmer(avespeed_mob ~ (1|PITID), data=GULD_ACT.excl)
+GULD_ACT.excl_behmod.avespeed_mob
+confint(GULD_ACT.excl_behmod.avespeed_mob)
+rpt(avespeed_mob ~ (1 | PITID), grname = "PITID", data = GULD_ACT.excl, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+GULD_ACT.excl_behmod.aveacceler <- lmer(aveacceler ~ (1|PITID), data=GULD_ACT.excl)
+GULD_ACT.excl_behmod.aveacceler
+confint(GULD_ACT.excl_behmod.aveacceler)
+rpt(aveacceler ~ (1 | PITID), grname = "PITID", data = GULD_ACT.excl, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+GULD_ACT.excl_behmod.propmoving <- lmer(propmoving ~ (1|PITID), data=GULD_ACT.excl)
+GULD_ACT.excl_behmod.propmoving
+confint(GULD_ACT.excl_behmod.propmoving)
+rpt(propmoving ~ (1 | PITID), grname = "PITID", data = GULD_ACT.excl, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+GULD_ACT.excl_behmod.dist <- lmer(dist ~ (1|PITID), data=GULD_ACT.excl)
+GULD_ACT.excl_behmod.dist
+confint(GULD_ACT.excl_behmod.dist)
+rpt(dist ~ (1 | PITID), grname = "PITID", data = GULD_ACT.excl, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+GULD_ACT.excl_behmod.timefrozen_tot <- lmer(timefrozen_tot ~ (1|PITID), data=GULD_ACT.excl)
+GULD_ACT.excl_behmod.timefrozen_tot
+confint(GULD_ACT.excl_behmod.timefrozen_tot)
+rpt(timefrozen_tot ~ (1 | PITID), grname = "PITID", data = GULD_ACT.excl, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+GULD_ACT.excl_behmod.timefrozen_ave <- lmer(timefrozen_ave ~ (1|PITID), data=GULD_ACT.excl)
+GULD_ACT.excl_behmod.timefrozen_ave
+confint(GULD_ACT.excl_behmod.timefrozen_ave)
+rpt(timefrozen_ave ~ (1 | PITID), grname = "PITID", data = GULD_ACT.excl, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+GULD_ACT.excl_behmod.centretime <- lmer(centretime ~ (1|PITID), data=GULD_ACT.excl)
+GULD_ACT.excl_behmod.centretime
+confint(GULD_ACT.excl_behmod.centretime)
+rpt(centretime ~ (1 | PITID), grname = "PITID", data = GULD_ACT.excl, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+
+##3.3 Preliminary EXPL Variance Analysis ----
+GULD_EXPL <- read.csv("~/trophicpersonalities_GULD/3_Behaviour_Analysis/GULDEXPLdat_15102020.csv")
+#Re-creating unique id for each trial 
+GULD_EXPL$UniqueID <- paste(GULD_EXPL$TrialType, GULD_EXPL$TrialDay, sep = "")
+GULD_EXPL$UniqueID <- paste(GULD_EXPL$UniqueID, GULD_EXPL$TrialRound, sep = "_")
+GULD_EXPL$UniqueID <- paste(GULD_EXPL$UniqueID, GULD_EXPL$ArenaID, sep = "")
+
+#Assessing distributions
+hist(GULD_EXPL$emergelat)
+hist(GULD_EXPL$endpointlat)
+hist(GULD_EXPL$refugereturnlat)
+
+nrow(GULD_EXPL) #125 rows
+GULD_EXPL <- subset(GULD_EXPL, GULD_EXPL$PITID != "NOFISH")
+GULD_EXPL <- subset(GULD_EXPL, GULD_EXPL$PITID != "2044/1395") #excluding trial where fish escaped arena
+nrow(GULD_EXPL) #116 trials
+n_distinct(GULD_EXPL$PITID) #for 46 fish
+
+
+GULD_EXPL.excl_behmod.emergelat <- lmer(emergelat ~ (1|PITID), data=GULD_EXPL)
+GULD_EXPL.excl_behmod.emergelat
+confint(GULD_EXPL.excl_behmod.emergelat)
+rpt(emergelat ~ (1 | PITID), grname = "PITID", data = GULD_EXPL, datatype = "Gaussian", 
+    nboot = 100, npermut = 0)
+
+#Converting to binomial for rpt estimate
+GULD_EXPLa <- subset(GULD_EXPL, emergelat != 2700)
+GULD_EXPLb <- subset(GULD_EXPL, emergelat == 2700)
+GULD_EXPLa$emergebin <- 1
+GULD_EXPLb$emergebin <- 0
+GULD_EXPL <- rbind(GULD_EXPLa, GULD_EXPLb)
+nrow(GULD_EXPLb)
+n_distinct(GULD_EXPLb$PITID)
+
+rpt(emergebin ~ (1 | PITID), grname = "PITID", data = GULD_EXPL, datatype = "Binary", 
+    nboot = 100, npermut = 0)
+
 
