@@ -70,14 +70,3 @@ write.csv(Novanadat_specfreq, "~/trophicpersonalities_GULD/1_SIA_PreyIdentificat
 #nrow(subset(OBISdat_inverts_freq, Freq >= 100))
 #write.csv(subset(OBISdat_inverts_freq, Freq >= 100), '~/trophicpersonalities_GULD/1_SIA_PreyIdentification/OBISdat_freq100.csv') 
 
-
-
-###1.3. Prex taxa exploratory analysis ----
-
-
-
-
-
-
-
-
