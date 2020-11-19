@@ -6,7 +6,7 @@ E,G06,2153,m,nonproductive(light),30,
 E,G14,2045,m,light,55,
 E,G12,2099,m,"nonproductive(light, juv?)",30,
 E,G04,2060,m,dark,49,
-E,G13,1284,m,unclear,36,
+E,G13,1286,m,unclear,36,"this was a typo (originally 1284, but was wrong)"
 E,G11,2233,m,light,36,
 E,G09,2026,m,juv,18,
 E,G10,2217,m,light,31,
@@ -35,7 +35,7 @@ D,G35,2021,m,dark,44,
 C,G55,2065,m,light,22,
 C,G47,1492,m,dark,18,euthanised 02072020
 C,G42,2014,m,light,42,
-C,G50,2049,f,nongravid,17,deceased 20/06/2020
+C,G50,2049,f,nongravid,17,deceased 26/06/2020
 C,G54,1260,m(j),light,11,
 C,G40,2101,m,light,27,
 C,G49,2040,m,light,34,

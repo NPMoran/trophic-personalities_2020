@@ -10,10 +10,9 @@ Sys.setenv(LANG = "en")
 
 #4. Compiling individual behavioural and isotope datasets
 
-### 4.1 GULD_Fish state data ----
+#Behavioural Datasets
+GULD_EXPL.proc <- read.csv("~/trophicpersonalities_GULD/4_Behaviour_Analysis/GULD_EXPL.processed.csv")
+#variables of interest: endpointlat.bin.B, emergelat.bin.B
 
-dat_prelim <- read.csv('GULDFish_19062020.csv', strip.white = TRUE)
-dat_ACT1 <- read.csv('GULDFish_25062020.csv', strip.white = TRUE)
-data_GULDfish <- merge(dat_prelim, dat_ACT1, all.x = TRUE)
-
-
+GULD_ACT.proc <- read.csv("~/trophicpersonalities_GULD/4_Behaviour_Analysis/GULD_ACT.processed.csv")
+#variables of interest: avespeed_tot, aveacceler, propmoving.exp, dist, timefrozen_tot.ln, centretime.lnplus1
