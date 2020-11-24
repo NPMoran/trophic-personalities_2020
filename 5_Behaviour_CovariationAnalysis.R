@@ -298,23 +298,23 @@ GULD_ACT.processed$InfectionScore <- as.factor(GULD_ACT.processed$InfectionScore
 GULD_avespeed_tot.mod.infectionscore <- lmer(avespeed_tot ~ InfectionScore + (1|FishID), data=GULD_ACT.processed)
 plot(GULD_avespeed_tot.mod.infectionscore)
 summary(GULD_avespeed_tot.mod.infectionscore) 
-#no effect of infectionscore
+#marginally negative effect of infectionscore
 GULD_aveacceler.mod.infectionscore <- lmer(aveacceler ~ InfectionScore + (1|FishID), data=GULD_ACT.processed)
 plot(GULD_aveacceler.mod.infectionscore)
 summary(GULD_aveacceler.mod.infectionscore) 
-#no effect of infectionscore
+#negative effect of infectionscore
 GULD_propmoving.exp.mod.infectionscore <- lmer(propmoving.exp ~ InfectionScore + (1|FishID), data=GULD_ACT.processed)
 plot(GULD_propmoving.exp.mod.infectionscore)
 summary(GULD_propmoving.exp.mod.infectionscore) 
-#no effect of infectionscore
+#negative effect of infectionscore
 GULD_dist.mod.infectionscore <- lmer(dist ~ InfectionScore + (1|FishID), data=GULD_ACT.processed)
 plot(GULD_dist.mod.infectionscore)
 summary(GULD_dist.mod.infectionscore) 
-#no effect of infectionscore
+#negative effect of infectionscore
 GULD_timefrozen_tot.ln.mod.infectionscore <- lmer(timefrozen_tot.ln ~ InfectionScore + (1|FishID), data=GULD_ACT.processed)
 plot(GULD_timefrozen_tot.ln.mod.infectionscore)
 summary(GULD_timefrozen_tot.ln.mod.infectionscore) 
-#no effect of infectionscore
+#marginally negative effect of infectionscore
 GULD_centretime.lnplus1.mod.infectionscore <- lmer(centretime.lnplus1 ~ InfectionScore + (1|FishID), data=GULD_ACT.processed)
 plot(GULD_centretime.lnplus1.mod.infectionscore)
 summary(GULD_centretime.lnplus1.mod.infectionscore) 
@@ -407,24 +407,29 @@ summary(GULD_endpointlat.bin.B.mod.infectionscore)
 #    - InfectionScore: no effect
 
 
+write.csv(GULD_ACT.processed, '~/trophicpersonalities_GULD/5_Behaviour_CovariationAnalysis/GULD_ACT.processed2.csv')
+write.csv(GULD_EXPL.processed, '~/trophicpersonalities_GULD/5_Behaviour_CovariationAnalysis/GULD_EXPL.processed2.csv')
 
 
 ### 5.3. Exploring relationship between behavioral variables (ACT) ----
+GULD_ACT.processed2 <- read.csv('~/trophicpersonalities_GULD/5_Behaviour_CovariationAnalysis/GULD_ACT.processed2.csv')
+GULD_EXPL.processed2 <- read.csv('~/trophicpersonalities_GULD/5_Behaviour_CovariationAnalysis/GULD_ACT.processed2.csv')
+
 
 #Removing unneeded rows
-GULD_ACT.processed <- select(GULD_ACT.processed, -c(X, TimeLoaded, TrialRound, timefrozen_tot, timefrozen_ave, centretime, Notes, UniqueID))
-cor(GULD_ACT.processed[,12:19])
-pairs(GULD_ACT.processed[,12:19]) #appears to be strong correlations between all activity variables
+GULD_ACT.processed2 <- select(GULD_ACT.processed, -c(X, TimeLoaded, TrialRound, avespeed_mob, propmoving, timefrozen_tot, timefrozen_ave, centretime, Notes, UniqueID))
+cor(GULD_ACT.processed2[,12:17])
+pairs(GULD_ACT.processed2[,12:17]) #appears to be strong correlations between all activity variables
 
 #Running a PCA on all data
-labels(GULD_ACT.processed)
-GULD_ACT.pca <- rda(GULD_ACT.processed[,c(-1,-2,-3,-4,-5, -6, -7, -8, -9, -10, -11)], na = na.exclude, scale=TRUE)
+labels(GULD_ACT.processed2)
+GULD_ACT.pca <- rda(GULD_ACT.processed2[,c(-1,-2,-3,-4,-5, -6, -7, -8, -9, -10, -11)], na = na.exclude, scale=TRUE)
 summary(GULD_ACT.pca, display=NULL) 
 screeplot(GULD_ACT.pca)
 abline(a = 1, b = 0) #only PC1 has eigenvalue greater than 1
 
 GULD_ACT.ord <- ordiplot(GULD_ACT.pca, type = "n")
-data.envfit <- envfit(GULD_ACT.pca, GULD_ACT.processed[,12:19])
+data.envfit <- envfit(GULD_ACT.pca, GULD_ACT.processed2[,12:17])
 plot(data.envfit, col="blue")
 data.envfit
 Sex <- model.matrix(~-1+Sex, GULD_ACT.processed)
