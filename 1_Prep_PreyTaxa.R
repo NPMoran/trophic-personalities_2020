@@ -9,11 +9,11 @@ Sys.setenv(LANG= 'en'); library(dplyr)
 
 
 
-#1. Potential prey taxa ----
+#1. Identifying potential prey taxa from databases ----
 
 ###Using species occurence databases for Guldborgsund, to produce a list of potential species to inform species IDs
 
-###1.1. Invertebrate species records retreived from Novana https://odaforalle.au.dk/ ----
+### 1.1. Invertebrate species records retreived from Novana https://odaforalle.au.dk/ ----
 #Extraction details: Hent data -> Hav -> Bundafauna -> Artsliste
 #Dates: 1/1/2020 - 25/9/2020 (also extraction date)
 #Vandomraade: Guldborgsund
@@ -21,12 +21,12 @@ Sys.setenv(LANG= 'en'); library(dplyr)
 #Bundfaunaraekke: Vaelg alle
 #Bundfaunaart: Vaelg alle
 #Prøvetagningsudstyr: Vaelg alle
-Novanadat <- read.csv("~/trophicpersonalities_GULD/1_SIA_PreyIdentification/HentData_UYGUPNWUIZ.csv", sep = ";")
+Novanadat <- read.csv("~/trophicpersonalities_GULD/1_Prep_PreyTaxa/HentData_UYGUPNWUIZ.csv", sep = ";")
 head(Novanadat)
 
 #Frequency of species by entries
 Novanadat_specfreq <- as.data.frame(table(Novanadat$Artsnavn))
-write.csv(Novanadat_specfreq, "~/trophicpersonalities_GULD/1_SIA_PreyIdentification/HentData_UYGUPNWUIZ_specfreq.csv")
+write.csv(Novanadat_specfreq, "~/trophicpersonalities_GULD/1_Prep_PreyTaxa/HentData_UYGUPNWUIZ_specfreq.csv")
 
 ##Positional data format editing
 ## Change positional data from integer to character
@@ -52,21 +52,21 @@ write.csv(Novanadat_specfreq, "~/trophicpersonalities_GULD/1_SIA_PreyIdentificat
 
 
 
-##1.2. Invetebrate records retreived from OBIS (https://obis.org/) ----
+### 1.2. Invetebrate records retreived from OBIS (https://obis.org/) ----
 ##Accessed via: Historical data on invertebrates from the Baltic Sea and Gdansk Bay: https://obis.org/dataset/5fbbc3e4-e951-4aa2-a16c-ac9258933d6c
 ##All records retreived from approximately 50km radius around GULD site (so less specific than Novana search)
-#OBISdat <- read.csv('~/trophicpersonalities_GULD/1_SIA_PreyIdentification/OBISdat.csv', strip.white = TRUE)
+#OBISdat <- read.csv('~/trophicpersonalities_GULD/1_Prep_PreyTaxa/OBISdat.csv', strip.white = TRUE)
 #summary(OBISdat$scientificName)
 #n_distinct(OBISdat$scientificName) #998 distinct taxa names, likely some overlap
 #
 ##assessing the most commonly recorded species in the area
 #OBISdat_freq <- as.data.frame(table(OBISdat$scientificName))
 #nrow(subset(OBISdat_freq, Freq >= 1000))
-#write.csv(subset(OBISdat_freq, Freq >= 1000), '~/trophicpersonalities_GULD/1_SIA_PreyIdentification/OBISdat_freq1000.csv') 
+#write.csv(subset(OBISdat_freq, Freq >= 1000), '~/trophicpersonalities_GULD/1_Prep_PreyTaxa/OBISdat_freq1000.csv') 
 ##found many were fish, so re-running with fish excluded
 #
 #OBISdat_inverts <- subset(OBISdat, class != 'Actinopterygii') #to exclude fish
 #OBISdat_inverts_freq <- as.data.frame(table(OBISdat_inverts$scientificName))
 #nrow(subset(OBISdat_inverts_freq, Freq >= 100))
-#write.csv(subset(OBISdat_inverts_freq, Freq >= 100), '~/trophicpersonalities_GULD/1_SIA_PreyIdentification/OBISdat_freq100.csv') 
+#write.csv(subset(OBISdat_inverts_freq, Freq >= 100), '~/trophicpersonalities_GULD/1_Prep_PreyTaxa/OBISdat_freq100.csv') 
 

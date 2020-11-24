@@ -10,11 +10,11 @@ library(dplyr); library(lme4); library(rptR)
 
 
 
-#2. SIA_Sample processing data ---- 
+#2. Preparation for Individual SIA Analysis ---- 
 
 ### 2.1. Estimating replicates needed to estimate variance components in individual isotopic data ----
 
-#Using 2014 data from Chlamydogobius eremius 2014, to estimate varance components 
+#Using 2014 data from Chlamydogobius eremius 2014, to estimate variance components 
 #3 Populations:
 #Cowa = high among individual variation
 #Alge = moderate among individual variance
@@ -22,7 +22,7 @@ library(dplyr); library(lme4); library(rptR)
 ##n_ind = 20 (per pop), replicates = 3 (per ind)
 
 #Case 1: high among-individual variation
-Var_testdat <- read.csv("~/trophicpersonalities_GULD/2_SIA_SampleProcessing/Var_testdat2.csv")
+Var_testdat <- read.csv("~/trophicpersonalities_GULD/2_Prep_IndividualSIA/Var_testdat2.csv")
 Var_testdat_high <- subset(Var_testdat, PopID == "Cowa")
 hist(Var_testdat_high$d15N)
 hist(Var_testdat_high$d13C)
@@ -107,7 +107,7 @@ GULD_SIAfish$DateRemoved <- ""
 GULD_SIAfish$DateCleaned <- ""
 GULD_SIAfish$DateDried <- ""
 GULD_SIAfish$Notes <- ""
-write.csv(GULD_SIAfish, "~/trophicpersonalities_GULD/2_SIA_SampleProcessing/GULD_SIAfishproc.csv")
+write.csv(GULD_SIAfish, "~/trophicpersonalities_GULD/2_Prep_IndividualSIA/GULD_SIAfishproc.csv")
 
 
 #Building data frame for SIA analysis batch 1
@@ -156,7 +156,7 @@ GULD_SIAbatch1$δ15N <- ""
 GULD_SIAbatch1$δC13 <- ""
 GULD_SIAbatch1$N_percentage <- ""
 GULD_SIAbatch1$C_percentage <- ""
-write.csv(GULD_SIAbatch1, "~/trophicpersonalities_GULD/2_SIA_SampleProcessing/GULD_SIAbatch1.csv")
+write.csv(GULD_SIAbatch1, "~/trophicpersonalities_GULD/2_Prep_IndividualSIA/GULD_SIAbatch1.csv")
 
 
 

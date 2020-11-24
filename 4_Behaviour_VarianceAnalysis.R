@@ -6,17 +6,14 @@
 
 
 Sys.setenv(LANG = "en")
-library(dplyr)
-library(ggpubr)
-library(ggplot2)
-library(lme4)
-library(rptR)
-#library(brms)
+library(dplyr); library(ggpubr); library(ggplot2); library(lme4); library(rptR)
 
 
 
-##3.3 Preliminary ACT Variance Analysis ----
-GULD_ACT <- read.csv("~/trophicpersonalities_GULD/4_Behaviour_Analysis/GULDACTdat_18112020.csv")
+#4. Individual Behavioural Variance Analysis ----
+
+### 4.1 Activity Assay (ACT) ----
+GULD_ACT <- read.csv("~/trophicpersonalities_GULD/4_Behaviour_VarianceAnalysis/GULDACTdat_18112020.csv")
 nrow(GULD_ACT) #136 rows
 
 
@@ -149,8 +146,7 @@ GULD_ACT.excl$centretime.lnplus1 <- log(GULD_ACT.excl$centretime + 1)
 
 #Variance analysis-
 GULD_avespeed_tot.mod <- lmer(avespeed_tot ~ (1|FishID), data=GULD_ACT.excl)
-GULD_avespeed_tot.mod
-confint(GULD_avespeed_tot.mod)
+summary(GULD_avespeed_tot.mod)
 plot(GULD_avespeed_tot.mod)
 GULD_avespeed_tot.rpt <- rpt(avespeed_tot ~ (1 | FishID), grname = "FishID", data = GULD_ACT.excl, datatype = "Gaussian", 
     nboot = 100, npermut = 0)
@@ -158,8 +154,7 @@ GULD_avespeed_tot.rpt
 
 
 GULD_avespeed_mob.mod <- lmer(avespeed_mob ~ (1|FishID), data=GULD_ACT.excl)
-GULD_avespeed_mob.mod
-confint(GULD_avespeed_mob.mod)
+summary(GULD_avespeed_mob.mod)
 plot(GULD_avespeed_mob.mod)
 GULD_avespeed_mob.rpt <- rpt(avespeed_mob ~ (1 | FishID), grname = "FishID", data = GULD_ACT.excl, datatype = "Gaussian", 
                              nboot = 100, npermut = 0)
@@ -167,8 +162,7 @@ GULD_avespeed_mob.rpt
 
 
 GULD_aveacceler.mod <- lmer(aveacceler ~ (1|FishID), data=GULD_ACT.excl)
-GULD_aveacceler.mod
-confint(GULD_aveacceler.mod)
+summary(GULD_aveacceler.mod)
 plot(GULD_aveacceler.mod)
 GULD_aveacceler.rpt <- rpt(aveacceler ~ (1 | FishID), grname = "FishID", data = GULD_ACT.excl, datatype = "Gaussian", 
                              nboot = 100, npermut = 0)
@@ -176,8 +170,7 @@ GULD_aveacceler.rpt
 
 
 GULD_propmoving.mod <- lmer(propmoving ~ (1|FishID), data=GULD_ACT.excl)
-GULD_propmoving.mod
-confint(GULD_propmoving.mod)
+summary(GULD_propmoving.mod)
 plot(GULD_propmoving.mod)
 GULD_propmoving.rpt <- rpt(propmoving ~ (1 | FishID), grname = "FishID", data = GULD_ACT.excl, datatype = "Gaussian", 
                            nboot = 100, npermut = 0)
@@ -185,8 +178,7 @@ GULD_propmoving.rpt
 
 
 GULD_propmoving.exp.mod <- lmer(propmoving.exp ~ (1|FishID), data=GULD_ACT.excl)
-GULD_propmoving.exp.mod
-confint(GULD_propmoving.exp.mod)
+summary(GULD_propmoving.exp.mod)
 plot(GULD_propmoving.exp.mod)
 GULD_propmoving.exp.rpt <- rpt(propmoving.exp ~ (1 | FishID), grname = "FishID", data = GULD_ACT.excl, datatype = "Gaussian", 
                                nboot = 100, npermut = 0)
@@ -194,8 +186,7 @@ GULD_propmoving.exp.rpt
 
 
 GULD_dist.mod <- lmer(dist ~ (1|FishID), data=GULD_ACT.excl)
-GULD_dist.mod
-confint(GULD_dist.mod)
+summary(GULD_dist.mod)
 plot(GULD_dist.mod)
 GULD_dist.rpt <- rpt(dist ~ (1 | FishID), grname = "FishID", data = GULD_ACT.excl, datatype = "Gaussian", 
                                    nboot = 100, npermut = 0)
@@ -203,8 +194,7 @@ GULD_dist.rpt
 
 
 GULD_timefrozen_tot.ln.mod <- lmer(timefrozen_tot.ln ~ (1|FishID), data=GULD_ACT.excl)
-GULD_timefrozen_tot.ln.mod
-confint(GULD_timefrozen_tot.ln.mod)
+summary(GULD_timefrozen_tot.ln.mod)
 plot(GULD_timefrozen_tot.ln.mod)
 GULD_timefrozen_tot.ln.rpt <- rpt(timefrozen_tot.ln ~ (1 | FishID), grname = "FishID", data = GULD_ACT.excl, datatype = "Gaussian", 
                      nboot = 100, npermut = 0)
@@ -212,8 +202,7 @@ GULD_timefrozen_tot.ln.rpt
 
 
 GULD_centretime.lnplus1.mod <- lmer(centretime.lnplus1 ~ (1|FishID), data=GULD_ACT.excl)
-GULD_centretime.lnplus1.mod
-confint(GULD_centretime.lnplus1.mod)
+summary(GULD_centretime.lnplus1.mod)
 plot(GULD_centretime.lnplus1.mod)
 GULD_centretime.lnplus1.rpt <- rpt(centretime.lnplus1 ~ (1 | FishID), grname = "FishID", data = GULD_ACT.excl, datatype = "Gaussian", 
                                   nboot = 100, npermut = 0)
@@ -222,7 +211,7 @@ GULD_centretime.lnplus1.rpt
 
 #Summary-
 #avespeed_tot:      _ 0.467 [0.304, 0.621] ***
-#avespeed_mob       _ 0.181 [0, 0.345]     *  Excluded from following analysis
+#avespeed_mob       _ 0.181 [0, 0.345]     *   (only variable with non-zero repeatability estimates following analysis)
 #aveacceler         _ 0.473 [0.271, 0.632] ***
 #propmoving         _ 0.496 [0.348, 0.645] ***
 #propmoving.exp     _ 0.531 [0.338, 0.667] ***
@@ -233,8 +222,8 @@ GULD_centretime.lnplus1.rpt
 
 
 
-##3.3 Preliminary EXPL Variance Analysis ----
-GULD_EXPL <- read.csv("~/trophicpersonalities_GULD/4_Behaviour_Analysis/GULDEXPLdat_19112020.csv")
+### 4.2 Exploration Assay (EXPL) ----
+GULD_EXPL <- read.csv("~/trophicpersonalities_GULD/4_Behaviour_VarianceAnalysis/GULDEXPLdat_19112020.csv")
 nrow(GULD_EXPL) #125 rows
 
 
@@ -342,8 +331,7 @@ GULD_EXPL.excl$refugereturnlat.ln <- log(GULD_EXPL.excl$refugereturnlat)
 
 #Variance analysis-
 GULD_emergelat.bin.A.mod <- glmer(emergelat.bin.A ~ (1|FishID), family = binomial, data=GULD_EXPL.excl)
-GULD_emergelat.bin.A.mod
-confint(GULD_emergelat.bin.A.mod)
+summary(GULD_emergelat.bin.A.mod)
 plot(GULD_emergelat.bin.A.mod)
 GULD_emergelat.bin.A.rpt <- rpt(emergelat.bin.A ~ (1 | FishID), grname = "FishID", data = GULD_EXPL.excl, datatype = "Binary", 
                                  nboot = 100, npermut = 0)
@@ -351,8 +339,7 @@ GULD_emergelat.bin.A.rpt
 
 
 GULD_emergelat.bin.B.mod <- glmer(emergelat.bin.B ~ (1|FishID), family = binomial, data=GULD_EXPL.excl)
-GULD_emergelat.bin.B.mod
-confint(GULD_emergelat.bin.B.mod)
+summary(GULD_emergelat.bin.B.mod)
 plot(GULD_emergelat.bin.B.mod)
 GULD_emergelat.bin.B.rpt <- rpt(emergelat.bin.B ~ (1 | FishID), grname = "FishID", data = GULD_EXPL.excl, datatype = "Binary", 
                                 nboot = 100, npermut = 0)
@@ -360,26 +347,15 @@ GULD_emergelat.bin.B.rpt
 
 
 GULD_endpointlat.bin.A.mod <- glmer(endpointlat.bin.A ~ (1|FishID), family = binomial, data=GULD_EXPL.excl)
-GULD_endpointlat.bin.A.mod
-confint(GULD_endpointlat.bin.A.mod)
+summary(GULD_endpointlat.bin.A.mod)
 plot(GULD_endpointlat.bin.A.mod)
 GULD_endpointlat.bin.A.rpt <- rpt(endpointlat.bin.A ~ (1 | FishID), grname = "FishID", data = GULD_EXPL.excl, datatype = "Binary", 
                                 nboot = 100, npermut = 0)
 GULD_endpointlat.bin.A.rpt
 
 
-GULD_endpointlat.bin.A.mod <- glmer(endpointlat.bin.A ~ (1|FishID), family = binomial, data=GULD_EXPL.excl)
-GULD_endpointlat.bin.A.mod #Convergence failure
-confint(GULD_endpointlat.bin.A.mod)
-plot(GULD_endpointlat.bin.A.mod)
-GULD_endpointlat.bin.A.rpt <- rpt(endpointlat.bin.A ~ (1 | FishID), grname = "FishID", data = GULD_EXPL.excl, datatype = "Binary", 
-                                  nboot = 100, npermut = 0)
-GULD_endpointlat.bin.A.rpt
-
-
 GULD_endpointlat.bin.B.mod <- glmer(endpointlat.bin.B ~ (1|FishID), family = binomial, data=GULD_EXPL.excl)
-GULD_endpointlat.bin.B.mod #Convergence failure
-confint(GULD_endpointlat.bin.B.mod)
+summary(GULD_endpointlat.bin.B.mod) 
 plot(GULD_endpointlat.bin.B.mod)
 GULD_endpointlat.bin.B.rpt <- rpt(endpointlat.bin.B ~ (1 | FishID), grname = "FishID", data = GULD_EXPL.excl, datatype = "Binary", 
                                   nboot = 100, npermut = 0)
@@ -387,8 +363,7 @@ GULD_endpointlat.bin.B.rpt
 
 
 GULD_endpointspeed.ln.mod <- lmer(endpointspeed.ln ~ (1|FishID), data=GULD_EXPL.excl)
-GULD_endpointspeed.ln.mod
-confint(GULD_endpointspeed.ln.mod)
+summary(GULD_endpointspeed.ln.mod)
 plot(GULD_endpointspeed.ln.mod)
 GULD_endpointspeed.ln.rpt <- rpt(endpointspeed.ln ~ (1 | FishID), grname = "FishID", data = GULD_EXPL.excl, datatype = "Gaussian", 
                                    nboot = 100, npermut = 0)
@@ -396,8 +371,7 @@ GULD_endpointspeed.ln.rpt
 
 
 GULD_refugereturnlat.ln.mod <- lmer(refugereturnlat.ln ~ (1|FishID), data=GULD_EXPL.excl)
-GULD_refugereturnlat.ln.mod
-confint(GULD_refugereturnlat.ln.mod)
+summary(GULD_refugereturnlat.ln.mod)
 plot(GULD_refugereturnlat.ln.mod)
 GULD_refugereturnlat.ln.rpt <- rpt(refugereturnlat.ln ~ (1 | FishID), grname = "FishID", data = GULD_EXPL.excl, datatype = "Gaussian", 
                                  nboot = 100, npermut = 0)
@@ -405,15 +379,15 @@ GULD_refugereturnlat.ln.rpt
 
 
 #Summary-
-#emergelat.bin.A:      _ 0.954 [0.948, 0.998] *** IRRRATIONAL
+#emergelat.bin.A:      _ 0.954 [0.948, 0.998] *** IRRRATIONAL ORIGINAL SCALE ESTIMATE
 #emergelat.bin.B:      _ 0.678 [0.292, 0.824] ***
-#endpointlat.bin.A:    _ 0.829 [0.519, 0.986] *** PROBLEMS, CONVERGENCE ISSUES
+#endpointlat.bin.A:    _ 0.829 [0.519, 0.986] *** IRRRATIONAL ORIGINAL SCALE ESTIMATE
 #endpointlat.bin.B:    _ 0.626 [0.269, 0.757] *** 
 #endpointspeed.ln:     _ 0.222 [0, 0.44] 
 #refugereturnlat.ln:   _ 0.158 [0, 0.382] 
 
 
-write.csv(GULD_EXPL.excl, '~/trophicpersonalities_GULD/4_Behaviour_Analysis/GULD_EXPL.processed.csv')
-write.csv(GULD_ACT.excl, '~/trophicpersonalities_GULD/4_Behaviour_Analysis/GULD_ACT.processed.csv')
+write.csv(GULD_EXPL.excl, '~/trophicpersonalities_GULD/4_Behaviour_VarianceAnalysis/GULD_EXPL.processed.csv')
+write.csv(GULD_ACT.excl, '~/trophicpersonalities_GULD/4_Behaviour_VarianceAnalysis/GULD_ACT.processed.csv')
 
 

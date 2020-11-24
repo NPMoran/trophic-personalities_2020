@@ -69,7 +69,7 @@ confint(GULD_SIA1.N.mod)
 GULD_SIA1.N.VarCorr <- VarCorr(GULD_SIA1.N.mod, sigma = 1)
 print(GULD_SIA1.N.VarCorr,comp=c("Variance"))
 plot(GULD_SIA1.N.mod) 
-GULD_SIA1.N.rpt(d15N ~ (1 | fishID), grname = "fishID", data = GULD_SIA1, datatype = "Gaussian", 
+GULD_SIA1.N.rpt <- rpt(d15N ~ (1 | fishID), grname = "fishID", data = GULD_SIA1, datatype = "Gaussian", 
     nboot = 100, npermut = 0)
 GULD_SIA1.N.rpt
 
@@ -79,8 +79,9 @@ confint(GULD_SIA1.C.mod)
 GULD_SIA1.C.VarCorr <- VarCorr(GULD_SIA1.C.mod, sigma = 1)
 print(GULD_SIA1.C.VarCorr,comp=c("Variance"))
 plot(GULD_SIA1.Cmod) 
-rpt(d13C ~ (1 | fishID), grname = "fishID", data = GULD_SIA1, datatype = "Gaussian", 
+GULD_SIA1.C.rpt <- rpt(d13C ~ (1 | fishID), grname = "fishID", data = GULD_SIA1, datatype = "Gaussian", 
     nboot = 100, npermut = 0)
+GULD_SIA1.C.rpt
 
 
 #Summary:

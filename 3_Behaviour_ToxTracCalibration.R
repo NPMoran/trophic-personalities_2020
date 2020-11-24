@@ -11,7 +11,7 @@ library(dplyr)
 
 #3. Toxtrac Calibration and Optimization ----
 
-##3.1 ACT_Calibration for Toxtrac ----
+### 3.1 ACT_Calibration for Toxtrac ----
 #Requires the vertical and horizontal pixel to distance conversion to be known
 #Calibration pixel/mm ratios are calculated manually for each arena
 
@@ -73,7 +73,7 @@ cali_full <- as.data.frame(cali_full)
 write.csv(cali_full, "~/trophicpersonalities_GULD/3_Behaviour_ToxTracCalibration/Guld_toxtracmanualcalibration.csv")
 
 
-##3.2 ACT ToxTrac Tracking Data ----
+### 3.2 ACT ToxTrac Tracking Data ----
 # all videos trimmed to 25:00, staring from the point that all individuals are loaded
 # trimmed using Microsoft Photos app
 

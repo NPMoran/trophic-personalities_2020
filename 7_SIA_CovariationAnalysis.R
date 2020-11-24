@@ -16,3 +16,5 @@ GULD_EXPL.proc <- read.csv("~/trophicpersonalities_GULD/4_Behaviour_Analysis/GUL
 
 GULD_ACT.proc <- read.csv("~/trophicpersonalities_GULD/4_Behaviour_Analysis/GULD_ACT.processed.csv")
 #variables of interest: avespeed_tot, aveacceler, propmoving.exp, dist, timefrozen_tot.ln, centretime.lnplus1
+
+
