@@ -13,13 +13,16 @@ library(data.table)
 library(ggplot2)
 
 
-#Round goby isotope distribution and variation ----
-GULD_SIA1 <- read.csv("~/trophicpersonalities_GULD/5_SIA_Analysis/SIA_batch1.csv")
+#6. Round goby isotope distribution and variation ----
+
+### 6.1. SIA variance analysis ----
+GULD_SIA1 <- read.csv("~/trophicpersonalities_GULD/6_SIA_VarianceAnalysis/SIA_batch1.csv")
 labels(GULD_SIA1)
 GULD_SIA1 <- rename(GULD_SIA1, d15N = d15N....vs.AIR)
 GULD_SIA1 <- rename(GULD_SIA1, d13C = d13C....vs.VPDB)
 GULD_SIA1 <- rename(GULD_SIA1, N_percent = X..N)
 GULD_SIA1 <- rename(GULD_SIA1, C_percent = X..C)
+GULD_SIA1 <- select(GULD_SIA1, -c())
 
 #Looking at distributions
 ggplot(GULD_SIA1) + aes(x = d15N) + geom_histogram(color="black", fill="lightblue", binwidth = 0.3) + simpletheme 
@@ -74,7 +77,7 @@ GULD_SIA1.N.rpt <- rpt(d15N ~ (1 | fishID), grname = "fishID", data = GULD_SIA1,
 GULD_SIA1.N.rpt
 
 GULD_SIA1.C.mod <- lmer(d13C ~ (1|fishID), data=GULD_SIA1)
-GULD_SIA1.C.mod
+summary(GULD_SIA1.C.mod)
 confint(GULD_SIA1.C.mod)
 GULD_SIA1.C.VarCorr <- VarCorr(GULD_SIA1.C.mod, sigma = 1)
 print(GULD_SIA1.C.VarCorr,comp=c("Variance"))
@@ -89,8 +92,7 @@ GULD_SIA1.C.rpt
 #d15N:      _ repeatability 0.979 [0.963, 0.987] 
 
 
-
-#Visualising distibution of SIA values ----
+### 6.2. Visualising SIA values ----
 GULD_SIA1.plot <- setDT(GULD_SIA1)[ , list(d15N_mean = mean(d15N), d15N_sd = sd(d15N),
                                            d13C_mean = mean(d13C), d13C_sd = sd(d13C)), 
                    by = .(fishID)]
@@ -122,7 +124,7 @@ GULD_SIA1.plot1 <- ggplot(GULD_SIA1.plot, aes(x = d13C_mean, y = d15N_mean)) +
        y = "d15N") 
 GULD_SIA1.plot1
 
-ggsave("~/trophicpersonalities_GULD/4_SIA_Analysis/GULD_SIA1.plot1.jpg", width = 20, height = 12, units = "cm", GULD_SIA1.plot1, dpi = 600)
+ggsave("~/trophicpersonalities_GULD/6_SIA_VarianceAnalysis/GULD_SIA1.plot1.jpg", width = 20, height = 12, units = "cm", GULD_SIA1.plot1, dpi = 600)
 
 
 #Exploratory correlation tests
@@ -130,4 +132,5 @@ cor.test(GULD_SIA1.plot$d15N_mean, GULD_SIA1.plot$d13C_mean, method = "spearman"
 cor.test(GULD_SIA1.plot$d15N_mean, GULD_SIA1.plot$d13C_mean, method = "pearson")
 #N and C are strongly correlated
 
+write.csv(GULD_SIA1, "~/trophicpersonalities_GULD/6_SIA_VarianceAnalysis/GULD_SIA1.processed.csv")
 

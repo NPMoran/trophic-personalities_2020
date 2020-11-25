@@ -153,10 +153,10 @@ GULD_avespeed_tot.rpt <- rpt(avespeed_tot ~ (1 | FishID), grname = "FishID", dat
 GULD_avespeed_tot.rpt
 
 
-GULD_avespeed_mob.mod <- lmer(avespeed_mob ~ (1|FishID), data=GULD_ACT.excl)
+GULD_avespeed_mob.mod <- lmer(avespeed_mob ~ TrialDay + (1|FishID), data=GULD_ACT.excl)
 summary(GULD_avespeed_mob.mod)
 plot(GULD_avespeed_mob.mod)
-GULD_avespeed_mob.rpt <- rpt(avespeed_mob ~ (1 | FishID), grname = "FishID", data = GULD_ACT.excl, datatype = "Gaussian", 
+GULD_avespeed_mob.rpt <- rpt(avespeed_mob ~ TrialDay + (1 | FishID), grname = "FishID", data = GULD_ACT.excl, datatype = "Gaussian", 
                              nboot = 100, npermut = 0)
 GULD_avespeed_mob.rpt 
 
@@ -211,7 +211,7 @@ GULD_centretime.lnplus1.rpt
 
 #Summary-
 #avespeed_tot:      _ 0.467 [0.304, 0.621] ***
-#avespeed_mob       _ 0.181 [0, 0.345]     *   (only variable with non-zero repeatability estimates following analysis)
+#avespeed_mob       _ 0.181 [0, 0.345]     *   
 #aveacceler         _ 0.473 [0.271, 0.632] ***
 #propmoving         _ 0.496 [0.348, 0.645] ***
 #propmoving.exp     _ 0.531 [0.338, 0.667] ***
@@ -383,8 +383,8 @@ GULD_refugereturnlat.ln.rpt
 #emergelat.bin.B:      _ 0.678 [0.292, 0.824] ***
 #endpointlat.bin.A:    _ 0.829 [0.519, 0.986] *** IRRRATIONAL ORIGINAL SCALE ESTIMATE
 #endpointlat.bin.B:    _ 0.626 [0.269, 0.757] *** 
-#endpointspeed.ln:     _ 0.222 [0, 0.44] 
-#refugereturnlat.ln:   _ 0.158 [0, 0.382] 
+#endpointspeed.ln:     _ 0.222 [0, 0.44]      .   EXCLUDED FROM SUBSEQUENT ANALYSIS
+#refugereturnlat.ln:   _ 0.158 [0, 0.382]         EXCLUDED FROM SUBSEQUENT ANALYSIS
 
 
 write.csv(GULD_EXPL.excl, '~/trophicpersonalities_GULD/4_Behaviour_VarianceAnalysis/GULD_EXPL.processed.csv')
