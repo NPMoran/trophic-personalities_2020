@@ -6,7 +6,7 @@
 
 
 Sys.setenv(LANG= 'en')
-library(dplyr); library(lme4); library(rptR)
+library(dplyr); library(lme4); library(rptR); library(operators)
 
 
 
@@ -79,9 +79,9 @@ rpt(d13C ~ (1 | IndID), grname = "IndID", data = Var_testdat_loww, datatype = "G
 #sufficient to estimate repeatability for this isotope data with high confidence 
 
 
-### 2.2. First SIA analysis batch prep ----
+### 2.2. SIA analysis of individual fin clip samples  ----
 #Aims: to estimate among and within-individual isotopic variance in the Goldborgsund goby population
-#Approach: Provide 1x replicate for all individuals, and 3x for 20 individuals (randomly selected)
+#Approach: Provide 1x replicate for all individuals, and 3x for 20 individuals (randomly selected) in batch 1. If there is evidence of among individual variation in SIA data, analyse the remaining samples in batch 2
 
 
 #Building data frame for fish fin processing
@@ -157,6 +157,35 @@ GULD_SIAbatch1$δC13 <- ""
 GULD_SIAbatch1$N_percentage <- ""
 GULD_SIAbatch1$C_percentage <- ""
 write.csv(GULD_SIAbatch1, "~/trophicpersonalities_GULD/2_Prep_IndividualSIA/GULD_SIAbatch1.csv")
+
+
+#Building data frame for SIA analysis batch 3
+
+#running all remaining fin clip samples
+
+GULD_SIAbatch3 <- subset(GULD_SIAfish, sampleID %!in% GULD_SIAbatch1$sampleID)
+nrow(GULD_SIAbatch3)
+GULD_SIAbatch3 <- select(GULD_SIAbatch3, -c(row.id, DateRemoved, DateCleaned, DateDried, Notes))
+GULD_SIAbatch3$date_packed <- ""
+GULD_SIAbatch3$weight_packed <- ""
+GULD_SIAbatch3$rack <- ""
+GULD_SIAbatch3$row <- ""
+GULD_SIAbatch3$position <- ""
+GULD_SIAbatch3$δ15N <- ""
+GULD_SIAbatch3$δC13 <- ""
+GULD_SIAbatch3$N_percentage <- ""
+GULD_SIAbatch3$C_percentage <- ""
+write.csv(GULD_SIAbatch3, "~/trophicpersonalities_GULD/2_Prep_IndividualSIA/GULD_SIAbatch3.csv")
+ 
+
+#checking all samples are accounted for
+GULD_SIAbatchcheck <- rbind(GULD_SIAbatch1, GULD_SIAbatch3)
+nrow(GULD_SIAbatchcheck)
+n_distinct(GULD_SIAbatchcheck$sampleID)
+n_distinct(GULD_SIAbatchcheck$fishID)
+n_distinct(GULD_SIAbatchcheck$rep)
+setdiff(GULD_SIAbatchcheck$sampleID, GULD_SIAfish$sampleID)
+intersect(GULD_SIAbatchcheck$sampleID, GULD_SIAfish$sampleID)
 
 
 

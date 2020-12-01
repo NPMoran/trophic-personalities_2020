@@ -6,8 +6,7 @@
 
 
 Sys.setenv(LANG = "en")
-library(dplyr); library(ggplot2)
-library(vegan)
+library(dplyr); library(ggplot2); library(vegan)
 
 
 
@@ -655,5 +654,5 @@ GULD_PC2.rpt.adj
 #    no InfectionScore effect
 #    highly repeatable (0.536, [0.352, 0.704])
 
-write.csv(GULD_behav_merged, '~/trophicpersonalities_GULD/5_Behaviour_CovariationAnalysis/GULD_behav_merged.csv')
+write.csv(GULD_behav_merged, '~/trophicpersonalities_GULD/5_Behaviour_CovariationAnalysis/GULD_behav_merged.pca.csv')
 

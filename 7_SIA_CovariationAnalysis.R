@@ -470,6 +470,7 @@ plot(GULD_behav_merged.SIA.ready$PC2_mean, GULD_behav_merged.SIA.ready$d13C)
 
 #Summary:
 #No significant effect of behaviour
+#Marginally significant positive effect of aveacceler on d13C
 
 
 
