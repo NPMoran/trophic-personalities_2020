@@ -11,6 +11,9 @@ library(lme4)
 library(rptR)
 library(data.table)
 library(ggplot2)
+library(ggpubr)
+library(RColorBrewer)
+
 
 
 #6. Round goby isotope distribution and variation ----
@@ -22,7 +25,7 @@ GULD_SIA1 <- rename(GULD_SIA1, d15N = d15N....vs.AIR)
 GULD_SIA1 <- rename(GULD_SIA1, d13C = d13C....vs.VPDB)
 GULD_SIA1 <- rename(GULD_SIA1, N_percent = X..N)
 GULD_SIA1 <- rename(GULD_SIA1, C_percent = X..C)
-GULD_SIA1 <- select(GULD_SIA1, -c())
+GULD_SIA1 <- select(GULD_SIA1, -c(run.ID, run.line, row, position, date_packed, weight_packed..mg.))
 
 #Looking at distributions
 ggplot(GULD_SIA1) + aes(x = d15N) + geom_histogram(color="black", fill="lightblue", binwidth = 0.3) + simpletheme 
@@ -63,6 +66,7 @@ GULD_SIAfish$sampleID <- paste(GULD_SIAfish$fishID, GULD_SIAfish$rep, sep = "")
 
 GULD_SIA1 <- rename(GULD_SIA1, sampleID = sample.ID)
 GULD_SIA1 <- merge(GULD_SIA1, GULD_SIAfish, all.x = TRUE)
+GULD_SIA1 <- select(GULD_SIA1, -c(row.id))
 
 
 #Variance estimates
@@ -92,45 +96,142 @@ GULD_SIA1.C.rpt
 #d15N:      _ repeatability 0.979 [0.963, 0.987] 
 
 
+write.csv(GULD_SIA1, "~/trophicpersonalities_GULD/6_SIA_VarianceAnalysis/GULD_SIA1.processed.csv")
+
+
+
+### 6.2. Invertebrate data processing ----
+GULD_SIA2 <- read.csv("~/trophicpersonalities_GULD/6_SIA_VarianceAnalysis/SIA_batch2.csv")
+labels(GULD_SIA2)
+GULD_SIA2 <- rename(GULD_SIA2, d15N = d15N....vs.AIR)
+GULD_SIA2 <- rename(GULD_SIA2, d13C = d13C....vs.VPDB)
+GULD_SIA2 <- rename(GULD_SIA2, N_percent = X..N)
+GULD_SIA2 <- rename(GULD_SIA2, C_percent = X..C)
+GULD_SIA2 <- rename(GULD_SIA2, sampleID = sample.ID)
+GULD_SIA2 <- select(GULD_SIA2, -c(run.ID, run.line, row, position, date_packed, weight_packed..mg., notes))
+GULD_SIA2$CN_ratio <- (GULD_SIA2$C_percent/GULD_SIA2$N_percent) #not planning to use this, but for interest
+
+#Adding in taxanomic data
+GULD_SIA2taxa <- read.csv("~/trophicpersonalities_GULD/6_SIA_VarianceAnalysis/GULD_SIA2.taxa.csv")
+labels(GULD_SIA2taxa)
+GULD_SIA2taxa <- select(GULD_SIA2taxa, -c(Notes., ID.Notes, Key.Ref))
+GULD_SIA2taxa
+GULD_SIA2 <- merge(GULD_SIA2, GULD_SIA2taxa, by = 'taxaID', all.x = FALSE)
+
+write.csv(GULD_SIA2, "~/trophicpersonalities_GULD/6_SIA_VarianceAnalysis/GULD_SIA2.processed.csv")
+
+
 ### 6.2. Visualising SIA values ----
-GULD_SIA1.plot <- setDT(GULD_SIA1)[ , list(d15N_mean = mean(d15N), d15N_sd = sd(d15N),
+#Round Goby data
+GULD_SIA.plot.goby <- setDT(GULD_SIA1)[ , list(d15N_mean = mean(d15N), d15N_sd = sd(d15N),
                                            d13C_mean = mean(d13C), d13C_sd = sd(d13C)), 
                    by = .(fishID)]
-range(GULD_SIA1.plot$d15N_mean) #N range 9.7 - 13.5
-range(GULD_SIA1.plot$d13C_mean) #C range -22.1 - -13.4
+range(GULD_SIA.plot.goby$d15N_mean) #N range 9.7 - 13.5
+range(GULD_SIA.plot.goby$d13C_mean) #C range -22.1 - -13.4
+GULD_SIA.plot.goby$label <- 'Round goby'
+
+
+#Prey taxa data plotting by class
+GULD_SIA2.Bival <- subset(GULD_SIA2, GULD_SIA2$Class == 'Bivalvia')
+GULD_SIA2.Bival.plot <- setDT(GULD_SIA2.Bival)[ , list(d15N_mean = mean(d15N), d15N_sd = sd(d15N),
+                                           d13C_mean = mean(d13C), d13C_sd = sd(d13C)), 
+                                    by = .(taxaID)]
+GULD_SIA2.Bival.plot$label <- 'Bivalvia'
+
+GULD_SIA2.Gastr <- subset(GULD_SIA2, GULD_SIA2$Class == 'Gastropoda')
+GULD_SIA2.Gastr.plot <- setDT(GULD_SIA2.Gastr)[ , list(d15N_mean = mean(d15N), d15N_sd = sd(d15N),
+                                                       d13C_mean = mean(d13C), d13C_sd = sd(d13C)), 
+                                                by = .(taxaID)]
+GULD_SIA2.Gastr.plot$label <- 'Gastropoda'
+
+GULD_SIA2.Malac <- subset(GULD_SIA2, GULD_SIA2$Class == 'Malacostraca')
+GULD_SIA2.Malac.plot <- setDT(GULD_SIA2.Malac)[ , list(d15N_mean = mean(d15N), d15N_sd = sd(d15N),
+                                                       d13C_mean = mean(d13C), d13C_sd = sd(d13C)), 
+                                                by = .(taxaID)]
+GULD_SIA2.Malac.plot$label <- 'Malacostraca'
+
+GULD_SIA2.Ostra <- subset(GULD_SIA2, GULD_SIA2$Class == 'Ostracoda')
+GULD_SIA2.Ostra.plot <- setDT(GULD_SIA2.Ostra)[ , list(d15N_mean = mean(d15N), d15N_sd = sd(d15N),
+                                                       d13C_mean = mean(d13C), d13C_sd = sd(d13C)), 
+                                                by = .(taxaID)]
+GULD_SIA2.Ostra.plot$label <- 'Ostracoda'
+
+GULD_SIA2.Insec <- subset(GULD_SIA2, GULD_SIA2$Class == 'Insecta')
+GULD_SIA2.Insec.plot <- setDT(GULD_SIA2.Insec)[ , list(d15N_mean = mean(d15N), d15N_sd = sd(d15N),
+                                                       d13C_mean = mean(d13C), d13C_sd = sd(d13C)), 
+                                                by = .(taxaID)]
+GULD_SIA2.Insec.plot$label <- 'Insecta'
+
+GULD_SIA2.Polyc <- subset(GULD_SIA2, GULD_SIA2$Class == 'Polychaeta')
+GULD_SIA2.Polyc.plot <- setDT(GULD_SIA2.Polyc)[ , list(d15N_mean = mean(d15N), d15N_sd = sd(d15N),
+                                                       d13C_mean = mean(d13C), d13C_sd = sd(d13C)), 
+                                                by = .(taxaID)]
+GULD_SIA2.Polyc.plot$label <- 'Polychaeta'
+
+GULD_SIA2.Actin <- subset(GULD_SIA2, GULD_SIA2$Class == 'Actinopterygii')
+GULD_SIA2.Actin.plot <- setDT(GULD_SIA2.Actin)[ , list(d15N_mean = mean(d15N), d15N_sd = sd(d15N),
+                                                       d13C_mean = mean(d13C), d13C_sd = sd(d13C)), 
+                                                by = .(taxaID)]
+GULD_SIA2.Actin.plot$label <- 'Actinopterygii'
+
+
+#Building full dataframe
+GULD_SIA.plot.taxa <- rbind(GULD_SIA2.Bival.plot, GULD_SIA2.Gastr.plot, GULD_SIA2.Malac.plot,
+                       GULD_SIA2.Ostra.plot, GULD_SIA2.Insec.plot, GULD_SIA2.Polyc.plot,
+                       GULD_SIA2.Actin.plot)
 
 
 #Setting values for manual errorbar plotting
-GULD_SIA1.plot$ylower <- GULD_SIA1.plot$d15N_mean - GULD_SIA1.plot$d15N_sd
-GULD_SIA1.plot$yupper <- GULD_SIA1.plot$d15N_mean + GULD_SIA1.plot$d15N_sd
-GULD_SIA1.plot$xlower <- GULD_SIA1.plot$d13C_mean - GULD_SIA1.plot$d13C_sd
-GULD_SIA1.plot$xupper <- GULD_SIA1.plot$d13C_mean + GULD_SIA1.plot$d13C_sd
+GULD_SIA.plot.goby$ylower <- GULD_SIA.plot.goby$d15N_mean - GULD_SIA.plot.goby$d15N_sd
+GULD_SIA.plot.goby$yupper <- GULD_SIA.plot.goby$d15N_mean + GULD_SIA.plot.goby$d15N_sd
+GULD_SIA.plot.goby$xlower <- GULD_SIA.plot.goby$d13C_mean - GULD_SIA.plot.goby$d13C_sd
+GULD_SIA.plot.goby$xupper <- GULD_SIA.plot.goby$d13C_mean + GULD_SIA.plot.goby$d13C_sd
+
+GULD_SIA.plot.taxa$ylower <- GULD_SIA.plot.taxa$d15N_mean - GULD_SIA.plot.taxa$d15N_sd
+GULD_SIA.plot.taxa$yupper <- GULD_SIA.plot.taxa$d15N_mean + GULD_SIA.plot.taxa$d15N_sd
+GULD_SIA.plot.taxa$xlower <- GULD_SIA.plot.taxa$d13C_mean - GULD_SIA.plot.taxa$d13C_sd
+GULD_SIA.plot.taxa$xupper <- GULD_SIA.plot.taxa$d13C_mean + GULD_SIA.plot.taxa$d13C_sd
 
 
-GULD_SIA1.plot1 <- ggplot(GULD_SIA1.plot, aes(x = d13C_mean, y = d15N_mean)) +
-  geom_point(size = 2, shape = 21, fill = "lightblue") + 
-  theme(axis.text.y = element_text(size = 8.5, colour = "black"), 
-        axis.text.x = element_text(size = 8.5, colour = "black"), 
-        panel.background = element_rect(fill = "white"),
-        panel.grid.major = element_line(colour = "black", size = 0.5, linetype = "dashed" ),
-        axis.title.y  = element_text(size=13, vjust = 0.1),
-        axis.title.x  = element_text(size=13, vjust = 0.1),
-        panel.border = element_rect(colour = "black", fill=NA, size = 1)) +
-  geom_segment(mapping = aes(x = d13C_mean, y = ylower, xend = d13C_mean, yend = yupper), size = 0.3, colour = "black") + 
-  geom_segment(mapping = aes(x = xlower, y = d15N_mean, xend = xupper, yend = d15N_mean), size = 0.3, colour = "black") + 
+
+#Ordering groups for plotting
+GULD_SIA.plot.goby$label <- as.factor(GULD_SIA.plot.goby$label)
+GULD_SIA.plot.taxa$label <- as.factor(GULD_SIA.plot.taxa$label)
+#GULD_SIA.plot$label <- ordered(GULD_SIA.plot$label, levels = c("Round goby", "Ostracoda", "Insecta", "Polychaeta", "Actinopterygii", "Bivalvia", "Gastropoda", "Malacostraca"))
+
+
+#General theme for SIA plots
+SIAtheme <-   theme(axis.text.y = element_text(size = 8.5, colour = "black"), 
+                    axis.text.x = element_text(size = 8.5, colour = "black"), 
+                    panel.background = element_rect(fill = "white"),
+                    panel.grid.major = element_line(colour = "black", size = 0.5, linetype = "dashed" ),
+                    axis.title.y  = element_text(size=13, vjust = 0.1),
+                    axis.title.x  = element_text(size=13, vjust = 0.1),
+                    panel.border = element_rect(colour = "black", fill=NA, size = 1),
+                    legend.box.background = element_rect(color="white"))
+
+
+#Full plot
+GULD_SIA.fullplot <- ggplot(GULD_SIA.plot.taxa, aes (x = d13C_mean, y = d15N_mean)) + 
+  SIAtheme +
+  geom_point(data = GULD_SIA.plot.goby, col = 'orangered2', shape = 16, size = 3.5, alpha = 0.7) + 
+#  geom_segment(data = GULD_SIA.plot.goby, aes(x = d13C_mean, y = ylower, xend = d13C_mean, yend = yupper), size = 0.3, colour = "black") + 
+#  geom_segment(data = GULD_SIA.plot.goby, aes(x = xlower, y = d15N_mean, xend = xupper, yend = d15N_mean), size = 0.3, colour = "black") + 
+  geom_point(data = GULD_SIA.plot.taxa, aes(col = label), shape = 18, size = 4, alpha = 1) + 
+  geom_segment(data = GULD_SIA.plot.taxa, aes(x = d13C_mean, y = ylower, xend = d13C_mean, yend = yupper), size = 0.3, colour = "black") + 
+  geom_segment(data = GULD_SIA.plot.taxa, aes(x = xlower, y = d15N_mean, xend = xupper, yend = d15N_mean), size = 0.3, colour = "black") +
   scale_x_continuous(limits = c(-25, 0), expand = c(0, 0)) +
   scale_y_continuous(limits = c(0,15), expand = c(0, 0)) +
-  labs(x = "d13C",
-       y = "d15N") 
-GULD_SIA1.plot1
+  labs(colour = "Taxa") +
+  ylab(expression(paste(delta^{15}, "N (\u2030)"))) +
+  xlab(expression(paste(delta^{13}, "C (\u2030)"))) + 
+  scale_color_brewer(palette = "Set1")
+GULD_SIA.fullplot
 
-ggsave("~/trophicpersonalities_GULD/6_SIA_VarianceAnalysis/GULD_SIA1.plot1.jpg", width = 20, height = 12, units = "cm", GULD_SIA1.plot1, dpi = 600)
+
+ggsave("~/trophicpersonalities_GULD/6_SIA_VarianceAnalysis/GULD_SIA.fullplot.jpg", width = 20, height = 10, units = "cm", GULD_SIA.fullplot, dpi = 600)
 
 
-#Exploratory correlation tests
-cor.test(GULD_SIA1.plot$d15N_mean, GULD_SIA1.plot$d13C_mean, method = "spearman")
-cor.test(GULD_SIA1.plot$d15N_mean, GULD_SIA1.plot$d13C_mean, method = "pearson")
-#N and C are strongly correlated
 
-write.csv(GULD_SIA1, "~/trophicpersonalities_GULD/6_SIA_VarianceAnalysis/GULD_SIA1.processed.csv")
+
 
