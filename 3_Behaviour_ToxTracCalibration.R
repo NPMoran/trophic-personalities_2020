@@ -1,17 +1,20 @@
-# Experiment: Guldborgsund Pilot 2020
-#
-# Author: Nicholas Moran (Centre for Ocean Life- DTU Aqua, Technical University of Denmark)
-#
 # Project: Personality in Community Ecology Responses: Integrating the behaviour and species interactions of a marine invader — PinCER
+#
+# Experiment: Quantification of among-individual behavioural and trophic variation the invasive round goby
+#
+# Author: Nicholas Moran, The Centre for Ocean Life- DTU Aqua, Technical University of Denmark
+#         Dec 2020
+
 
 
 Sys.setenv(LANG = "en")
 library(dplyr)
 
 
-#3. Toxtrac Calibration and Optimization ----
 
-### 3.1 ACT_Calibration for Toxtrac ----
+#1. Toxtrac Calibration and Optimization ----
+
+### 1.1. Calibration for Toxtrac (Guldgborgsund, ACT1 - ACT3) ----
 #Requires the vertical and horizontal pixel to distance conversion to be known
 #Calibration pixel/mm ratios are calculated manually for each arena
 
@@ -25,10 +28,10 @@ cali_arena$arenaID <- c("A","B","C","D","E","F","G","H")
 # - using Calibration image with 3x5 grid of 50mm x 50mm black and white squared placed in each arena.
 # - measurements taken at each line on the grid, values optained from Analyze/Set Scale, entering known distances
 # - values are in pixels/cm (note: both calibration images and videos are all 1280 x 720)
-cali_arena$vertical1 <- c(6.0905, 6.0653, 6.1032, 6.0001, 6.1370, 6.1783, 6.1612, 6.0847)
-cali_arena$vertical2 <- c(6.0943, 6.1431, 6.1833, 5.9601, 6.0574, 6.2173, 6.2023, 5.9634)
-cali_arena$vertical3 <- c(6.0916, 6.1840, 6.1042, 6.0412, 6.0971, 6.1777, 6.1612, 6.1264)
-cali_arena$vertical4 <- c(6.0555, 6.1450, 6.1450, 6.0400, 6.0975, 6.1773, 6.2021, 6.1233)
+cali_arena$verti1 <- c(6.0905, 6.0653, 6.1032, 6.0001, 6.1370, 6.1783, 6.1612, 6.0847)
+cali_arena$verti2 <- c(6.0943, 6.1431, 6.1833, 5.9601, 6.0574, 6.2173, 6.2023, 5.9634)
+cali_arena$verti3 <- c(6.0916, 6.1840, 6.1042, 6.0412, 6.0971, 6.1777, 6.1612, 6.1264)
+cali_arena$verti4 <- c(6.0555, 6.1450, 6.1450, 6.0400, 6.0975, 6.1773, 6.2021, 6.1233)
 cali_arena$horiz1 <- c(6.1012, 6.1828, 6.1178, 5.8670, 5.8845, 6.1504, 6.0681, 5.8682)
 cali_arena$horiz2 <- c(6.0916, 6.3158, 6.0502, 5.8004, 5.9592, 6.2176, 6.0670, 6.0004)
 cali_arena$horiz3 <- c(5.9062, 6.1167, 6.1828, 6.0004, 5.8845, 6.2845, 6.2004, 6.0015)
@@ -38,7 +41,7 @@ cali_arena$horiz6 <- c(5.9687, 5.9173, 6.0513, 5.7337, 5.9502, 6.2176, 6.2667, 5
 
 # - calculating the average for each arena, and converting to pixels/mm for input into ToxTrac 
 # - taken as mean of horizontal and vertical pixel/mm scale entered into Toxtrac/Calibration/Camera matrix for each arena
-cali_arena$vertical.ppmm <- 0.1* (cali_arena$vertical1 + cali_arena$vertical2 + cali_arena$vertical3 + cali_arena$vertical4)/4
+cali_arena$verti.ppmm <- 0.1* (cali_arena$verti1 + cali_arena$verti2 + cali_arena$verti3 + cali_arena$verti4)/4
 cali_arena$horiz.ppmm <- 0.1* (cali_arena$horiz1 + cali_arena$horiz2 + cali_arena$horiz3 + cali_arena$horiz4 + cali_arena$horiz5 + cali_arena$horiz6)/6
 
 
@@ -61,7 +64,7 @@ mean(cali_trial$ACT3toACT1) #adjustment ratio between ACT3 and ACT1 calibration 
 cali_full<-NULL
 cali_full$arenaID <- c("A","B","C","D","E","F","G","H")
 cali_full$ACT3.x <- cali_arena$horiz.ppmm
-cali_full$ACT3.y <- cali_arena$vertical.ppmm
+cali_full$ACT3.y <- cali_arena$verti.ppmm
 cali_full$ACT2.x <- 0.97279*(cali_full$ACT3.x)
 cali_full$ACT2.y <- 0.97279*(cali_full$ACT3.y)
 cali_full$ACT1.x <- 0.8932541*(cali_full$ACT3.x)
@@ -70,14 +73,50 @@ cali_full <- as.data.frame(cali_full)
 
 
 #Database of calibration coefficients
-write.csv(cali_full, "~/trophicpersonalities_GULD/3_Behaviour_ToxTracCalibration/Guld_toxtracmanualcalibration.csv")
+write.csv(cali_full, "~/trophicpersonalities_A/1_ToxTracCalibration/GULD_toxtracmanualcalibration.csv")
+
+
+
+### 1.2. Calibration for Toxtrac (Karrebæk, ACT4 - ACT6) ----
+# Calculated as above, but orientation, pose and zoo keep consistent accross all trial days, so trail adjustment is not required
+
+
+#Defining 8 arenas used in ACT trials
+cali_arena2 <- NULL
+cali_arena2$arenaID <- c("A","B","C","D","E","F","G","H")
+
+#Calculating pixel/cm ratio within arenas using ImageJ 
+cali_arena2$verti1 <- c(5.0230, 5.1706, 5.0857, 4.9615, 5.1202, 5.1602, 5.0802, 5.0006)
+cali_arena2$verti2 <- c(5.0207, 5.1317, 5.0802, 5.0414, 5.0406, 5.2002, 5.1602, 4.9600)
+cali_arena2$verti3 <- c(5.0984, 5.1317, 5.1214, 5.0440, 5.0806, 5.1600, 5.1202, 4.9606)
+cali_arena2$verti4 <- c(4.9841, 5.1710, 5.1225, 4.9606, 5.0006, 5.2006, 5.2402, 5.0400)
+cali_arena2$horiz1 <- c(4.9314, 5.1251, 5.0684, 4.9333, 4.9338, 5.2667, 5.2705, 4.8166)
+cali_arena2$horiz2 <- c(4.9950, 5.2546, 5.2684, 4.8671, 5.1351, 5.2667, 5.2667, 4.8116)
+cali_arena2$horiz3 <- c(4.9336, 5.1223, 5.1351, 4.8667, 5.0684, 5.2004, 5.1372, 4.9446)
+cali_arena2$horiz4 <- c(4.9978, 5.1834, 5.2004, 4.9338, 4.9374, 5.1372, 5.3337, 4.8781)
+cali_arena2$horiz5 <- c(4.9336, 5.1202, 5.0671, 4.8005, 5.2004, 5.2380, 5.2684, 4.8780)
+cali_arena2$horiz6 <- c(4.9314, 5.1850, 5.2000, 4.8667, 5.0000, 5.4004, 5.2004, 4.8708)
+
+# - calculating the average for each arena, and converting to pixels/mm for input into ToxTrac 
+# - taken as mean of horizontal and vertical pixel/mm scale entered into Toxtrac/Calibration/Camera matrix for each arena
+cali_full2<-NULL
+cali_full2$arenaID <- c("A","B","C","D","E","F","G","H")
+cali_full2$verti.ppmm <- 0.1* (cali_arena2$verti1 + cali_arena2$verti2 + cali_arena2$verti3 + cali_arena2$verti4)/4
+cali_full2$horiz.ppmm <- 0.1* (cali_arena2$horiz1 + cali_arena2$horiz2 + cali_arena2$horiz3 + cali_arena2$horiz4 + cali_arena2$horiz5 + cali_arena2$horiz6)/6
+cali_full2 <- as.data.frame(cali_full2)
+
+
+#Database of calibration coefficients
+write.csv(cali_full2, "~/trophicpersonalities_A/1_ToxTracCalibration/KARR_toxtracmanualcalibration.csv")
+
 
 
 ### 3.2 ACT ToxTrac Tracking Data ----
+# note, tracking settings are consistent accross all trials)
 # all videos trimmed to 25:00, staring from the point that all individuals are loaded
 # trimmed using Microsoft Photos app
 
-# Project Initials Settings:
+# Project Initials Settings: (
 #  Start at (min/s)- 5:00, Finish at(min/s)- 25:00 
 #  Fill Temp. Holes, Max Size 25 Frames
 #  Fill Spacial Holes, Max Size 25 Frames
