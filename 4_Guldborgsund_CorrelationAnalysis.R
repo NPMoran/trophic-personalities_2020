@@ -61,74 +61,91 @@ labels(GULD_behav_merged)
 
 #  Visualising correlations
 pairs(GULD_behav_merged[,12:22])
-cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$avespeed_mob, method = 'spearman')            # 0.6785468   ***
-cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$aveacceler, method = 'spearman')              # 0.9519464   ***
-cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$propmoving.exp, method = 'spearman')          # 0.9283687   ***
-cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$dist, method = 'spearman')                    # 0.9946242   ***
-cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$timefrozen_tot.ln, method = 'spearman')       # -0.8766261  ***
-cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$centretime.lnplus1, method = 'spearman')      # 0.2611043   **
-cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$emergelat.bin, method = 'spearman')           # 0.3906882   ***
-cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$endpointlat.bin, method = 'spearman')         # 0.347821    ***
-cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$endpointspeed.ln, method = 'spearman')        # -0.04041535 
-cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')      # 0.2067612   .
+
+cor01_02 <- cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$avespeed_mob, method = 'spearman')            # 0.6785468   ***
+cor01_03 <- cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$aveacceler, method = 'spearman')              # 0.9519464   ***
+cor01_04 <- cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$propmoving.exp, method = 'spearman')          # 0.9283687   ***
+cor01_05 <- cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$dist, method = 'spearman')                    # 0.9946242   ***
+cor01_06 <- cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$timefrozen_tot.ln, method = 'spearman')       # -0.8766261  ***
+cor01_07 <- cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$centretime.lnplus1, method = 'spearman')      # 0.2611043   **
+cor01_08 <- cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$emergelat.bin, method = 'spearman')           # 0.3906882   ***
+cor01_09 <- cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$endpointlat.bin, method = 'spearman')         # 0.347821    ***
+cor01_10 <- cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$endpointspeed.ln, method = 'spearman')        # -0.04041535 
+cor01_11 <- cor.test(GULD_behav_merged$avespeed_tot, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')      # 0.2067612   .
       
-cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$aveacceler, method = 'spearman')              # 0.5202159   ***
-cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$propmoving.exp, method = 'spearman')          # 0.4108809   ***
-cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$dist, method = 'spearman')                    # 0.6454957   ***
-cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$timefrozen_tot.ln, method = 'spearman')       # -0.4084209  ***
-cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$centretime.lnplus1, method = 'spearman')      # 0.2512216   **
-cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$emergelat.bin, method = 'spearman')           # 0.1443376   
-cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$endpointlat.bin, method = 'spearman')         # 0.1459654   
-cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$endpointspeed.ln, method = 'spearman')        # -0.007647766 
-cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')      # 0.05115232   
+cor02_03 <- cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$aveacceler, method = 'spearman')              # 0.5202159   ***
+cor02_04 <- cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$propmoving.exp, method = 'spearman')          # 0.4108809   ***
+cor02_05 <- cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$dist, method = 'spearman')                    # 0.6454957   ***
+cor02_06 <- cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$timefrozen_tot.ln, method = 'spearman')       # -0.4084209  ***
+cor02_07 <- cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$centretime.lnplus1, method = 'spearman')      # 0.2512216   **
+cor02_08 <- cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$emergelat.bin, method = 'spearman')           # 0.1443376   
+cor02_09 <- cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$endpointlat.bin, method = 'spearman')         # 0.1459654   
+cor02_10 <- cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$endpointspeed.ln, method = 'spearman')        # -0.007647766 
+cor02_11 <- cor.test(GULD_behav_merged$avespeed_mob, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')      # 0.05115232   
       
-cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$propmoving.exp, method = 'spearman')            # 0.9594258   ***
-cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$dist, method = 'spearman')                      # 0.9574244   ***
-cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$timefrozen_tot.ln, method = 'spearman')         # -0.8711334  ***
-cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$centretime.lnplus1, method = 'spearman')        # 0.1969622   *
-cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$emergelat.bin, method = 'spearman')             # 0.4617717   ***   
-cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$endpointlat.bin, method = 'spearman')           # 0.3999127   ***
-cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$endpointspeed.ln, method = 'spearman')          # -0.1042732  
-cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')        # 0.2225698   *
+cor03_04 <- cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$propmoving.exp, method = 'spearman')            # 0.9594258   ***
+cor03_05 <- cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$dist, method = 'spearman')                      # 0.9574244   ***
+cor03_06 <- cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$timefrozen_tot.ln, method = 'spearman')         # -0.8711334  ***
+cor03_07 <- cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$centretime.lnplus1, method = 'spearman')        # 0.1969622   *
+cor03_08 <- cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$emergelat.bin, method = 'spearman')             # 0.4617717   ***   
+cor03_09 <- cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$endpointlat.bin, method = 'spearman')           # 0.3999127   ***
+cor03_10 <- cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$endpointspeed.ln, method = 'spearman')          # -0.1042732  
+cor03_11 <- cor.test(GULD_behav_merged$aveacceler, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')        # 0.2225698   *
   
-cor.test(GULD_behav_merged$propmoving.exp, GULD_behav_merged$dist, method = 'spearman')                  # 0.9382001   ***
-cor.test(GULD_behav_merged$propmoving.exp, GULD_behav_merged$timefrozen_tot.ln, method = 'spearman')     # -0.9206188  ***
-cor.test(GULD_behav_merged$propmoving.exp, GULD_behav_merged$centretime.lnplus1, method = 'spearman')    # 0.198686    *
-cor.test(GULD_behav_merged$propmoving.exp, GULD_behav_merged$emergelat.bin, method = 'spearman')         # 0.4747946   ***   
-cor.test(GULD_behav_merged$propmoving.exp, GULD_behav_merged$endpointlat.bin, method = 'spearman')       # 0.4091373   ***
-cor.test(GULD_behav_merged$propmoving.exp, GULD_behav_merged$endpointspeed.ln, method = 'spearman')      # -0.04768372  
-cor.test(GULD_behav_merged$propmoving.exp, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')    # 0.2829491   **
+cor04_05 <- cor.test(GULD_behav_merged$propmoving.exp, GULD_behav_merged$dist, method = 'spearman')                  # 0.9382001   ***
+cor04_06 <- cor.test(GULD_behav_merged$propmoving.exp, GULD_behav_merged$timefrozen_tot.ln, method = 'spearman')     # -0.9206188  ***
+cor04_07 <- cor.test(GULD_behav_merged$propmoving.exp, GULD_behav_merged$centretime.lnplus1, method = 'spearman')    # 0.198686    *
+cor04_08 <- cor.test(GULD_behav_merged$propmoving.exp, GULD_behav_merged$emergelat.bin, method = 'spearman')         # 0.4747946   ***   
+cor04_09 <- cor.test(GULD_behav_merged$propmoving.exp, GULD_behav_merged$endpointlat.bin, method = 'spearman')       # 0.4091373   ***
+cor04_10 <- cor.test(GULD_behav_merged$propmoving.exp, GULD_behav_merged$endpointspeed.ln, method = 'spearman')      # -0.04768372  
+cor04_11 <- cor.test(GULD_behav_merged$propmoving.exp, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')    # 0.2829491   **
   
-cor.test(GULD_behav_merged$dist, GULD_behav_merged$timefrozen_tot.ln, method = 'spearman')               # -0.8783937  ***
-cor.test(GULD_behav_merged$dist, GULD_behav_merged$centretime.lnplus1, method = 'spearman')              # 0.2494248   **
-cor.test(GULD_behav_merged$dist, GULD_behav_merged$emergelat.bin, method = 'spearman')                   # 0.3803783   ***   
-cor.test(GULD_behav_merged$dist, GULD_behav_merged$endpointlat.bin, method = 'spearman')                 # 0.3353407   ***
-cor.test(GULD_behav_merged$dist, GULD_behav_merged$endpointspeed.ln, method = 'spearman')                # -0.0445687   
-cor.test(GULD_behav_merged$dist, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')              # 0.2352503   *
+cor05_06 <- cor.test(GULD_behav_merged$dist, GULD_behav_merged$timefrozen_tot.ln, method = 'spearman')               # -0.8783937  ***
+cor05_07 <- cor.test(GULD_behav_merged$dist, GULD_behav_merged$centretime.lnplus1, method = 'spearman')              # 0.2494248   **
+cor05_08 <- cor.test(GULD_behav_merged$dist, GULD_behav_merged$emergelat.bin, method = 'spearman')                   # 0.3803783   ***   
+cor05_09 <- cor.test(GULD_behav_merged$dist, GULD_behav_merged$endpointlat.bin, method = 'spearman')                 # 0.3353407   ***
+cor05_10 <- cor.test(GULD_behav_merged$dist, GULD_behav_merged$endpointspeed.ln, method = 'spearman')                # -0.0445687   
+cor05_11 <- cor.test(GULD_behav_merged$dist, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')              # 0.2352503   *
  
-cor.test(GULD_behav_merged$timefrozen_tot.ln, GULD_behav_merged$centretime.lnplus1, method = 'spearman') # -0.2141717  *
-cor.test(GULD_behav_merged$timefrozen_tot.ln, GULD_behav_merged$emergelat.bin, method = 'spearman')      # -0.3991005  ***   
-cor.test(GULD_behav_merged$timefrozen_tot.ln, GULD_behav_merged$endpointlat.bin, method = 'spearman')    # -0.3472798  ***
-cor.test(GULD_behav_merged$timefrozen_tot.ln, GULD_behav_merged$endpointspeed.ln, method = 'spearman')   # 0.00246608  
-cor.test(GULD_behav_merged$timefrozen_tot.ln, GULD_behav_merged$refugereturnlat.ln, method = 'spearman') # -0.2230328  *
+cor06_07 <- cor.test(GULD_behav_merged$timefrozen_tot.ln, GULD_behav_merged$centretime.lnplus1, method = 'spearman') # -0.2141717  *
+cor06_08 <- cor.test(GULD_behav_merged$timefrozen_tot.ln, GULD_behav_merged$emergelat.bin, method = 'spearman')      # -0.3991005  ***   
+cor06_09 <- cor.test(GULD_behav_merged$timefrozen_tot.ln, GULD_behav_merged$endpointlat.bin, method = 'spearman')    # -0.3472798  ***
+cor06_10 <- cor.test(GULD_behav_merged$timefrozen_tot.ln, GULD_behav_merged$endpointspeed.ln, method = 'spearman')   # 0.00246608  
+cor06_11 <- cor.test(GULD_behav_merged$timefrozen_tot.ln, GULD_behav_merged$refugereturnlat.ln, method = 'spearman') # -0.2230328  *
 
-cor.test(GULD_behav_merged$centretime.lnplus1, GULD_behav_merged$emergelat.bin, method = 'spearman')     # 0.1722862   .   
-cor.test(GULD_behav_merged$centretime.lnplus1, GULD_behav_merged$endpointlat.bin, method = 'spearman')   # 0.1028291   
-cor.test(GULD_behav_merged$centretime.lnplus1, GULD_behav_merged$endpointspeed.ln, method = 'spearman')  # 0.01855069 
-cor.test(GULD_behav_merged$centretime.lnplus1, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')# -0.1046046  
+cor07_08 <- cor.test(GULD_behav_merged$centretime.lnplus1, GULD_behav_merged$emergelat.bin, method = 'spearman')     # 0.1722862   .   
+cor07_09 <- cor.test(GULD_behav_merged$centretime.lnplus1, GULD_behav_merged$endpointlat.bin, method = 'spearman')   # 0.1028291   
+cor07_10 <- cor.test(GULD_behav_merged$centretime.lnplus1, GULD_behav_merged$endpointspeed.ln, method = 'spearman')  # 0.01855069 
+cor07_11 <- cor.test(GULD_behav_merged$centretime.lnplus1, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')# -0.1046046  
 
-cor.test(GULD_behav_merged$emergelat.bin, GULD_behav_merged$endpointlat.bin, method = 'spearman')        # 0.822995    ***
-cor.test(GULD_behav_merged$emergelat.bin, GULD_behav_merged$endpointspeed.ln, method = 'spearman')       # -0.384746   **
-cor.test(GULD_behav_merged$emergelat.bin, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')     # 0.1599561  
+cor08_09 <- cor.test(GULD_behav_merged$emergelat.bin, GULD_behav_merged$endpointlat.bin, method = 'spearman')        # 0.822995    ***
+cor08_10 <- cor.test(GULD_behav_merged$emergelat.bin, GULD_behav_merged$endpointspeed.ln, method = 'spearman')       # -0.384746   **
+cor08_11 <- cor.test(GULD_behav_merged$emergelat.bin, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')     # 0.1599561  
 
-cor.test(GULD_behav_merged$endpointlat.bin, GULD_behav_merged$endpointspeed.ln, method = 'spearman')     # -0.5917001  ***
-cor.test(GULD_behav_merged$endpointlat.bin, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')   # 0.205503    .
+cor09_10 <- cor.test(GULD_behav_merged$endpointlat.bin, GULD_behav_merged$endpointspeed.ln, method = 'spearman')     # -0.5917001  ***
+cor09_11 <- cor.test(GULD_behav_merged$endpointlat.bin, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')   # 0.205503    .
 
-cor.test(GULD_behav_merged$endpointspeed.ln, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')  # -0.01330125 .
+cor10_11 <- cor.test(GULD_behav_merged$endpointspeed.ln, GULD_behav_merged$refugereturnlat.ln, method = 'spearman')  # -0.01330125 .
+
+GULD_behav_corr <- NULL
+GULD_behav_corr$comparison <- 
+  c(cor01_02$ data.name,cor01_03$ data.name,cor01_04$ data.name,cor01_05$ data.name,cor01_06$ data.name,cor01_07$ data.name,cor01_08$ data.name,cor01_09$ data.name,cor01_10$ data.name,cor01_11$ data.name,cor02_03$ data.name,cor02_04$ data.name,cor02_05$ data.name,cor02_06$ data.name,cor02_07$ data.name,cor02_08$ data.name,cor02_09$ data.name,cor02_10$ data.name,cor02_11$ data.name,cor03_04$ data.name,cor03_05$ data.name,cor03_06$ data.name,cor03_07$ data.name,cor03_08$ data.name,cor03_09$ data.name,cor03_10$ data.name,cor03_11$ data.name,cor04_05$ data.name,cor04_06$ data.name,cor04_07$ data.name,cor04_08$ data.name,cor04_09$ data.name,cor04_10$ data.name,cor04_11$ data.name,cor05_06$ data.name,cor05_07$ data.name,cor05_08$ data.name,cor05_09$ data.name,cor05_10$ data.name,cor05_11$ data.name,cor06_07$ data.name,cor06_08$ data.name,cor06_09$ data.name,cor06_10$ data.name,cor06_11$ data.name,cor07_08$ data.name,cor07_09$ data.name,cor07_10$ data.name,cor07_11$ data.name,cor08_09$ data.name,cor08_10$ data.name,cor08_11$ data.name,cor09_10$ data.name,cor09_11$ data.name,cor10_11$ data.name)
+GULD_behav_corr <- as.data.frame(GULD_behav_corr)
+GULD_behav_corr$method <- 'Spearmans rank correlation rho' 
+GULD_behav_corr$rho <- 
+  c(cor01_02$ estimate,cor01_03$ estimate,cor01_04$ estimate,cor01_05$ estimate,cor01_06$ estimate,cor01_07$ estimate,cor01_08$ estimate,cor01_09$ estimate,cor01_10$ estimate,cor01_11$ estimate,cor02_03$ estimate,cor02_04$ estimate,cor02_05$ estimate,cor02_06$ estimate,cor02_07$ estimate,cor02_08$ estimate,cor02_09$ estimate,cor02_10$ estimate,cor02_11$ estimate,cor03_04$ estimate,cor03_05$ estimate,cor03_06$ estimate,cor03_07$ estimate,cor03_08$ estimate,cor03_09$ estimate,cor03_10$ estimate,cor03_11$ estimate,cor04_05$ estimate,cor04_06$ estimate,cor04_07$ estimate,cor04_08$ estimate,cor04_09$ estimate,cor04_10$ estimate,cor04_11$ estimate,cor05_06$ estimate,cor05_07$ estimate,cor05_08$ estimate,cor05_09$ estimate,cor05_10$ estimate,cor05_11$ estimate,cor06_07$ estimate,cor06_08$ estimate,cor06_09$ estimate,cor06_10$ estimate,cor06_11$ estimate,cor07_08$ estimate,cor07_09$ estimate,cor07_10$ estimate,cor07_11$ estimate,cor08_09$ estimate,cor08_10$ estimate,cor08_11$ estimate,cor09_10$ estimate,cor09_11$ estimate,cor10_11$ estimate)
+GULD_behav_corr$p.value <- 
+  c(cor01_02$ p.value , cor01_03$ p.value , cor01_04$ p.value , cor01_05$ p.value , cor01_06$ p.value , cor01_07$ p.value , cor01_08$ p.value , cor01_09$ p.value , cor01_10$ p.value , cor01_11$ p.value , cor02_03$ p.value , cor02_04$ p.value , cor02_05$ p.value , cor02_06$ p.value , cor02_07$ p.value , cor02_08$ p.value , cor02_09$ p.value , cor02_10$ p.value , cor02_11$ p.value , cor03_04$ p.value , cor03_05$ p.value , cor03_06$ p.value , cor03_07$ p.value , cor03_08$ p.value , cor03_09$ p.value , cor03_10$ p.value , cor03_11$ p.value , cor04_05$ p.value , cor04_06$ p.value , cor04_07$ p.value , cor04_08$ p.value , cor04_09$ p.value , cor04_10$ p.value , cor04_11$ p.value , cor05_06$ p.value , cor05_07$ p.value , cor05_08$ p.value , cor05_09$ p.value , cor05_10$ p.value , cor05_11$ p.value , cor06_07$ p.value , cor06_08$ p.value , cor06_09$ p.value , cor06_10$ p.value , cor06_11$ p.value , cor07_08$ p.value , cor07_09$ p.value , cor07_10$ p.value , cor07_11$ p.value , cor08_09$ p.value , cor08_10$ p.value , cor08_11$ p.value , cor09_10$ p.value , cor09_11$ p.value , cor10_11$ p.value)
+
+write.csv(GULD_behav_corr, '~/trophicpersonalities_A/4_Guldbordsund_CorrelationAnalysis/GULD_behav_corr.csv')
+
 
 #Summary:
-# Appears to be strong correlations between all activity variables, 
-# more active individual also are to be more likely to emerge and reach endpoint.
+# Strong correlations between all ACT variables, 
+# avespeed_tot/aveacceler/dist/propmoving.exp all >0.9 rho corr. Likely measured the same way, so only need to use one
+#
+# More active individual also are to be more likely to emerge and reach endpoint in EXPL trial
+# avespeed_tot/aveacceler, dist, propmoving.exp moderate correlation with both emergelat.bin and endpointlat.
 
 
 ### 4.3. PCA Analysis ----
