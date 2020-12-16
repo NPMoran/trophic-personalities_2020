@@ -111,7 +111,7 @@ write.csv(cali_full2, "~/trophicpersonalities_A/1_ToxTracCalibration/KARR_toxtra
 
 
 
-### 3.2 ACT ToxTrac Tracking Data ----
+### 1.3 ACT Toxtrac Tracking Data ----
 # note, tracking settings are consistent accross all trials)
 # all videos trimmed to 25:00, staring from the point that all individuals are loaded
 # trimmed using Microsoft Photos app
