@@ -8,8 +8,7 @@
 
 
 Sys.setenv(LANG = "en")
-library(dplyr); library(ggplot2); library(vegan)
-library(ggpubr); library(lme4); library(lmerTest); library(rptR)
+library(dplyr); library(ggplot2); library(ggpubr); library(lme4); library(lmerTest); library(rptR)
 
 
 
@@ -171,7 +170,7 @@ summary(GULD_refugereturnlat.ln.mod.sysfac)
 
 
 
-### 5.2. Fish state factors influencing behavioural variation ----
+### 3.2. Fish state factors influencing behavioural variation ----
 #  Fish state predictors
 #    Sex
 #    TL
@@ -351,12 +350,19 @@ summary(GULD_refugereturnlat.ln.mod.stafac)
 #    - InfectionScore: no effect
 
 
+labels(GULD_ACT.processed)
+GULD_ACT.processed <- GULD_ACT.processed[, c(2,3,4,14,28,5,6,7,8,9,10,11,12,24,13,15,16,17,18,26,19,20,25,21,22,27,23)]
+labels(GULD_ACT.processed)
 write.csv(GULD_ACT.processed, '~/trophicpersonalities_A/3_Guldbordsund_FactorAnalysis/GULD_ACT.processed.csv')
+
+labels(GULD_EXPL.processed)
+GULD_EXPL.processed <- GULD_EXPL.processed[, c(2,3,4,28,29,5,6,7,8,9,10,11,12,13,23,14,15,16,24,17,18,25,19,26,20,21,27,22)]
+labels(GULD_EXPL.processed)
 write.csv(GULD_EXPL.processed, '~/trophicpersonalities_A/3_Guldbordsund_FactorAnalysis/GULD_EXPL.processed.csv')
 
 
 
-### 5.3. Calculating adjusted repeatabilities for some variables ----
+### 3.3. Calculating adjusted repeatabilities for some variables ----
 #  Additional factors included for each behavioural variable:
 #    avespeed_tot       - TrialDay + ArenaID + Sex
 #    avespeed_mob       - TrialDay
@@ -446,7 +452,6 @@ GULD_refugereturnlat.ln.rpt.adj <- rpt(refugereturnlat.ln ~ TrialDay + TrialRoun
 GULD_refugereturnlat.ln.rpt.adj
 
 
-
 #Summary adjusted repeatabilities-
 #avespeed_tot:      _ 0.643 [0.447, 0.768] ***       (unadjusted for comparison-   0.467 [0.266, 0.618] ***)
 #avespeed_mob       _ 0.382 [0.164, 0.571] ***       (unadjusted for comparison-   0.181 [0, 0.374]     *  )
@@ -460,113 +465,4 @@ GULD_refugereturnlat.ln.rpt.adj
 #endpointspeed.ln   _ NA                   NA        (unadjusted for comparison-   0.222 [0, 0.489]     ns )
 #refugereturnlat.ln _ 0.237 [0, 0.532]     ns        (unadjusted for comparison-   0.158 [0, 0.411]     ns )
    
-
-
-### 5.4. Exploring relationship between behavioral variables ----
-
-#Variables:
-#avespeed_tot       avespeed_mob       aveacceler         propmoving.exp     
-#dist               timefrozen_tot.ln  centretime.lnplus1 emergelat.bin.B    
-#endpointlat.bin.B  
-
-#Creating dataframe with all beahvioural variables
-GULD_ACT.processed$mergeID <- paste(GULD_ACT.processed$FishID, GULD_ACT.processed$TrialDay, sep ='_')
-GULD_EXPL.processed$mergeID <- paste(GULD_EXPL.processed$FishID, GULD_EXPL.processed$TrialDay, sep ='_')
-GULD_behav_merged <- merge(GULD_ACT.processed, GULD_EXPL.processed, by = 'mergeID', all.x = TRUE)
-GULD_behav_merged <- select(GULD_behav_merged, -c(ConditionFactor.x, Weight.y, emergelat,
-                                                  Notes.y, UniqueID.y, endpointtime, endpointlat, endpointspeed, refugereturntime, 
-                                                  refugereturnlat, Date.y, TimeLoaded.y, TimeInitiated, TrialType.y, TrialDay.y, 
-                                                  TrialRound.y, ArenaID.y, TankID.y,emergetime, X.y, PITID.y, FishID.y,
-                                                  TL.y, InfectionScore.y, Sex.y, timefrozen_tot, timefrozen_ave, centretime, Notes.x,
-                                                  UniqueID.x, propmoving, TrialType.x, Date.x, mergeID, X.x, TimeLoaded.x, ArenaID.x, ConditionFactor.y))
-labels(GULD_behav_merged)
-
-GULD_behav_merged <- rename(GULD_behav_merged, PITID = PITID.x)
-GULD_behav_merged <- rename(GULD_behav_merged, FishID = FishID.x)
-GULD_behav_merged <- rename(GULD_behav_merged, TL = TL.x)
-GULD_behav_merged <- rename(GULD_behav_merged, InfectionScore = InfectionScore.x)
-GULD_behav_merged <- rename(GULD_behav_merged, Sex = Sex.x)
-GULD_behav_merged <- rename(GULD_behav_merged, TrialDay = TrialDay.x)
-GULD_behav_merged <- rename(GULD_behav_merged, TrialRound = TrialRound.x)
-GULD_behav_merged <- rename(GULD_behav_merged, TankID = TankID.x)
-GULD_behav_merged <- rename(GULD_behav_merged, Weight = Weight.x)
-#GULD_behav_merged <- rename(GULD_behav_merged, ConditionFactor = ConditionFactor.x)
-
-labels(GULD_behav_merged)
-
-
-#As the PCA cannot handle NA, this exclude rows with NAs for
-#i.e. fish who completed the activity trial, but not the exploratory trial in a week are excluded
-#5 rows excluded
-GULD_behav_merged.pca <- subset(GULD_behav_merged, emergelat.bin != 'NA')
-cor(GULD_behav_merged.pca[,10:20])
-pairs(GULD_behav_merged.pca[,10:20])
-#appears to be strong correlations between all activity variables, more active individual appear to be more likely to emerge and reach endpoint
-
-#Running a PCA on all data
-GULD_behav_merged.pca.rda <- rda(GULD_behav_merged.pca[,c(-1,-2,-3,-4,-5, -6, -7, -8, -9, -17)], na = na.exclude, scale=TRUE)
-summary(GULD_behav_merged.pca.rda, display=NULL) 
-screeplot(GULD_behav_merged.pca.rda)
-abline(a = 1, b = 0) #PC1 and PC2 have eigenvalue greater than 1
-
-GULD_behav_merged.pca.ord <- ordiplot(GULD_behav_merged.pca.rda, type = "n")
-data.envfit <- envfit(GULD_behav_merged.pca.rda, GULD_behav_merged.pca[,10:20])
-plot(data.envfit, col="blue")
-data.envfit
-Sex <- model.matrix(~-1+Sex, GULD_behav_merged.pca)
-data.envfit2 <- envfit(GULD_behav_merged.pca.rda, env=Sex)
-data.envfit2
-plot(data.envfit2, col="green")
-InfectionScore <- model.matrix(~-1+InfectionScore, GULD_behav_merged.pca)
-data.envfit3 <- envfit(GULD_behav_merged.pca.rda, env=InfectionScore)
-data.envfit3
-plot(data.envfit3, col="red")
-TrialDay <- model.matrix(~-1+TrialDay, GULD_behav_merged.pca)
-data.envfit4 <- envfit(GULD_behav_merged.pca.rda, env=TrialDay)
-data.envfit4
-plot(data.envfit4, col="pink")
-
-#Taking PC1 and PC2 as composite variables
-GULD_behav_merged.pca.scores <- as.data.frame(scores(GULD_behav_merged.pca.rda, display="sites"))
-GULD_behav_merged.pca.loadings <- scores(GULD_behav_merged.pca.rda, display="species")
-
-#Adding those back into the main dataframe
-GULD_behav_merged.pca.scores$mergeID <- (1:113)
-GULD_behav_merged.pca$mergeID <- (1:113)
-GULD_behav_merged.pca <- merge(GULD_behav_merged.pca, GULD_behav_merged.pca.scores, by = 'mergeID')
-nrow(GULD_behav_merged.pca)
-GULD_behav_merged.pca$mergeID <- paste(GULD_behav_merged.pca$FishID, GULD_behav_merged.pca$TrialDay, sep = '_')
-GULD_behav_merged$mergeID <-  paste(GULD_behav_merged$FishID, GULD_behav_merged$TrialDay, sep = '_')
-GULD_behav_merged.pca <- select(GULD_behav_merged.pca, c(mergeID, PC1, PC2))
-GULD_behav_merged <- merge(GULD_behav_merged, GULD_behav_merged.pca, by = 'mergeID', all.x = TRUE)
-
-
-#Analysing effects on composite variables
-GULD_PC1.mod <- lmer(PC1 ~  TrialDay + Sex + InfectionScore + (1|FishID), data=GULD_behav_merged)
-summary(GULD_PC1.mod)
-plot(GULD_PC1.mod)
-GULD_PC1.rpt.adj <- rpt(PC1 ~  TrialDay + Sex + InfectionScore + (1 | FishID), grname = "FishID", 
-                        data = GULD_behav_merged, datatype = "Gaussian", 
-                               nboot = 100, npermut = 0)
-GULD_PC1.rpt.adj
-#PC1:
-#    -ve male Sex effect 
-#    positive TrialDay effect
-#    no InfectionScore effect
-#    highly repeatable (0.59, [0.473, 0.758])
-
-GULD_PC2.mod <- lmer(PC2 ~  TrialDay + Sex + InfectionScore + (1|FishID), data=GULD_behav_merged)
-summary(GULD_PC2.mod)
-plot(GULD_PC2.mod)
-GULD_PC2.rpt.adj <- rpt(PC2 ~  TrialDay + Sex + InfectionScore + (1 | FishID), grname = "FishID", 
-                        data = GULD_behav_merged, datatype = "Gaussian", 
-                            nboot = 100, npermut = 0)
-GULD_PC2.rpt.adj
-#PC1:
-#    no Sex effect
-#    positive TrialDay effect
-#    no InfectionScore effect
-#    highly repeatable (0.536, [0.352, 0.704])
-
-write.csv(GULD_behav_merged, '~/trophicpersonalities_A/3_Guldbordsund_FactorAnalysis/GULD_merged.csv')
 
