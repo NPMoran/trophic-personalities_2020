@@ -67,61 +67,61 @@ simpletheme <-   theme(axis.text.y = element_text(size = 10, colour = "black"),
 #avespeed_tot: (mm/s) the average speed of the individual accross the full trial period
 ggplot(GULD_ACT.excl) + aes(x = avespeed_tot) + geom_histogram(color="black", fill="lightblue", binwidth = 4.5) + simpletheme 
 ggqqplot(GULD_ACT.excl$avespeed_tot)
-#shapiro.test(GULD_ACT.excl$avespeed_tot) #approximately normal
+#approximately normal
 
 
 #avespeed_mob: (mm/s) the average speed of the individual excluding periods when it was immobile
 ggplot(GULD_ACT.excl) + aes(x = avespeed_mob) + geom_histogram(color="black", fill="lightblue", binwidth = 5) + simpletheme 
 ggqqplot(GULD_ACT.excl$avespeed_mob)
-#shapiro.test(GULD_ACT.excl$avespeed_mob) #marginal non-normality driven four potential outliers at the very low end
+#marginal non-normality driven four potential outliers at the very low end
 
 
 #aveacceler: (mm/s^2) average rate of acceleration accross the trial
 ggplot(GULD_ACT.excl) + aes(x = aveacceler) + geom_histogram(color="black", fill="lightblue", binwidth = 14) + simpletheme 
 ggqqplot(GULD_ACT.excl$aveacceler)
-#shapiro.test(GULD_ACT.excl$aveacceler) #minimal left skew
+#minimal left skew
 
 
 #propmoving: (proportional) proportion of time mobile
 ggplot(GULD_ACT.excl) + aes(x = propmoving) + geom_histogram(color="black", fill="lightblue", binwidth = 0.055) + simpletheme 
 ggqqplot(GULD_ACT.excl$propmoving)
-#shapiro.test(GULD_ACT.excl$propmoving) #some left skew
+#some left skew
 ggplot(GULD_ACT.excl) + aes(x = exp(propmoving)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.055) + simpletheme 
 ggqqplot(exp(GULD_ACT.excl$propmoving))
-#shapiro.test(exp(GULD_ACT.excl$propmoving)) #right skewed, exp moving closer to normality
+#right skewed, exp moving closer to normality
 
 
 #dist: (mm) total distance travelled during trial
 ggplot(GULD_ACT.excl) + aes(x = dist) + geom_histogram(color="black", fill="lightblue", binwidth = 4800) + simpletheme 
 ggqqplot(GULD_ACT.excl$dist)
-#shapiro.test(GULD_ACT.excl$dist) #minimal left skew
+#minimal left skew
 
 
 #timefrozen_tot: (s) total time spent frozen during trial
 ggplot(GULD_ACT.excl) + aes(x = timefrozen_tot) + geom_histogram(color="black", fill="lightblue", binwidth = 85) + simpletheme 
 ggqqplot(GULD_ACT.excl$timefrozen_tot)
-#shapiro.test(GULD_ACT.excl$timefrozen_tot) #right skewed so log transformation applied
+#right skewed so log transformation applied
 ggplot(GULD_ACT.excl) + aes(x = log(timefrozen_tot)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.32) + simpletheme 
 ggqqplot(log(GULD_ACT.excl$timefrozen_tot))
-#shapiro.test(log(GULD_ACT.excl$timefrozen_tot)) #minimal left skew, closer to normality
+#minimal left skew, closer to normality
 
 
 #timefrozen_ave: (s) total duration of frozen periods
 ggplot(GULD_ACT.excl) + aes(x = timefrozen_ave) + geom_histogram(color="black", fill="lightblue", binwidth = 45) + simpletheme 
 ggqqplot(GULD_ACT.excl$timefrozen_ave)
-#shapiro.test(GULD_ACT.excl$timefrozen_ave) #severely right skewed zero so log transformation applied
+#severely right skewed zero so log transformation applied
 ggplot(GULD_ACT.excl) + aes(x = log(timefrozen_ave)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.45) + simpletheme 
 ggqqplot(log(GULD_ACT.excl$timefrozen_ave))
-#shapiro.test(log(GULD_ACT.excl$timefrozen_ave)) #still quite skewed, may exclude from further analysis
+#still quite skewed, may exclude from further analysis
 
 
 #centretime: (s) total time spent >10 from an edge of the arena
 ggplot(GULD_ACT.excl) + aes(x = centretime) + geom_histogram(color="black", fill="lightblue", binwidth = 20) + simpletheme 
 ggqqplot(GULD_ACT.excl$centretime)
-#shapiro.test(GULD_ACT.excl$centretime) #right skewed so log(n+1) transformation applied as there are 3 zeros
+#right skewed so log(n+1) transformation applied as there are 3 zeros
 ggplot(GULD_ACT.excl) + aes(x = log(centretime + 1)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.45) + simpletheme 
 ggqqplot(log(GULD_ACT.excl$centretime + 1))
-#shapiro.test(log(GULD_ACT.excl$centretime + 1)) #approximately gaussian with a few zeros
+#approximately gaussian with a few zeros
 
 
 #Summary-
