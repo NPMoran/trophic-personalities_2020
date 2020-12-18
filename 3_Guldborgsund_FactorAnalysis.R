@@ -12,7 +12,7 @@ library(dplyr); library(ggplot2); library(ggpubr); library(lme4); library(lmerTe
 
 
 
-#3. Exploring Factor Effects on Behaviour ----
+#3. Exploring Factor Effects on Behaviour (GULD) ----
 
 #  Behavioral variables used in analysis:
 #    avespeed_tot
@@ -112,7 +112,7 @@ summary(GULD_centretime.lnplus1.mod.sysfact)
 #ACT Summary: 
 #    TrialDay: strong decreases in activity across all variables (excl. centre time)
 #    TrialRound: no effect
-#    ArenaID: appears to be some issues with C, G, F, potentially B (these are central tanks, so may be considered more exposed??)
+#    ArenaID: appears to be some issues with C, G, F, potentially B (these are central tanks, so may be considered more exposed, or a calibration issue??)
 #    TankID: no effect
 
 

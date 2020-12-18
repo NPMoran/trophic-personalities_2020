@@ -12,7 +12,7 @@ library(dplyr); library(ggplot2); library(vegan)
 
 
 
-#4. Correlations Between Behavioural Variables ----
+#4. Correlations Between Behavioural Variables (GULD) ----
 
 GULD_ACT.processed <- read.csv('~/trophicpersonalities_A/3_Guldbordsund_FactorAnalysis/GULD_ACT.processed.csv')
 GULD_EXPL.processed <- read.csv('~/trophicpersonalities_A/3_Guldbordsund_FactorAnalysis/GULD_EXPL.processed.csv')

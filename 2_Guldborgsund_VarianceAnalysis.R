@@ -12,7 +12,7 @@ library(dplyr); library(ggpubr); library(ggplot2); library(lme4); library(rptR)
 
 
 
-#2. Individual Behavioural Variance Analysis ----
+#2. Individual Behavioural Variance Analysis (GULD) ----
 
 ### 2.1 Activity Assay (ACT) ----
 GULD_ACT <- read.csv("~/trophicpersonalities_A/2_Guldborgsund_VarianceAnalysis/GULDACTdat_18112020.csv")
@@ -103,7 +103,7 @@ ggqqplot(GULD_ACT.excl$timefrozen_tot)
 #right skewed so log transformation applied
 ggplot(GULD_ACT.excl) + aes(x = log(timefrozen_tot)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.32) + simpletheme 
 ggqqplot(log(GULD_ACT.excl$timefrozen_tot))
-#minimal left skew, closer to normality
+#minimal left skew, close to normality
 
 
 #timefrozen_ave: (s) total duration of frozen periods
@@ -137,7 +137,10 @@ ggqqplot(log(GULD_ACT.excl$centretime + 1))
 
 #Variables to be used for repeatability analysis-
 #avespeed_tot       avespeed_mob        aveacceler         propmoving      
-#propmoving.exp     dist                timefrozen_tot.ln  centretime.lnplus1
+#propmoving.exp     dist                timefrozen_tot     timefrozen_tot.ln  
+#centretime         centretime.lnplus1
+
+#(note, running untransformed versions just for comparison with transformed)
 
 
 #Transformations-
@@ -171,9 +174,15 @@ GULD_aveacceler.rpt <- rpt(aveacceler ~ (1 | FishID), grname = "FishID", data = 
 GULD_aveacceler.rpt 
 
 
+GULD_propmoving.mod <- lmer(propmoving ~ (1|FishID), data=GULD_ACT.excl)
+summary(GULD_propmoving.mod)
+plot(GULD_propmoving.mod) #some very minor assymmetry
+GULD_propmoving.rpt <- rpt(propmoving ~ (1 | FishID), grname = "FishID", data = GULD_ACT.excl, datatype = "Gaussian", 
+                               nboot = 100, npermut = 0)
+GULD_propmoving.rpt
 GULD_propmoving.exp.mod <- lmer(propmoving.exp ~ (1|FishID), data=GULD_ACT.excl)
 summary(GULD_propmoving.exp.mod)
-plot(GULD_propmoving.exp.mod)
+plot(GULD_propmoving.exp.mod) #good
 GULD_propmoving.exp.rpt <- rpt(propmoving.exp ~ (1 | FishID), grname = "FishID", data = GULD_ACT.excl, datatype = "Gaussian", 
                                nboot = 100, npermut = 0)
 GULD_propmoving.exp.rpt
@@ -187,14 +196,26 @@ GULD_dist.rpt <- rpt(dist ~ (1 | FishID), grname = "FishID", data = GULD_ACT.exc
 GULD_dist.rpt
 
 
+GULD_timefrozen_tot.mod <- lmer(timefrozen_tot ~ (1|FishID), data=GULD_ACT.excl)
+summary(GULD_timefrozen_tot.mod)
+plot(GULD_timefrozen_tot.mod) #significant assymmetry
+GULD_timefrozen_tot.rpt <- rpt(timefrozen_tot ~ (1 | FishID), grname = "FishID", data = GULD_ACT.excl, datatype = "Gaussian", 
+                                  nboot = 100, npermut = 0)
+GULD_timefrozen_tot.rpt
 GULD_timefrozen_tot.ln.mod <- lmer(timefrozen_tot.ln ~ (1|FishID), data=GULD_ACT.excl)
 summary(GULD_timefrozen_tot.ln.mod)
-plot(GULD_timefrozen_tot.ln.mod)
+plot(GULD_timefrozen_tot.ln.mod) #good
 GULD_timefrozen_tot.ln.rpt <- rpt(timefrozen_tot.ln ~ (1 | FishID), grname = "FishID", data = GULD_ACT.excl, datatype = "Gaussian", 
                      nboot = 100, npermut = 0)
 GULD_timefrozen_tot.ln.rpt
 
 
+GULD_centretime.mod <- lmer(centretime ~ (1|FishID), data=GULD_ACT.excl)
+summary(GULD_centretime.mod)
+plot(GULD_centretime.mod) #significant assymmetry
+GULD_centretime.rpt <- rpt(centretime ~ (1 | FishID), grname = "FishID", data = GULD_ACT.excl, datatype = "Gaussian", 
+                                   nboot = 100, npermut = 0)
+GULD_centretime.rpt
 GULD_centretime.lnplus1.mod <- lmer(centretime.lnplus1 ~ (1|FishID), data=GULD_ACT.excl)
 summary(GULD_centretime.lnplus1.mod)
 plot(GULD_centretime.lnplus1.mod)
@@ -207,11 +228,13 @@ GULD_centretime.lnplus1.rpt
 #avespeed_tot:      _ 0.467 [0.266, 0.618] ***
 #avespeed_mob       _ 0.181 [0, 0.374]     *   
 #aveacceler         _ 0.473 [0.27, 0.63]   ***
+#propmoving         _ 0.496 [0.251, 0.614] ***
 #propmoving.exp     _ 0.531 [0.371, 0.683] ***
 #dist               _ 0.468 [0.293, 0.596] ***
+#timefrozen_tot     _ 0.336 [0.1, 0.504]   **
 #timefrozen_tot.ln  _ 0.374 [0.134, 0.583] ***
+#centretime.lnplus1 _ 0.318 [0.106, 0.505] ***
 #centretime.lnplus1 _ 0.43  [0.163, 0.63]  ***
-
 
 
 
@@ -284,7 +307,8 @@ ggqqplot(log(GULD_EXPL.excl$refugereturnlat)) #near normal
 
 #Variables to be used for repeatability analysis-
 #emergelat.bin          endpointlat.bin       
-#endpointspeed.ln       refugereturnlat.ln
+#endpointspeed          endpointspeed.ln
+#refugereturnlat        refugereturnlat.ln
 
 
 #Coversions to binomial using median emergence time as conversion point (1 <= median, 0 > median)
@@ -324,27 +348,41 @@ GULD_endpointlat.bin.rpt <- rpt(endpointlat.bin ~ (1 | FishID), grname = "FishID
 GULD_endpointlat.bin.rpt
 
 
+GULD_endpointspeed.mod <- lmer(endpointspeed ~ (1|FishID), data=GULD_EXPL.excl)
+summary(GULD_endpointspeed.mod)
+plot(GULD_endpointspeed.mod) #significant assymmetry
+GULD_endpointspeed.rpt <- rpt(endpointspeed ~ (1 | FishID), grname = "FishID", data = GULD_EXPL.excl, datatype = "Gaussian", 
+                                 nboot = 100, npermut = 0)
+GULD_endpointspeed.rpt
 GULD_endpointspeed.ln.mod <- lmer(endpointspeed.ln ~ (1|FishID), data=GULD_EXPL.excl)
 summary(GULD_endpointspeed.ln.mod)
-plot(GULD_endpointspeed.ln.mod)
+plot(GULD_endpointspeed.ln.mod) #good
 GULD_endpointspeed.ln.rpt <- rpt(endpointspeed.ln ~ (1 | FishID), grname = "FishID", data = GULD_EXPL.excl, datatype = "Gaussian", 
                                    nboot = 100, npermut = 0)
 GULD_endpointspeed.ln.rpt
 
 
+GULD_refugereturnlat.mod <- lmer(refugereturnlat ~ (1|FishID), data=GULD_EXPL.excl)
+summary(GULD_refugereturnlat.mod)
+plot(GULD_refugereturnlat.mod) #significant assymmetry
+GULD_refugereturnlat.rpt <- rpt(refugereturnlat ~ (1 | FishID), grname = "FishID", data = GULD_EXPL.excl, datatype = "Gaussian", 
+                                   nboot = 100, npermut = 0)
+GULD_refugereturnlat.rpt
 GULD_refugereturnlat.ln.mod <- lmer(refugereturnlat.ln ~ (1|FishID), data=GULD_EXPL.excl)
 summary(GULD_refugereturnlat.ln.mod)
-plot(GULD_refugereturnlat.ln.mod)
+plot(GULD_refugereturnlat.ln.mod) #good
 GULD_refugereturnlat.ln.rpt <- rpt(refugereturnlat.ln ~ (1 | FishID), grname = "FishID", data = GULD_EXPL.excl, datatype = "Gaussian", 
                                  nboot = 100, npermut = 0)
 GULD_refugereturnlat.ln.rpt
 
 
 #Summary-
-#emergelat.bin:        _ 0.678 [0.355, 0.838] ***
-#endpointlat.bin:      _ 0.626 [0.248, 0.804] *** 
-#endpointspeed.ln:     _ 0.222 [0, 0.489]     .   
-#refugereturnlat.ln:   _ 0.158 [0, 0.411]     .   
+#emergelat.bin        _ 0.678 [0.355, 0.838] ***
+#endpointlat.bin      _ 0.626 [0.248, 0.804] *** 
+#endpointspeed        _ 0.098 [0, 0.34]      ns 
+#endpointspeed.ln     _ 0.222 [0, 0.489]     . 
+#refugereturnlat.ln   _ 0.243 [0, 0.45]      ns 
+#refugereturnlat.ln   _ 0.158 [0, 0.411]     ns   
 
 
 write.csv(GULD_EXPL.excl, '~/trophicpersonalities_A/2_Guldborgsund_VarianceAnalysis/GULD_EXPL.processing.csv')
