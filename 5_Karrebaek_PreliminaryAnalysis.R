@@ -245,102 +245,122 @@ write.csv(KARR_ACT, '~/trophicpersonalities_A/5_Karrebaek_PreliminaryAnalysis/KA
 #    TrialRound
 #    ArenaID
 #    TankID
-#Currently running Trial day as categorical, 4 = pre-treatment, 5 = post treatment
-KARR_ACT.processed$TrialDay <- as.factor(KARR_ACT.processed$TrialDay)
-
 KARR_ACT.processed <- read.csv('~/trophicpersonalities_A/5_Karrebaek_PreliminaryAnalysis/KARR_ACT.processing.csv')
 
+#Running Trial day as categorical, 4 = pre-treatment, 5 = post treatment
+KARR_ACT.processed$TrialDay <- as.factor(KARR_ACT.processed$TrialDay)
 
 
-KARR_ACT_avespeed_tot.sqrt.mod.sysfact <- lmer(avespeed_tot.sqrt ~ TrialDay + TrialRound + ArenaID + TankID + (1|FishID), 
+KARR_ACT.processed$TankID2 <- KARR_ACT.processed$TankID
+#Running Tank ID as 2 categories, D and E
+KARR_ACT.processed$TankID2[KARR_ACT.processed$TankID2 == "D_4"] <- "D"
+KARR_ACT.processed$TankID2[KARR_ACT.processed$TankID2 == "D_3"] <- "D"
+KARR_ACT.processed$TankID2[KARR_ACT.processed$TankID2 == "D_2"] <- "D"
+KARR_ACT.processed$TankID2[KARR_ACT.processed$TankID2 == "D_1"] <- "D"
+KARR_ACT.processed$TankID2[KARR_ACT.processed$TankID2 == "E_4"] <- "E"
+KARR_ACT.processed$TankID2[KARR_ACT.processed$TankID2 == "E_3"] <- "E"
+KARR_ACT.processed$TankID2[KARR_ACT.processed$TankID2 == "E_2"] <- "E"
+KARR_ACT.processed$TankID2[KARR_ACT.processed$TankID2 == "E_1"] <- "E"
+
+KARR_ACT.processed$ArenaPosition <- KARR_ACT.processed$ArenaID
+#Running Tank ID as 2 categories, D and E
+KARR_ACT.processed$ArenaPosition[KARR_ACT.processed$ArenaPosition == "A"] <- "Outer"
+KARR_ACT.processed$ArenaPosition[KARR_ACT.processed$ArenaPosition == "D"] <- "Outer"
+KARR_ACT.processed$ArenaPosition[KARR_ACT.processed$ArenaPosition == "E"] <- "Outer"
+KARR_ACT.processed$ArenaPosition[KARR_ACT.processed$ArenaPosition == "H"] <- "Outer"
+KARR_ACT.processed$ArenaPosition[KARR_ACT.processed$ArenaPosition == "B"] <- "Inner"
+KARR_ACT.processed$ArenaPosition[KARR_ACT.processed$ArenaPosition == "C"] <- "Inner"
+KARR_ACT.processed$ArenaPosition[KARR_ACT.processed$ArenaPosition == "F"] <- "Inner"
+KARR_ACT.processed$ArenaPosition[KARR_ACT.processed$ArenaPosition == "G"] <- "Inner"
+
+
+
+KARR_ACT_avespeed_tot.sqrt.mod.sysfact <- lmer(avespeed_tot.sqrt ~ TrialDay + TrialRound + ArenaPosition + TankID2 + (1|FishID), 
                                       data=KARR_ACT.processed)
 plot(KARR_ACT_avespeed_tot.sqrt.mod.sysfact)
 Anova(KARR_ACT_avespeed_tot.sqrt.mod.sysfact) 
 summary(KARR_ACT_avespeed_tot.sqrt.mod.sysfact) 
-#TrialDay:   ***, significant decrease in post-treatment trials
+#TrialDay:   ***, Decrease in post-treatment trials
 #TrialRound: ns
-#ArenaID:    ns
-#TankID:     *, D_4 significantly higher, D_3 marginally higher
+#ArenaID:    **, Outer arenas higher
+#TankID:     *, Tank E lower
 
 
-KARR_ACT_avespeed_mob.mod.sysfact <- lmer(avespeed_mob ~ TrialDay + TrialRound + ArenaID + TankID + (1|FishID), 
+KARR_ACT_avespeed_mob.mod.sysfact <- lmer(avespeed_mob ~ TrialDay + TrialRound + ArenaPosition + TankID2 + (1|FishID), 
                                                data=KARR_ACT.processed)
 plot(KARR_ACT_avespeed_mob.mod.sysfact)
 Anova(KARR_ACT_avespeed_mob.mod.sysfact) 
 summary(KARR_ACT_avespeed_mob.mod.sysfact) 
-#TrialDay:   *, marginal decrease in post-treatment trials 
+#TrialDay:   *, Decrease in post-treatment trials 
 #TrialRound: ns
 #ArenaID:    ns
 #TankID:     ns
 
 
-KARR_ACT_aveacceler.sqrt.mod.sysfact <- lmer(aveacceler.sqrt ~ TrialDay + TrialRound + ArenaID + TankID + (1|FishID), 
+KARR_ACT_aveacceler.sqrt.mod.sysfact <- lmer(aveacceler.sqrt  ~ TrialDay + TrialRound + ArenaPosition + TankID2 + (1|FishID), 
                                           data=KARR_ACT.processed)
 plot(KARR_ACT_aveacceler.sqrt.mod.sysfact)
 Anova(KARR_ACT_aveacceler.sqrt.mod.sysfact) 
 summary(KARR_ACT_aveacceler.sqrt.mod.sysfact) 
-#TrialDay:   **, significant decrease in post-treatment trials
-#TrialRound: ns
-#ArenaID:    ns
-#TankID:     ns
+#TrialDay:   **, Decrease in post-treatment trials
+#TrialRound: ns,
+#ArenaID:    **, Outer arenas higher
+#TankID:     *, Tank E lower
 
 
-KARR_ACT_propmoving.mod.sysfact <- lmer(propmoving ~ TrialDay + TrialRound + ArenaID + TankID + (1|FishID), 
+KARR_ACT_propmoving.mod.sysfact <- lmer(propmoving ~ TrialDay + TrialRound + ArenaPosition + TankID2 + (1|FishID), 
                                              data=KARR_ACT.processed)
 plot(KARR_ACT_propmoving.mod.sysfact)
 Anova(KARR_ACT_propmoving.mod.sysfact) 
 summary(KARR_ACT_propmoving.mod.sysfact) 
-#TrialDay:   ***, significant decrease in post-treatment trials
-#TrialRound: ns
-#ArenaID:    *, Arena B,C,D,G significantly lower
-#TankID:     ., D_3, D_4 marginally higher
+#TrialDay:   **, Decrease in post-treatment trials
+#TrialRound: ns,
+#ArenaID:    *, Outer arenas higher
+#TankID:     *, Tank E lower
 
 
-KARR_ACT_dist.sqrt.sysfact <- lmer(dist.sqrt ~ TrialDay + TrialRound + ArenaID + TankID + (1|FishID), 
+KARR_ACT_dist.sqrt.sysfact <- lmer(dist.sqrt ~ TrialDay + TrialRound + ArenaPosition + TankID2 + (1|FishID), 
                                         data=KARR_ACT.processed)
 plot(KARR_ACT_dist.sqrt.sysfact)
 Anova(KARR_ACT_dist.sqrt.sysfact) 
 summary(KARR_ACT_dist.sqrt.sysfact) 
-#TrialDay:   ***, significant decrease in post-treatment trials
-#TrialRound: ns
-#ArenaID:    ns
-#TankID:     *, D_4 significantly higher, D_3 marginally higher
+#TrialDay:   **, Decrease in post-treatment trials
+#TrialRound: ns,
+#ArenaID:    *, Outer arenas higher
+#TankID:     *, Tank E lower
 
 
-KARR_ACT_timefrozen_tot.sysfact <- lmer(timefrozen_tot ~ TrialDay + TrialRound + ArenaID + TankID + (1|FishID), 
+KARR_ACT_timefrozen_tot.sysfact <- lmer(timefrozen_tot ~ TrialDay + TrialRound + ArenaPosition + TankID2 + (1|FishID), 
                                    data=KARR_ACT.processed)
 plot(KARR_ACT_timefrozen_tot.sysfact)
 Anova(KARR_ACT_timefrozen_tot.sysfact) 
 summary(KARR_ACT_timefrozen_tot.sysfact) 
-#TrialDay:   ***, significant increase in post-treatment trials
-#TrialRound: ns
-#ArenaID:    *, Arenas B,C,D,G significantly higher, F marginally higher 
-#TankID:     ., D_4, D_3 significantly lower
+#TrialDay:   **, Increase in post-treatment trials
+#TrialRound: ns,
+#ArenaID:    *, Outer arenas lower
+#TankID:     *, Tank E higher
 
 
-KARR_ACT_centretime.lnplus1.sysfact <- lmer(centretime.lnplus1 ~ TrialDay + TrialRound + ArenaID + TankID + (1|FishID), 
+KARR_ACT_centretime.lnplus1.sysfact <- lmer(centretime.lnplus1 ~ TrialDay + TrialRound + ArenaPosition + TankID2 + (1|FishID), 
                                         data=KARR_ACT.processed)
 plot(KARR_ACT_centretime.lnplus1.sysfact)
 Anova(KARR_ACT_centretime.lnplus1.sysfact) 
 summary(KARR_ACT_centretime.lnplus1.sysfact) 
 #TrialDay:   ns
 #TrialRound: ns
-#ArenaID:    ns
+#ArenaID:    ., marginal increase in outer arenas
 #TankID:     ns
 
 
 #  Additional factors included for each behavioural variable:
-#    avespeed_tot       - TrialDay + TankID
+#    avespeed_tot       - TrialDay + ArenaID + TankID
 #    avespeed_mob       - TrialDay
-#    aveacceler         - TrialDay + ArenaID + Sex
-#    propmoving.exp     - TrialDay + ArenaID + Sex + ConditionFactor
-#    dist               - TrialDay + ArenaID + Sex
-#    timefrozen_tot.ln  - TrialDay + ArenaID + ConditionFactor + InfectionScore
-#    centretime.lnplus1 - ArenaID 
-#    emergelat.bin.B    - nil
-#    endpointlat.bin.B  - nil
-#    endpointspeed.ln   - nil
-#    refugereturnlat.ln - TrialDay + TrialRound
+#    aveacceler         - TrialDay + ArenaID + TankID
+#    propmoving.exp     - TrialDay + ArenaID + TankID
+#    dist               - TrialDay + ArenaID + TankID
+#    timefrozen_tot     - TrialDay + ArenaID + TankID
+#    centretime.lnplus1 - nil 
+
 
 
 
