@@ -3,11 +3,10 @@
 # Experiment: Quantification of among-individual behavioural and trophic variation the invasive round goby
 #
 # Author: Nicholas Moran, The Centre for Ocean Life- DTU Aqua, Technical University of Denmark
-#         Dec 2020
 
 
 
-#Karrabaek.1. Preliminary data processing and analysis ----
+#Karrebaek.1. Preliminary data processing and analysis ----
 
 
 Sys.setenv(LANG = "en")
@@ -21,6 +20,7 @@ library(lme4); library(lmerTest); library(rptR); library(car)
 #Loading required datasets-
 KARRact <- read.csv("~/trophicpersonalities_A/Data_Karrebaek/KARR_ACTdat.csv")
 labels(KARRact)
+KARRact <- subset (KARRact, FishID != 'NOFISH')
 
 
 #Re-creating the unique id for each trial-
@@ -41,7 +41,6 @@ simpletheme <-   theme(axis.text.y = element_text(size = 10, colour = "black"),
 
 ### K.1.1 Calibration of ToxTrac (ACT trials) ----
 
-
 #Calibration pixel/mm ratios are calculated manually for each arena:
 
 # - Pixel length/width calculated via ImageJ at the midpoint of each ACT arena
@@ -60,6 +59,7 @@ ppmm_y <- ggplot(KARRact, aes(x = ArenaID, y = ppmm_y_calc)) + geom_boxplot(fill
 ppmm_xy <- ggarrange(ppmm_x, ppmm_y,
           ncol = 2, nrow = 1)
 ppmm_xy
+#Variation across areas as expected, i.e. higher ppmm in central arenas
 
 
 #Visualizing calculated arena measurement from Toxtrac tracking files
@@ -86,8 +86,8 @@ height_width_arenas
 #Calibration appears successful within the acceptable range
 
 
-
 ### K.1.2 Optimization of ToxTrac (ACT trials) ----
+
 # Project Initials Settings: 
 #  Start at (min/s)- 5:00, Finish at(min/s)- 25:00 
 #  Fill Temp. Holes, Max Size 25 Frames
@@ -97,125 +97,89 @@ height_width_arenas
 # Tracking Settings: Use defaults
 
 # Statistics Advanced Options:
-#  Mob min. speed- 10mm/s (originally set to 1mm/s)
+#  Mob min. speed- 5mm/s (originally set to 1mm/s)
 Settings_test <- NULL
-Settings_test$minmobilityspeedset <- c(0, 1, 3, 6, 9, 12, 15, 18, 20) # Frozen event dist set to 20mm
+Settings_test$minmobilityspeedset <- c(0, 1, 3, 6, 9, 12, 15, 18, 20) 
 Settings_test$mobrate_act5_4a <- c(1, 0.32, 0.05, 0.01, 0.00, 0.00, 0.00, 0.00, 0.00) #Inactive fish (ACT5_4A)
 Settings_test$mobrate_act4_3g <- c(1, 0.93, 0.84, 0.76, 0.71, 0.68, 0.65, 0.62, 0.61) #Very active (ACT4_3G)
 Settings_test$mobratediff <- (Settings_test$mobrate_act4_3g - Settings_test$mobrate_act5_4a)
 par(mfrow=c(1,3))    
-plot(Settings_test$minmobilityspeedset, Settings_test$mobrate_act5_4a) #Curve begins to flatten around 9mm/s
-plot(Settings_test$minmobilityspeedset, Settings_test$mobrate_act4_3g) #Reaches 0 by 9mm/s 
+plot(Settings_test$minmobilityspeedset, Settings_test$mobrate_act5_4a) #Curve is steady exponential decline
+plot(Settings_test$minmobilityspeedset, Settings_test$mobrate_act4_3g) #Flattens by about 5mm 
 plot(Settings_test$minmobilityspeedset, Settings_test$mobratediff) 
-#Set to 10mm/s capture difference between behaviours 
-#(may try to bring down to 5-10mm)
+abline(v = 5, col="purple") #Set to 5mm/s capture difference between behaviours 
 
-#  Frozen event. Max. Dist- 20mm (originally set to 5mm)
-Settings_test <- NULL
-Settings_test$frozenmaxdist <- c(0, 1, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30) #Mob min. speed set to 10mm/s
+#  Frozen event. Max. Dist- 25mm (originally set to 5mm)  (not currently being used)
+Settings_test$frozenmaxdist <- c(0, 1, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30) 
 Settings_test$timefrozen_act5_4a <- c(0, 0, 352, 1171, 1195, 1198, 1199, 1199, 1199, 1199, 1199, 1199) #Inactive fish (ACT5_4A)
 Settings_test$timefrozen_act4_3g <- c(0, 0, 0, 27, 47, 77, 83, 105, 116, 138, 145, 154) #Very active (ACT4_3G)
-Settings_test$timefrozendiff <- (Settings_test$timefrozen_act4_3g - Settings_test$timefrozen_act5_4a)
+Settings_test$timefrozendiff <- (Settings_test$timefrozen_act5_4a - Settings_test$timefrozen_act4_3g)
 plot(Settings_test$frozenmaxdist, Settings_test$timefrozen_act5_4a) #Maxes out at approx 10mm
 plot(Settings_test$frozenmaxdist, Settings_test$timefrozen_act4_3g) #Some Flattening between 12-21mm
 plot(Settings_test$frozenmaxdist, Settings_test$timefrozendiff) 
-#Set to 20mm capture difference between behaviours 
-#(can try to bring down to 10-15)
-
-#  Frozen Event Min. Time- 3s
-#  Transitions time Int.- 7s (not used)
-
-
-### K.1.3 Distribution checks for behavioural variables (ACT) ----
-#avespeed_tot: (mm/s) the average speed of the individual accross the full trial period
-ggplot(KARRact) + aes(x = avespeed_tot) + geom_histogram(color="black", fill="lightblue", binwidth = 4.5) + simpletheme 
-ggqqplot(KARRact$avespeed_tot) #positive skew
-ggplot(KARRact) + aes(x = sqrt(avespeed_tot)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.5) + simpletheme 
-ggqqplot(sqrt(KARRact$avespeed_tot)) #root transformation is improved
-
-#avespeed_mob: (mm/s) the average speed of the individual excluding periods when it was immobile
-ggplot(KARRact) + aes(x = avespeed_mob) + geom_histogram(color="black", fill="lightblue", binwidth = 5) + simpletheme 
-ggqqplot(KARRact$avespeed_mob) #some negative skew due to 5 - 10 very inactive fish
-
-#aveacceler: (mm/s^2) average rate of acceleration accross the trial
-ggplot(KARRact) + aes(x = aveacceler) + geom_histogram(color="black", fill="lightblue", binwidth = 14) + simpletheme 
-ggqqplot(KARRact$aveacceler) #minimal positive skew
-
-#propmoving: (proportional) proportion of time mobile
-ggplot(KARRact) + aes(x = propmoving) + geom_histogram(color="black", fill="lightblue", binwidth = 0.05) + simpletheme 
-ggqqplot(KARRact$propmoving) #no clear skew, potential issues with high proportion of low activity fish
-
-#dist: (mm) total distance travelled during trial
-ggplot(KARRact) + aes(x = dist) + geom_histogram(color="black", fill="lightblue", binwidth = 4800) + simpletheme 
-ggqqplot(KARRact$dist) #positive skew
-ggplot(KARRact) + aes(x = sqrt(dist)) + geom_histogram(color="black", fill="lightblue", binwidth = 12) + simpletheme 
-ggqqplot(sqrt(KARRact$dist)) #root transformation is improved
-
-#frozenevents: (count) 
-ggplot(KARRact) + aes(x = frozenevents) + geom_histogram(color="black", fill="lightblue", binwidth = 8) + simpletheme 
-ggqqplot(KARRact$frozenevents) #no clear deviation from normal, may be poisson
-
-#timefrozen_tot: (s) total time spent frozen during trial
-ggplot(KARRact) + aes(x = timefrozen_tot) + geom_histogram(color="black", fill="lightblue", binwidth = 85) + simpletheme 
-ggqqplot(KARRact$timefrozen_tot) #no clear skew, potential issues with high proportion of low activity fish
-
-#timefrozen_ave: (s) total duration of frozen periods
-ggplot(KARRact) + aes(x = timefrozen_ave) + geom_histogram(color="black", fill="lightblue", binwidth = 45) + simpletheme 
-ggqqplot(KARRact$timefrozen_ave) #severe positive skew zero so log transformation applied (consider running as a poisson distribution)
-ggplot(KARRact) + aes(x = log(timefrozen_ave)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.45) + simpletheme 
-ggqqplot(log(KARRact$timefrozen_ave)) #log transformation is improved but still quite skewed,
-
-#centretime50: (s) time >5cm away from edge
-ggplot(KARRact) + aes(x = centretime50) + geom_histogram(color="black", fill="lightblue", binwidth = 45) + simpletheme 
-ggqqplot(KARRact$centretime50) #positive skew with zeros so log(x+1) and sqrt transformation applied
-ggplot(KARRact) + aes(x = log(centretime50 + 1)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.5) + simpletheme 
-ggqqplot(log(KARRact$centretime50 + 1)) #left skewed
-ggplot(KARRact) + aes(x = sqrt(centretime50)) + geom_histogram(color="black", fill="lightblue", binwidth = 2) + simpletheme 
-ggqqplot(sqrt(KARRact$centretime50)) #approximately normal
-
-#centretime75: (s) time >7.5cm away from edge
-ggplot(KARRact) + aes(x = centretime75) + geom_histogram(color="black", fill="lightblue", binwidth = 45) + simpletheme 
-ggqqplot(KARRact$centretime75) #positive skew with zeros so log(x+1) and sqrt transformation applied
-ggplot(KARRact) + aes(x = log(centretime75 + 1)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.5) + simpletheme 
-ggqqplot(log(KARRact$centretime75 + 1)) #negative skewed
-ggplot(KARRact) + aes(x = sqrt(centretime75)) + geom_histogram(color="black", fill="lightblue", binwidth = 2) + simpletheme 
-ggqqplot(sqrt(KARRact$centretime75)) #close to normal
-
-#centretime100: (s) time >10cm away from edge
-ggplot(KARRact) + aes(x = centretime100) + geom_histogram(color="black", fill="lightblue", binwidth = 45) + simpletheme 
-ggqqplot(KARRact$centretime100) #positive skew with zeros so log(x+1) and sqrt transformation applied
-ggplot(KARRact) + aes(x = log(centretime100 + 1)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.5) + simpletheme 
-ggqqplot(log(KARRact$centretime100 + 1)) #negative skewed
-ggplot(KARRact) + aes(x = sqrt(centretime100)) + geom_histogram(color="black", fill="lightblue", binwidth = 1.5) + simpletheme 
-ggqqplot(sqrt(KARRact$centretime100)) #closer to normal
+abline(v = 25, col="purple") #Set to 25mm/s capture stable difference between behaviours 
+#Set to 25mm capture difference between behaviours 
+#  Frozen Event Min. Time- 3s  (not currently being used)
+#  Transitions time Int.- 7s  (not currently being used)
 
 
 
-#Summary of behavioural variables
-#     avespeed_tot	  - sqrt transformation
-#     avespeed_mob	  - no transformation needed
-#     aveacceler	    - no transformation needed
-#     propmoving	    - UNCLEAR issue with high proportion of inactive fish, use no transformation for now
-#     dist	          - sqrt transformation
-#     frozenevents	  - no transformation needed
-#     timefrozen_tot	- UNCLEAR issue with high proportion of inactive fish, use no transformation for now
-#     timefrozen_ave  - log transformation 
-#     centretime50	  - sqrt transformation
-#     centretime75	  - sqrt transformation
-#     centretime100   - sqrt transformation
+### K.1.3 Preliminary data exploration ----
+
+# Variables of interest
+# in: avespeed_tot        
+#     avespeed_mob
+#     propmoving          
+#     dist
+#     timefrozen_tot
+#     centretime50        
+#     centretime75
+#     centretime100       
+#     centrescore
 
 
-### K.1.4 preparing datasets for treatment analysis 
-#Behaviour variable transformations
-KARRact$avespeed_tot.sqrt <- sqrt(KARRact$avespeed_tot)
-KARRact$dist.sqrt <- sqrt(KARRact$dist)
-KARRact$timefrozen_ave.ln <- log(KARRact$timefrozen_ave)
-KARRact$centretime50.sqrt <- sqrt(KARRact$centretime50)
-KARRact$centretime75.sqrt <- sqrt(KARRact$centretime75)
-KARRact$centretime100.sqrt <- sqrt(KARRact$centretime100)
+#Calculating centre use variables:
+# - centretime50: time spent >50mm from the edge of the arena, calculated from the pixels visible in zones (50-75mm, 75-100mm, 100+mm)
+KARRact$centretime50 <- (KARRact$centre_50_75+KARRact$centre_75_100+KARRact$centre_100_)/30
+
+# - centretime75: time spent >50mm from the edge of the arena, calculated from the pixels visible in zones (75-100mm, 100+mm)
+KARRact$centretime75 <- (KARRact$centre_75_100+KARRact$centre_100_)/30
+
+# - centretime100: time spent >50mm from the edge of the arena, calculated from the pixels visible in zones (75-100mm, 100+mm)
+KARRact$centretime100 <- (KARRact$centre_100_)/30
+
+# - centrescore: calculated from the proportion of time spend in 25mm widt zones from the edge of the arena
+KARRact$centrescore <- ((1*(KARRact$centre_0_25))+(2*KARRact$centre_25_50)+(3*KARRact$centre_50_75)+(4*KARRact$centre_75_100)+(5*KARRact$centre_100_))/
+  (KARRact$centre_0_25+KARRact$centre_25_50+KARRact$centre_50_75+KARRact$centre_75_100+KARRact$centre_100_)
 
 
-#Adjusting TankID factor
+
+#visualizing variation across in treatment groups across the Trial days
+KARRact$TrialDay[KARRact$TrialDay == 4] <- "Day 0"
+KARRact$TrialDay[KARRact$TrialDay == 5] <- "Day 2"
+KARRact$TrialDay[KARRact$TrialDay == 6] <- "Day 10"
+KARRact$TrialDay <- ordered(KARRact$TrialDay, levels = c("Day 0","Day 2","Day 10"))
+
+KARRact$Treatment[KARRact$Treatment == 'cont'] <- "Control"
+KARRact$Treatment[KARRact$Treatment == 'clip'] <- "PIT+clip"
+KARRact$Treatment[KARRact$Treatment == 'pit'] <- "PITtagged"
+KARRact$Treatment <- ordered(KARRact$Treatment, levels = c("Control","PITtagged","PIT+clip"))
+
+ggplot(KARRact, aes(x = TrialDay, y = avespeed_tot, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = avespeed_mob, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = propmoving, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = dist, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = timefrozen_tot, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = centretime50, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = centretime75, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = centretime100, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = centrescore, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
+#Notable reduction in activity, and potential increase in center time in day 10
+
+
+
+### K.1.4 Processing databases for analysis ----
+#- Adjusting TankID factor
 #Running Tank ID as 2 categories, D and E, as D_1 - D_4 were interconnected so considered a better grouping variable
 KARRact$TankID.combo <- KARRact$TankID
 KARRact$TankID.combo[KARRact$TankID.combo == "D_4"] <- "D"
@@ -227,8 +191,7 @@ KARRact$TankID.combo[KARRact$TankID.combo == "E_3"] <- "E"
 KARRact$TankID.combo[KARRact$TankID.combo == "E_2"] <- "E"
 KARRact$TankID.combo[KARRact$TankID.combo == "E_1"] <- "E"
 
-
-#Adding state variables using data as measured on Day 0 trials
+#- Adding state variables using data as measured on Day 0 trials
 #  day O measurements are considered more accurate, as later measurements were taken just to confirm identification, so day 0 used throughout
 KARRfish <- read.csv("~/trophicpersonalities_A/Data_Karrebaek/KARRfish_10112020.csv")
 KARRfish <- select(KARRfish, -c(RANDBETWEEN.0.1000000., TankID, Treatment, TrialID, ArenaID, PITID, Sex))
@@ -236,200 +199,126 @@ KARRfish <- select(KARRfish, -c(RANDBETWEEN.0.1000000., TankID, Treatment, Trial
 #  removing SL, TL + weights measured at trials, 
 KARRact <- select(KARRact, -c(TL, SL, Weight))
 
+#  removing variables not used in analysis
+KARRact <- select(KARRact, -c(ImageJ_width_pixel, ImageJ_height_pixel, ppmm_x_calc, ppmm_y_calc, width_pixel, 
+                              height_pixel, width_mm, height_mm, arenaarea_m2, visibilityrate, aveacceler,
+                              frozenevents, timefrozen_tot.raw, timefrozen_ave.raw, timefrozen_ave, offset,
+                              centre_0_25, centre_25_50, centre_50_75, centre_75_100, centre_100_))
+
 #  merging databases
-KARRact.processed <- merge(KARRfish, KARRact, by = "FishID", all.x = TRUE)
+KARRact <- merge(KARRfish, KARRact, by = "FishID", all.x = TRUE)
 
 
-#Checking fish state variables
+#- Checking fish state variables
 #    Sex
-n_distinct(subset(KARRact.processed,  Sex == 'F')$FishID) #n = 16
-n_distinct(subset(KARRact.processed, Sex == 'M')$FishID) #n = 32
+n_distinct(subset(KARRact,  Sex == 'F')$FishID) #n = 16
+n_distinct(subset(KARRact, Sex == 'M')$FishID) #n = 32
 
 #    TL
 summary(KARRact.processed$TL) #range 10.1 - 18.6 cm
 #cor.test(KARRact.processed$TL, KARRact.processed$SL)
-#TL and SL strongly correlated, so TL used as this is the one used in GULD fish
+#TL and SL strongly correlated, so TL used here
 #cor.test(KARRact.processed$TL, KARRact.processed$Weight)
 #TL and SL also strongly correlated, so only TL used here
 
 #    Condition factor
-KARRact.processed$ConditionFactor <- 100* (KARRact.processed$Weight / ((KARRact.processed$TL)^3))
+KARRact$ConditionFactor <- 100* (KARRact$Weight / ((KARRact$TL)^3))
 
 #    InfectionScore
-summary(KARRact.processed$InfectionScore) 
+summary(KARRact$InfectionScore) 
 #Score of 1-3: 
 #1 = 0 - 10% of fins with ectoparasite/fungal infection
 #2 = 10 - 50% of fins with ectoparasite/fungal infection
 #3 = 50 - 100% of fins with ectoparasite/fungal infection
 
 
-#Minor formatting adjustments:
-
-#  changing name of treatment group, so control group is the intercept in treatment models  
-KARRact.processed$Treatment[KARRact.processed$Treatment == "clip"] <- "finclip"
-
-
-#  removing obsolete columns
-KARRact.processed <- select(KARRact.processed, -c(arenaarea_m2, timefrozen_tot.raw, timefrozen_ave.raw, offset))
-
-labels(KARRact.processed)
-#  reordering columns
-KARRact.processed <- KARRact.processed[, c(1,2,3,4,51,5,7,8,9,10,11,12,43,13,50,14,15,16,17,18,19,20,21,22,23,24,25,26,44,27,28,29,30,45,31,32,33,46,34,35,36,37,38,39,40,47,41,48,42,49,6)]
+#Reorganising dataframe
+labels(KARRact)
+KARRact <- KARRact %>% relocate(UniqueID, .after = ArenaID)
+KARRact <- KARRact %>% relocate(ConditionFactor, .after = Weight)
+KARRact <- KARRact %>% relocate(TankID.combo, .after = TankID)
+KARRact <- KARRact %>% relocate(Notes, .after = centrescore)
+KARRact <- KARRact %>% relocate(PITID, .after = FishID)
+KARRact <- KARRact %>% relocate(Treatment, .after = PITID)
+KARRact <- KARRact %>% relocate(Sex, .after = Treatment)
 
 
 #Writing dataset
-write.csv(KARRact.processed, "~/trophicpersonalities_A/Data_Karrebaek/KARR_ACTdat_processed.csv")
+write.csv(KARRact, "~/trophicpersonalities_A/Data_Karrebaek/KARR_ACTdat_processed.csv")
 
 
 
 
 
-#### K.1.4 Testing for systematic variation in behavioural variables ----
+## OBSOLETE Creating alternate response databases ----
+#KARRact0 <- subset(KARRact, TrialDay == 'Day 0')
+#KARRact2 <- subset(KARRact, TrialDay == 'Day 2')
+#KARRact10 <- subset(KARRact, TrialDay == 'Day 10')
+#labels(KARRact)
 #
-##Variables of interest-
-##  avespeed_tot.sqrt
-##  avespeed_mob
-##  aveacceler
-##  propmoving
-##  dist.sqrt
-##  frozenevents
-##  timefrozen_tot
-##  timefrozen_ave.ln
-##  centretime50.sqrt
-##  centretime75.sqrt
-##  centretime100.sqrt
+#KARRact2 <- select(KARRact2, -c(TankID.combo, ConditionFactor, TrialDay, TrialRound, ArenaID, TankID, PITID, Treatment, 
+#                                Sex, Notes, Date, TimeLoaded, TrialType, TL,  SL, Weight, InfectionScore))
+#KARRact2<- rename(KARRact2, UniqueID_Day2 = UniqueID)
 #
-#
-##Systematic factors-
-##  TrialDay 
-##  ArenaID 
-##  TankID
+#KARRact10 <- select(KARRact10, -c(TankID.combo, ConditionFactor, TrialDay, TrialRound, ArenaID, TankID, PITID, Treatment, 
+#                                  Sex, Notes, Date, TimeLoaded, TrialType, TL,  SL, Weight, InfectionScore))
+#KARRact10<- rename(KARRact10, UniqueID_Day10 = UniqueID)
 #
 #
-##Testing for systemic issues 
-#KARR_avespeed_tot.sqrt.mod <- lmer(avespeed_tot.sqrt ~ TrialDay + TankID.combo + ArenaID + (1|FishID), data=KARRact)
-#Anova(KARR_avespeed_tot.sqrt.mod) #TrialDay, and TankID effects, no ArenaID effects
-#plot(KARR_avespeed_tot.sqrt.mod) #no clustering issues
-#
-#KARR_avespeed_mob.mod <- lmer(avespeed_mob ~ TrialDay + TankID.combo + ArenaID + (1|FishID), data=KARRact)
-#Anova(KARR_avespeed_mob.mod) #TrialDay effects, no ArenaID or TankID effects
-#plot(KARR_avespeed_mob.mod) #no clustering issues
-#
-#KARR_aveacceler.mod <- lmer(aveacceler ~ TrialDay + TankID.combo + ArenaID + (1|FishID), data=KARRact)
-#Anova(KARR_aveacceler.mod) #TrialDay, and TankID effects, no ArenaID effects (marginal)
-#plot(KARR_aveacceler.mod) #no clustering issues
-#
-#KARR_propmoving.mod <- lmer(propmoving ~ TrialDay + TankID.combo + ArenaID + (1|FishID), data=KARRact)
-#Anova(KARR_propmoving.mod) #TrialDay, and TankID effects, no ArenaID effects (marginal)
-#plot(KARR_propmoving.mod) #no clustering issues
-#
-#KARR_dist.sqrt.mod <- lmer(dist.sqrt ~ TrialDay + TankID.combo + ArenaID + (1|FishID), data=KARRact)
-#Anova(KARR_dist.sqrt.mod) #TrialDay, and TankID effects, no ArenaID effects (marginal)
-#plot(KARR_dist.sqrt.mod) #no clustering issues
-#
-#KARR_frozenevents.mod <- lmer(frozenevents ~ TrialDay + TankID.combo + ArenaID + (1|FishID), data=KARRact)
-#Anova(KARR_frozenevents.mod) #TankID effects, no TrialDay + ArenaID effects (marginal)
-#plot(KARR_frozenevents.mod) #no clustering issues
-#
-#KARR_timefrozen_tot.mod <- lmer(timefrozen_tot ~ TrialDay + TankID.combo + ArenaID + (1|FishID), data=KARRact)
-#Anova(KARR_timefrozen_tot.mod) #TankID, TrialDay + ArenaID effects 
-#plot(KARR_timefrozen_tot.mod) #no clustering issues
-#
-#KARR_timefrozen_ave.ln.mod <- lmer(timefrozen_ave.ln ~ TrialDay + TankID.combo + ArenaID + (1|FishID), data=KARRact)
-#Anova(KARR_timefrozen_ave.ln.mod) #TankID effects, no TrialDay + ArenaID effects (marginal)
-#plot(KARR_timefrozen_ave.ln.mod) #no clustering issues
-#
-#KARR_centretime50.sqrt.mod <- lmer(centretime50.sqrt ~ TrialDay + TankID.combo + ArenaID + (1|FishID), data=KARRact)
-#Anova(KARR_centretime50.sqrt.mod) #no effects
-#plot(KARR_centretime50.sqrt.mod) #no clustering issues
-#
-#KARR_centretime75.sqrt.mod <- lmer(centretime75.sqrt ~ TrialDay + TankID.combo + ArenaID + (1|FishID), data=KARRact)
-#Anova(KARR_centretime75.sqrt.mod) #no effects
-#plot(KARR_centretime75.sqrt.mod) #no clustering issues
-#
-#KARR_centretime100.sqrt.mod <- lmer(centretime100.sqrt ~ TrialDay + TankID.combo + ArenaID + (1|FishID), data=KARRact)
-#Anova(KARR_centretime100.sqrt.mod) #no effects
-#plot(KARR_centretime100.sqrt.mod) #no clustering issues
+##Using the ratio of post-trial behaviour to pre-trial behaviour
+#KARRact.RESP <- merge(KARRact0, KARRact2, by = 'FishID', all.x = TRUE)
+#labels(KARRact.RESP)
+#KARRact.RESP$avespeed_tot.2 <- KARRact.RESP$avespeed_tot.y/KARRact.RESP$avespeed_tot.x
+#KARRact.RESP$avespeed_mob.2 <- KARRact.RESP$avespeed_mob.y/KARRact.RESP$avespeed_mob.x
+#KARRact.RESP$propmoving.2 <- KARRact.RESP$propmoving.y/KARRact.RESP$propmoving.x
+#KARRact.RESP$dist.2 <- KARRact.RESP$dist.y/KARRact.RESP$dist.x
+#KARRact.RESP$centretime50.2 <- KARRact.RESP$centretime50.y/KARRact.RESP$centretime50.x
+#KARRact.RESP$centretime75.2 <- KARRact.RESP$centretime75.y/KARRact.RESP$centretime75.x
+#KARRact.RESP$centretime100.2 <- KARRact.RESP$centretime100.y/KARRact.RESP$centretime100.x
 #
 #
-##Systematic factors for account for-
-##  avespeed_tot.sqrt:   TrialDay, TankID.combo
-##  avespeed_mob:        TrialDay
-##  aveacceler:          TrialDay, TankID.combo
-##  propmoving:          TrialDay, TankID.combo
-##  dist.sqrt:           TrialDay, TankID.combo
-##  frozenevents:        TrialDay, 
-##  timefrozen_tot:      TrialDay, TankID.combo, ArenaID
-##  timefrozen_ave.ln:   TankID.combo
-##  centretime50.sqrt:   nil
-##  centretime75.sqrt:   nil
-##  centretime100.sqrt:  nil
+#KARRact.RESP <- merge(KARRact.RESP, KARRact10, by = 'FishID', all.x = TRUE)
+#labels(KARRact.RESP)
+#KARRact.RESP$avespeed_tot.10 <- KARRact.RESP$avespeed_tot/KARRact.RESP$avespeed_tot.x
+#KARRact.RESP$avespeed_mob.10 <- KARRact.RESP$avespeed_mob/KARRact.RESP$avespeed_mob.x
+#KARRact.RESP$propmoving.10 <- KARRact.RESP$propmoving/KARRact.RESP$propmoving.x
+#KARRact.RESP$dist.10 <- KARRact.RESP$dist/KARRact.RESP$dist.x
+#KARRact.RESP$centretime50.10 <- KARRact.RESP$centretime50/KARRact.RESP$centretime50.x
+#KARRact.RESP$centretime75.10 <- KARRact.RESP$centretime75/KARRact.RESP$centretime75.x
+#KARRact.RESP$centretime100.10 <- KARRact.RESP$centretime100/KARRact.RESP$centretime100.x
 #
 #
-##State factors to account for- 
+#KARRact.RESP <- select(KARRact.RESP, -c(avespeed_tot, avespeed_mob, propmoving,  dist, centretime50, centretime75, 
+#                                        centretime100, centretime100.y, avespeed_tot.y, avespeed_mob.y, propmoving.y, 
+#                                        dist.y, centretime50.y, centretime75.y, avespeed_tot.x,
+#                                        avespeed_mob.x, propmoving.x, dist.x, centretime50.x, centretime75.x, 
+#                                        centretime100.x))
+#KARRact.RESP<- rename(KARRact.RESP, UniqueID_Day0 = UniqueID)
+#labels(KARRact.RESP)
 #
-#KARR_avespeed_tot.sqrt.mod2 <- lmer(avespeed_tot.sqrt ~ Sex + TL + ConditionFactor + InfectionScore + (1|TrialDay) + (1|TankID.combo) + (1|FishID), data=KARRact.processed)
-#Anova(KARR_avespeed_tot.sqrt.mod2) #no effects
-#plot(KARR_avespeed_tot.sqrt.mod2) #no clustering issues
-#
-#KARR_avespeed_mob.mod2 <- lmer(avespeed_mob ~ Sex + TL + ConditionFactor + InfectionScore + (1|TrialDay) + (1|FishID), data=KARRact.processed)
-#Anova(KARR_avespeed_mob.mod2) #no effects (marginal Sex difference)
-#plot(KARR_avespeed_mob.mod2) #no clustering issues
-#
-#KARR_aveacceler.mod2 <- lmer(aveacceler ~ Sex + TL + ConditionFactor + InfectionScore + (1|TrialDay) + (1|TankID.combo) + (1|FishID), data=KARRact.processed)
-#Anova(KARR_aveacceler.mod2) #no effects
-#plot(KARR_aveacceler.mod2) #no clustering issues
-#
-#KARR_propmoving.mod2 <- lmer(propmoving ~ Sex + TL + ConditionFactor + InfectionScore + (1|TrialDay) + (1|TankID.combo) + (1|FishID), data=KARRact.processed)
-#Anova(KARR_propmoving.mod2) #no effects
-#plot(KARR_propmoving.mod2) #no clustering issues
-#
-#KARR_dist.sqrt.mod2 <- lmer(dist.sqrt ~ Sex + TL + ConditionFactor + InfectionScore + (1|TrialDay) + (1|TankID.combo) + (1|FishID), data=KARRact.processed)
-#Anova(KARR_dist.sqrt.mod2) #no effects
-#plot(KARR_dist.sqrt.mod2) #no clustering issues
-#
-#KARR_frozenevents.mod2 <- lmer(frozenevents ~  Sex + TL + ConditionFactor + InfectionScore + (1|TankID.combo) + (1|FishID), data=KARRact.processed)
-#Anova(KARR_frozenevents.mod2) #no effects
-#plot(KARR_frozenevents.mod2) #no clustering issues
-#
-#KARR_timefrozen_tot.mod2 <- lmer(timefrozen_tot ~ Sex + TL + ConditionFactor + InfectionScore + (1|TrialDay) + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-#Anova(KARR_timefrozen_tot.mod2)  #no effects
-#plot(KARR_timefrozen_tot.mod2) #no clustering issues
-#
-#KARR_timefrozen_ave.ln.mod2 <- lmer(timefrozen_ave.ln ~ Sex + TL + ConditionFactor + InfectionScore + (1|TankID.combo) + (1|FishID), data=KARRact.processed)
-#Anova(KARR_timefrozen_ave.ln.mod2)  #no effects (marginal Condition difference)
-#plot(KARR_timefrozen_ave.ln.mod2) #no clustering issues
-#
-#KARR_centretime50.sqrt.mod2 <- lmer(centretime50.sqrt ~ Sex + TL + ConditionFactor + InfectionScore + (1|FishID), data=KARRact.processed)
-#Anova(KARR_centretime50.sqrt.mod2) #ConditionFactor effect
-#summary(KARR_centretime50.sqrt.mod2) #positive effect
-#plot(KARR_centretime50.sqrt.mod2) #no clustering issues
-#
-#KARR_centretime75.sqrt.mod2 <- lmer(centretime75.sqrt ~ Sex + TL + ConditionFactor + InfectionScore + (1|FishID), data=KARRact.processed)
-#Anova(KARR_centretime75.sqrt.mod2) #ConditionFactor effect
-#summary(KARR_centretime75.sqrt.mod2) #positive effect
-#plot(KARR_centretime75.sqrt.mod2) #no clustering issues
-#
-#KARR_centretime100.sqrt.mod2 <- lmer(centretime100.sqrt ~ Sex + TL + ConditionFactor + InfectionScore + (1|FishID), data=KARRact.processed)
-#Anova(KARR_centretime100.sqrt.mod2) #ConditionFactor + Infection Score effect
-#summary(KARR_centretime100.sqrt.mod2) #positive effects
-#plot(KARR_centretime100.sqrt.mod2) #no clustering issues
+##reordering some variables
+#KARRact.RESP <- KARRact.RESP %>% relocate(UniqueID_Day2, .after = UniqueID_Day0)
+#KARRact.RESP <- KARRact.RESP %>% relocate(UniqueID_Day10, .after = UniqueID_Day2)
+#KARRact.RESP <- KARRact.RESP %>% relocate(ConditionFactor, .after = Weight)
+#KARRact.RESP <- KARRact.RESP %>% relocate(TankID.combo, .after = TankID)
 #
 #
-##Summary-
 #
-##  Variable             Systematic effects                Fixed effects
+##Visualising responses across treatment groups
+#ggplot(KARRact.RESP, aes(x = Treatment, y = log(avespeed_tot.2))) + geom_boxplot(fill = 'deeppink') + simpletheme
+#ggplot(KARRact.RESP, aes(x = Treatment, y = log(avespeed_mob.2))) + geom_boxplot(fill = 'deeppink') + simpletheme
+#ggplot(KARRact.RESP, aes(x = Treatment, y = log(propmoving.2))) + geom_boxplot(fill = 'deeppink') + simpletheme
+#ggplot(KARRact.RESP, aes(x = Treatment, y = log(dist.2))) + geom_boxplot(fill = 'deeppink') + simpletheme
+#ggplot(KARRact.RESP, aes(x = Treatment, y = log(centretime50.2))) + geom_boxplot(fill = 'deeppink') + simpletheme
+#ggplot(KARRact.RESP, aes(x = Treatment, y = log(centretime75.2))) + geom_boxplot(fill = 'deeppink') + simpletheme
+#ggplot(KARRact.RESP, aes(x = Treatment, y = log(centretime100.2))) + geom_boxplot(fill = 'deeppink') + simpletheme
 #
-##  avespeed_tot.sqrt:   TrialDay, TankID.combo            nil
-##  avespeed_mob:        TrialDay                          nil
-##  aveacceler:          TrialDay, TankID.combo            nil
-##  propmoving:          TrialDay, TankID.combo            nil
-##  dist.sqrt:           TrialDay, TankID.combo            nil
-##  frozenevents:        TrialDay,                         nil
-##  timefrozen_tot:      TrialDay, TankID.combo, ArenaID   nil
-##  timefrozen_ave.ln:   TankID.combo                      nil
-##  centretime50.sqrt:   nil                               ConditionFactor
-##  centretime75.sqrt:   nil                               ConditionFactor
-##  centretime100.sqrt:  nil                               ConditionFactor, InfectionScore
+#ggplot(KARRact.RESP, aes(x = Treatment, y = log(avespeed_tot.10))) + geom_boxplot(fill = 'deeppink') + simpletheme
+#ggplot(KARRact.RESP, aes(x = Treatment, y = log(avespeed_mob.10))) + geom_boxplot(fill = 'deeppink') + simpletheme
+#ggplot(KARRact.RESP, aes(x = Treatment, y = log(propmoving.10))) + geom_boxplot(fill = 'deeppink') + simpletheme
+#ggplot(KARRact.RESP, aes(x = Treatment, y = log(dist.10))) + geom_boxplot(fill = 'deeppink') + simpletheme
+#ggplot(KARRact.RESP, aes(x = Treatment, y = log(centretime50.10))) + geom_boxplot(fill = 'deeppink') + simpletheme
+#ggplot(KARRact.RESP, aes(x = Treatment, y = log(centretime75.10))) + geom_boxplot(fill = 'deeppink') + simpletheme
+#ggplot(KARRact.RESP, aes(x = Treatment, y = log(centretime100.10))) + geom_boxplot(fill = 'deeppink') + simpletheme
 #
 #

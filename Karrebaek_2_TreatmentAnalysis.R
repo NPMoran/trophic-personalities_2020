@@ -3,11 +3,10 @@
 # Experiment: Quantification of among-individual behavioural and trophic variation the invasive round goby
 #
 # Author: Nicholas Moran, The Centre for Ocean Life- DTU Aqua, Technical University of Denmark
-#         Dec 2020
 
 
 
-#Karrabaek 2. Treatment Analysis ----
+#Karrebaek 2. Treatment Analysis ----
 
 
 Sys.setenv(LANG = "en")
@@ -15,288 +14,358 @@ Sys.setenv(LANG = "en")
 
 #Loading required packages- 
 library(dplyr); library(ggplot2); library(lme4); library(lmerTest); library(car)
-library(survival); library(survminer); library(rptR)
+library(survival); library(survminer); library(rptR); library(performance)
 
 #Loading required datasets-
 KARRact.processed <- read.csv("~/trophicpersonalities_A/Data_Karrebaek/KARR_ACTdat_processed.csv")
 labels(KARRact.processed)
 
 
-#Creating a general theme for ggplots-
-simpletheme <-   theme(axis.text.y = element_text(size = 10, colour = "black"),
-                       axis.text.x = element_text(size = 10, colour = "black"), 
-                       panel.background = element_rect(fill = "white"),
-                       axis.title.y  = element_text(size=12, vjust = 2),
-                       axis.title.x  = element_text(size=12, vjust = 0.1),
-                       panel.border = element_rect(colour = "black", fill=NA, size = 1))
+### K.2.1 Day 2 Behavioural Effects, Day 2 ----
+
+#Z-transformation/scaling of continuous fixed effects
+KARRact.processed$TL.C <- scale(KARRact.processed$TL)  
+KARRact.processed$ConditionFactor.C <- scale(KARRact.processed$ConditionFactor)  
+KARRact.processed$InfectionScore.C <- scale(KARRact.processed$InfectionScore)  
+
+#Pre-cheaking distributions
+ggplot(KARRact.processed) + aes(x = avespeed_tot) + geom_histogram(color="black", fill="lightblue", binwidth = 4.5) + simpletheme 
+ggqqplot(KARRact.processed$avespeed_tot) #positive skew
+ggplot(KARRact.processed) + aes(x = sqrt(avespeed_tot)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.5) + simpletheme 
+ggqqplot(sqrt(KARRact.processed$avespeed_tot)) #sqrt transformation is improved, some censoring at low end
+
+ggplot(KARRact.processed) + aes(x = avespeed_mob) + geom_histogram(color="black", fill="lightblue", binwidth = 5) + simpletheme 
+ggqqplot(KARRact.processed$avespeed_mob) #majority of data appears normal with 5 - 10 very inactive fish
+
+ggplot(KARRact.processed) + aes(x = propmoving) + geom_histogram(color="black", fill="lightblue", binwidth = 0.05) + simpletheme 
+ggqqplot(KARRact.processed$propmoving) #majority of data appears normal with 5 - 10 very inactive fish
+ggplot(KARRact.processed) + aes(x = sqrt(propmoving)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.05) + simpletheme 
+ggqqplot(sqrt(KARRact.processed$propmoving)) #sqrt transformation is improved
+
+ggplot(KARRact.processed) + aes(x = dist) + geom_histogram(color="black", fill="lightblue", binwidth = 4800) + simpletheme 
+ggqqplot(KARRact.processed$dist) #positive skew
+ggplot(KARRact.processed) + aes(x = sqrt(dist)) + geom_histogram(color="black", fill="lightblue", binwidth = 15) + simpletheme 
+ggqqplot(sqrt(KARRact.processed$dist)) #root transformation is improved, but still shows censoring at 0
+
+ggplot(KARRact.processed) + aes(x = timefrozen_tot) + geom_histogram(color="black", fill="lightblue", binwidth = 45) + simpletheme 
+ggqqplot(KARRact.processed$timefrozen_tot) #binomial would be better
+ggplot(KARRact.processed) + aes(x = sqrt(1200-timefrozen_tot)) + geom_histogram(color="black", fill="lightblue", binwidth = 2.5) + simpletheme 
+ggqqplot(sqrt(1200-KARRact.processed$timefrozen_tot)) #root transformation is improved, but still shows censoring at 0
+
+ggplot(KARRact.processed) + aes(x = centretime50) + geom_histogram(color="black", fill="lightblue", binwidth = 45) + simpletheme 
+ggqqplot(KARRact.processed$centretime50) #root transformation is improved, but still shows censoring at 0
+ggplot(KARRact.processed) + aes(x = sqrt(centretime50)) + geom_histogram(color="black", fill="lightblue", binwidth = 2) + simpletheme 
+ggqqplot(sqrt(KARRact$centretime50)) #root transformation is improved, but still shows censoring at 0
+
+ggplot(KARRact.processed) + aes(x = centretime75) + geom_histogram(color="black", fill="lightblue", binwidth = 45) + simpletheme 
+ggqqplot(KARRact.processed$centretime75) #positive skew 
+ggplot(KARRact.processed) + aes(x = sqrt(centretime75)) + geom_histogram(color="black", fill="lightblue", binwidth = 2) + simpletheme 
+ggqqplot(sqrt(KARRact$centretime75)) #root transformation is improved, but still shows censoring at 0
+
+ggplot(KARRact.processed) + aes(x = centrescore) + geom_histogram(color="black", fill="lightblue", binwidth = 0.2) + simpletheme 
+ggqqplot(KARRact.processed$centrescore) #minimal positive skew 
+ggplot(KARRact.processed) + aes(x = sqrt(centrescore)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.05) + simpletheme 
+ggqqplot(sqrt(KARRact$centrescore)) #root transformation is improved
+
+
+#Full Models- including all random and fixed effects
+#  Variable         Transformation/Distribution    Random effects                                Fixed effects
+
+#  avespeed_tot:    sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
+#  avespeed_mob:    nil/Gaussian                   TankID.combo, ArenaID, FishID, TrialRound     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
+#  propmoving:      sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
+#  dist.sqrt:       sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
+#  timfrozen_tot:   invsqrt/Gaussian               TankID.combo, ArenaID, FishID, TrialRound     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
+#  centretime50     sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
+#  centretime75:    sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
+#  centretime100:   sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
+#  centrescore:     sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
+
+
+#avespeed_tot: (mm/s) the average speed of the individual across the full trial period
+KARR_avespeed_tot.sqrt.mod <- lmer(sqrt(avespeed_tot) ~ 
+                                            Sex + TL.C + ConditionFactor.C + InfectionScore.C + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) + (1|FishID), data=KARRact.processed)
+Anova(KARR_avespeed_tot.sqrt.mod)     #No Sex, TL.C, ConditionFactor.C, InfectionScore.C effects
+summary(KARR_avespeed_tot.sqrt.mod)   #All random effects resolve some variance
+plot(KARR_avespeed_tot.sqrt.mod)      #No clustering issues
+r2_nakagawa(KARR_avespeed_tot.sqrt.mod)
+
+
+#avespeed_mob: (mm/s) the average speed of the individual excluding periods when it was immobile
+KARR_avespeed_mob.mod <- lmer(avespeed_mob ~ 
+                                       Sex + TL.C + ConditionFactor.C + InfectionScore.C + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) + (1|FishID), data=KARRact.processed)
+Anova(KARR_avespeed_mob.mod)          #InfectionScore.C positive effect
+summary(KARR_avespeed_mob.mod)        #All random effects resolve some variance
+plot(KARR_avespeed_mob.mod)           #No clustering issues
+r2_nakagawa(KARR_avespeed_mob.mod)
+
+
+#propmoving: (proportional) proportion of time mobile
+KARR_propmoving.sqrt <- lmer(sqrt(propmoving) ~ 
+                                 Sex + TL.C + ConditionFactor.C + InfectionScore.C + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) +  (1|FishID), data=KARRact.processed)
+Anova(KARR_propmoving.sqrt)           #No Sex, TL.C, ConditionFactor.C, InfectionScore.C effects
+summary(KARR_propmoving.sqrt)         #All random effects resolve some variance
+plot(KARR_propmoving.sqrt)            #No clustering issues
+r2_nakagawa(KARR_propmoving.sqrt)
+
+
+#dist: (mm) total distance travelled during trial
+KARR_dist.sqrt <- lmer(sqrt(dist) ~ 
+                                Sex + TL.C + ConditionFactor.C + InfectionScore.C + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) +  (1|FishID), data=KARRact.processed)
+Anova(KARR_dist.sqrt)                 #No Sex, TL.C, ConditionFactor.C, InfectionScore.C effects
+summary(KARR_dist.sqrt)               #All random effects resolve some variance
+plot(KARR_dist.sqrt)                  #No clustering issues
+r2_nakagawa(KARR_dist.sqrt)
+
+
+#timefrozen_tot: (sec) total time spend frozen 
+KARR_timefrozen_tot.invsqrt.sqrt <- lmer(sqrt(1200-timefrozen_tot) ~ 
+                         Sex + TL.C + ConditionFactor.C + InfectionScore.C + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) +  (1|FishID), data=KARRact.processed)
+Anova(KARR_timefrozen_tot.invsqrt.sqrt)                 #No Sex, TL.C, ConditionFactor.C, InfectionScore.C effects
+summary(KARR_timefrozen_tot.invsqrt.sqrt)               #All random effects resolve some variance
+plot(KARR_timefrozen_tot.invsqrt.sqrt)                  #No clustering issues
+r2_nakagawa(KARR_timefrozen_tot.invsqrt.sqrt)
+
+
+#centretime50: (s) time >5cm away from edge
+KARR_centretime50.sqrt <- lmer(sqrt(centretime50) ~ 
+                                        Sex + TL.C + ConditionFactor.C + InfectionScore.C + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) +  (1|FishID), data=KARRact.processed)
+Anova(KARR_centretime50.sqrt)         #ConditionFactor.C effect
+summary(KARR_centretime50.sqrt)       #ArenaID, TrialRound V = 0.000
+plot(KARR_centretime50.sqrt)          #Some evidence of censoring
+r2_nakagawa(KARR_centretime50.sqrt)   #Need to revise random effect structure
+
+
+#centretime75: (s) time >7.5cm away from edge
+KARR_centretime75.sqrt <- lmer(sqrt(centretime75) ~ 
+                                        Sex + TL.C + ConditionFactor.C + InfectionScore.C + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) +  (1|FishID), data=KARRact.processed)
+Anova(KARR_centretime75.sqrt)         #ConditionFactor.C effect
+summary(KARR_centretime75.sqrt)       #ArenaID V = 0.000, TrialRound V = 1.601e-08
+plot(KARR_centretime75.sqrt)          #Evidence of censoring
+r2_nakagawa(KARR_centretime75.sqrt)   #Need to revise random effect structure
+
+
+#centretime100: (s) time >10cm away from edge
+KARR_centretime100.sqrt <- lmer(sqrt(centretime100) ~ 
+                                         Sex + TL.C + ConditionFactor.C + InfectionScore.C + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) +  (1|FishID), data=KARRact.processed)
+Anova(KARR_centretime100.sqrt)        #ConditionFactor effect, Treatment effect  
+summary(KARR_centretime100.sqrt)      #All random effects resolve some variance
+plot(KARR_centretime100.sqrt)         #Evidence of censoring
+r2_nakagawa(KARR_centretime100.sqrt)
+
+
+#centrescore: (NA) calculated from the proportion of time spent in each area
+KARR_centrescore.sqrt <- lmer(sqrt(centrescore) ~ 
+                                  Sex + TL.C + ConditionFactor.C + InfectionScore.C + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) +  (1|FishID), data=KARRact.processed)
+Anova(KARR_centrescore.sqrt)          #ConditionFactor effect, TrialDay effect  
+summary(KARR_centrescore.sqrt)        #All random effects resolve some variance
+plot(KARR_centrescore.sqrt)           #Stunningly beautiful
+r2_nakagawa(KARR_centrescore.sqrt)    #ArenaID and TrialRound resolved no variance
 
 
 
-### K.2.1 Testing for treatment effects on behavioural variables (full models) ----
+#Reduced Models- removing random effects that failed to resolve variance, and fixed effects with insignificant effect
+#  Variable         Transformation/Distribution    Random effects                                Fixed effects
 
-#  Variable             Random effects                    Fixed effects
-
-#  avespeed_tot.sqrt:   TankID.combo, ArenaID, FishID     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
-#  avespeed_mob:        TankID.combo, ArenaID, FishID     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
-#  aveacceler:          TankID.combo, ArenaID, FishID     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
-#  propmoving:          TankID.combo, ArenaID, FishID     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
-#  dist.sqrt:           TankID.combo, ArenaID, FishID     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
-#  frozenevents:        TankID.combo, ArenaID, FishID     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
-#  timefrozen_tot:      TankID.combo, ArenaID, FishID     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
-#  timefrozen_ave.ln:   TankID.combo, ArenaID, FishID     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
-#  centretime50.sqrt:   TankID.combo, ArenaID, FishID     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
-#  centretime75.sqrt:   TankID.combo, ArenaID, FishID     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
-#  centretime100.sqrt:  TankID.combo, ArenaID, FishID     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
-
-
-KARR_avespeed_tot.sqrt.mod.treat2 <- lmer(avespeed_tot.sqrt ~ 
-                                            Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_avespeed_tot.sqrt.mod.treat2) #effect of TrialDay, Treatment*TrialDay interaction non-significant effect (marginal)
-summary(KARR_avespeed_tot.sqrt.mod.treat2) #Treatmentpit:TrialDay sig lower than controls
-plot(KARR_avespeed_tot.sqrt.mod.treat2) #no clustering issues
-
-KARR_avespeed_mob.mod.treat2 <- lmer(avespeed_mob ~ 
-                                       Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_avespeed_mob.mod.treat2) #effect of TrialDay, no Treatment*TrialDay interaction effect
-summary(KARR_avespeed_tot.sqrt.mod.treat2) #Treatmentpit:TrialDay sig lower than controls
-plot(KARR_avespeed_mob.mod.treat2) #no clustering issues
-
-KARR_aveacceler.mod.treat2 <- lmer(aveacceler ~ 
-                                     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_aveacceler.mod.treat2) #effect of TrialDay, Treatment*TrailDay interaction non-significant effect (marginal)
-summary(KARR_aveacceler.mod.treat2) #Treatmentpit:TrialDay sig lower than controls
-plot(KARR_aveacceler.mod.treat2) #no clustering issues
-
-KARR_propmoving.treat2 <- lmer(propmoving ~ 
-                                 Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_propmoving.treat2) #effect of TrialDay + Treatment*TrailDay interaction
-summary(KARR_propmoving.treat2) #Treatmentpit:TrialDay sig lower than controls
-plot(KARR_propmoving.treat2) #no clustering issues
-
-KARR_dist.sqrt.treat2 <- lmer(dist.sqrt ~ 
-                                Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_dist.sqrt.treat2) #effect of TrialDay, , Treatment*TrailDay interaction non-significant effect (marginal)
-summary(KARR_dist.sqrt.treat2) #Treatmentpit:TrialDay sig lower than controls
-plot(KARR_dist.sqrt.treat2) #no clustering issues
-
-KARR_frozenevents.treat2 <- lmer(frozenevents ~ 
-                                   Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_frozenevents.treat2) #no effects
-summary(KARR_frozenevents.treat2) #no effects
-plot(KARR_frozenevents.treat2) #no clustering issues
-
-KARR_timefrozen_tot.treat2 <- lmer(timefrozen_tot ~ 
-                                     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_timefrozen_tot.treat2) #effect of TrialDay, Treatment*TrailDay interaction non-significant effect (marginal)
-summary(KARR_timefrozen_tot.treat2) #Treatmentpit:TrialDay pit group sig higher than cont
-plot(KARR_timefrozen_tot.treat2) #no clustering issues
-
-KARR_timefrozen_ave.ln.treat2 <- lmer(timefrozen_ave.ln ~ 
-                                        Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_timefrozen_ave.ln.treat2)  #effect of TrialDay, Treatment*TrailDay interaction no significant effect, ConditionFactor non-signficant effect (marginal),
-summary(KARR_timefrozen_ave.ln.treat2) #no Treatment*TrialDay effects
-plot(KARR_timefrozen_ave.ln.treat2) #some asymmetry
-
-KARR_centretime50.sqrt.treat2 <- lmer(centretime50.sqrt ~ 
-                                        Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_centretime50.sqrt.treat2) #ConditionFactor effect
-summary(KARR_centretime50.sqrt.treat2) #no Treatment*TrialDay effects
-plot(KARR_centretime50.sqrt.treat2) #no clustering issues
-
-KARR_centretime75.sqrt.treat2 <- lmer(centretime75.sqrt ~ 
-                                        Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_centretime75.sqrt.treat2)  #ConditionFactor effect
-summary(KARR_centretime75.sqrt.treat2) #positive effect of condition factor
-plot(KARR_centretime75.sqrt.treat2) #no clustering issues
-
-KARR_centretime100.sqrt.treat2 <- lmer(centretime100.sqrt ~ 
-                                         Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_centretime100.sqrt.treat2) #ConditionFactor effect
-summary(KARR_centretime100.sqrt.treat2) #no Treatment*TrialDay effects
-plot(KARR_centretime100.sqrt.treat2) #no clustering issues
+#  avespeed_tot:    sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Treatment*TrialDay
+#  avespeed_mob:    nil/Gaussian                   TankID.combo, ArenaID, FishID, TrialRound     InfectionScore + Treatment*TrialDay
+#  propmoving:      sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Treatment*TrialDay
+#  dist.sqrt:       sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Treatment*TrialDay
+#  timfrozen_tot:   invsqrt/Gaussian               TankID.combo, ArenaID, FishID, TrialRound     Treatment*TrialDay
+#  centretime50     sqrt/Gaussian                  TankID.combo, FishID                          ConditionFactor + Treatment*TrialDay
+#  centretime75:    sqrt/Gaussian                  TankID.combo, FishID                          ConditionFactor + Treatment*TrialDay
+#  centretime100:   sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     ConditionFactor + Treatment*TrialDay
+#  centrescore:     sqrt/Gaussian                  TankID.combo, FishID,                         ConditionFactor + Treatment*TrialDay
 
 
 
-### K.2.2 Testing for treatment effects on behavioural variables (reduced models) ----
-
-#  Variable             Random effects                    Fixed effects
-
-#  avespeed_tot.sqrt:   TankID.combo, ArenaID, FishID     Treatment*TrialDay
-#  avespeed_mob:        TankID.combo, ArenaID, FishID     Treatment*TrialDay
-#  aveacceler:          TankID.combo, ArenaID, FishID     Treatment*TrialDay
-#  propmoving:          TankID.combo, ArenaID, FishID     Treatment*TrialDay
-#  dist.sqrt:           TankID.combo, ArenaID, FishID     Treatment*TrialDay
-#  frozenevents:        TankID.combo, ArenaID, FishID     Treatment*TrialDay
-#  timefrozen_tot:      TankID.combo, ArenaID, FishID     Treatment*TrialDay
-#  timefrozen_ave.ln:   TankID.combo, FishID              Treatment*TrialDay
-#  centretime50.sqrt:   TankID.combo, FishID              ConditionFactor + Treatment*TrialDay
-#  centretime75.sqrt:   TankID.combo, FishID              ConditionFactor + Treatment*TrialDay
-#  centretime100.sqrt:  TankID.combo, FishID              ConditionFactor + Treatment*TrialDay
+#avespeed_tot: (mm/s) the average speed of the individual across the full trial period
+KARR_avespeed_tot.sqrt.mod.red <- lmer(sqrt(avespeed_tot) ~ 
+                                     Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) + (1|FishID), data=KARRact.processed)
+Anova(KARR_avespeed_tot.sqrt.mod.red)     #
+summary(KARR_avespeed_tot.sqrt.mod.red)   #TreatmentPITtagged:TrialDayDay 2
+plot(KARR_avespeed_tot.sqrt.mod.red)      #No clustering issues
+r2_nakagawa(KARR_avespeed_tot.sqrt.mod.red)
 
 
+#avespeed_mob: (mm/s) the average speed of the individual excluding periods when it was immobile
+KARR_avespeed_mob.mod.red <- lmer(avespeed_mob ~ 
+                                InfectionScore.C + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) + (1|FishID), data=KARRact.processed)
+Anova(KARR_avespeed_mob.mod.red)          #
+summary(KARR_avespeed_mob.mod.red)        #InfectionScore.C positive effect
+plot(KARR_avespeed_mob.mod.red)           #No clustering issues
+r2_nakagawa(KARR_avespeed_mob.mod.red)
 
-KARR_avespeed_tot.sqrt.mod.treat2 <- lmer(avespeed_tot.sqrt ~ 
-                                            Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_avespeed_tot.sqrt.mod.treat2) #effect of TrialDay, Treatment*TrailDay interaction non-significant effect (marginal)
-summary(KARR_avespeed_tot.sqrt.mod.treat2) #Treatmentpit:TrialDay sig lower than controls
-plot(KARR_avespeed_tot.sqrt.mod.treat2) #no clustering issues
 
-KARR_avespeed_mob.mod.treat2 <- lmer(avespeed_mob ~ 
-                                       Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_avespeed_mob.mod.treat2) #effect of TrialDay, no Treatment*TrailDay interaction effect
-summary(KARR_avespeed_tot.sqrt.mod.treat2) #Treatmentpit:TrialDay sig lower than controls
-plot(KARR_avespeed_mob.mod.treat2) #no clustering issues
+#propmoving: (proportional) proportion of time mobile
+KARR_propmoving.sqrt.red <- lmer(sqrt(propmoving) ~ 
+                               Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) + (1|FishID), data=KARRact.processed)
+Anova(KARR_propmoving.sqrt.red)           #No Sex, TL.C, ConditionFactor.C, InfectionScore.C effects
+summary(KARR_propmoving.sqrt.red)         #All random effects resolve some variance
+plot(KARR_propmoving.sqrt.red)            #No clustering issues
+r2_nakagawa(KARR_propmoving.sqrt.red)
 
-KARR_aveacceler.mod.treat2 <- lmer(aveacceler ~ 
-                                     Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_aveacceler.mod.treat2) #effect of TrialDay, Treatment*TrailDay interaction non-significant effect (marginal)
-summary(KARR_aveacceler.mod.treat2) #Treatmentpit:TrialDay sig lower than controls
-plot(KARR_aveacceler.mod.treat2) #no clustering issues
 
-KARR_propmoving.treat2 <- lmer(propmoving  ~ 
-                                 Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_propmoving.treat2) #effect of TrialDay + Treatment*TrailDay interaction
-summary(KARR_propmoving.treat2) #Treatmentpit:TrialDay sig lower than controls
-plot(KARR_propmoving.treat2) #no clustering issues
-confint(KARR_propmoving.treat2)
+#dist: (mm) total distance travelled during trial
+KARR_dist.sqrt.red <- lmer(sqrt(dist) ~ 
+                         Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) + (1|FishID), data=KARRact.processed)
+Anova(KARR_dist.sqrt.red)                 #No Sex, TL.C, ConditionFactor.C, InfectionScore.C effects
+summary(KARR_dist.sqrt.red)               #All random effects resolve some variance
+plot(KARR_dist.sqrt.red)                  #No clustering issues
+r2_nakagawa(KARR_dist.sqrt.red)
 
-KARR_dist.sqrt.treat2 <- lmer(dist.sqrt ~ 
-                                Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_dist.sqrt.treat2) #effect of TrialDay, , Treatment*TrailDay interaction non-significant effect (marginal)
-summary(KARR_dist.sqrt.treat2) #Treatmentpit:TrialDay sig lower than controls
-plot(KARR_dist.sqrt.treat2) #no clustering issues
 
-KARR_frozenevents.treat2 <- lmer(frozenevents ~ 
-                                   Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_frozenevents.treat2) #no effects
-summary(KARR_frozenevents.treat2) #no effects
-plot(KARR_frozenevents.treat2) #no clustering issues
+#timefrozen_tot: (sec) total time spend frozen 
+KARR_timefrozen_tot.invsqrt.sqrt.red <- lmer(sqrt(1200-timefrozen_tot) ~ 
+                                          Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) +  (1|FishID), data=KARRact.processed)
+Anova(KARR_timefrozen_tot.invsqrt.sqrt.red)                 #No Sex, TL.C, ConditionFactor.C, InfectionScore.C effects
+summary(KARR_timefrozen_tot.invsqrt.sqrt.red)               #All random effects resolve some variance
+plot(KARR_timefrozen_tot.invsqrt.sqrt.red)                  #No clustering issues
+r2_nakagawa(KARR_timefrozen_tot.invsqrt.sqrt.red)
 
-KARR_timefrozen_tot.treat2 <- lmer(timefrozen_tot ~ 
-                                     Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|FishID), data=KARRact.processed)
-Anova(KARR_timefrozen_tot.treat2) #effect of TrialDay, Treatment*TrailDay interaction non-significant effect (marginal)
-summary(KARR_timefrozen_tot.treat2) #Treatmentpit:TrialDay pit group sig higher than cont
-plot(KARR_timefrozen_tot.treat2) #no clustering issues
 
-KARR_timefrozen_ave.ln.treat2 <- lmer(timefrozen_ave.ln ~ 
-                                        Treatment*TrialDay + (1|TankID.combo) + (1|FishID), data=KARRact.processed)
-Anova(KARR_timefrozen_ave.ln.treat2)  #effect of TrialDay, Treatment*TrailDay interaction no significant effect, ConditionFactor non-signficant effect (marginal),
-summary(KARR_timefrozen_ave.ln.treat2) #no Treatment*TrialDay effects
-plot(KARR_timefrozen_ave.ln.treat2) #some asymmetry
+#centretime50: (s) time >5cm away from edge
+KARR_centretime50.sqrt.red <- lmer(sqrt(centretime50) ~ 
+                                 ConditionFactor.C + Treatment*TrialDay + (1|TankID.combo) +  (1|FishID), data=KARRact.processed)
+Anova(KARR_centretime50.sqrt.red)         #ConditionFactor.C effect
+summary(KARR_centretime50.sqrt.red)       #ArenaID, TrialRound V = 0.000
+plot(KARR_centretime50.sqrt.red)          #Some evidence of censoring
+r2_nakagawa(KARR_centretime50.sqrt.red)
 
-KARR_centretime50.sqrt.treat2 <- lmer(centretime50.sqrt ~ 
-                                        ConditionFactor + Treatment*TrialDay + (1|TankID.combo) + (1|FishID), data=KARRact.processed)
-Anova(KARR_centretime50.sqrt.treat2) #ConditionFactor effect
-summary(KARR_centretime50.sqrt.treat2) #no Treatment*TrialDay effects
-plot(KARR_centretime50.sqrt.treat2) #no clustering issues
 
-KARR_centretime75.sqrt.treat2 <- lmer(centretime75.sqrt ~ 
-                                       ConditionFactor + Treatment*TrialDay + (1|TankID.combo) + (1|FishID), data=KARRact.processed)
-Anova(KARR_centretime75.sqrt.treat2)  #ConditionFactor effect
-summary(KARR_centretime75.sqrt.treat2) #positive effect of condition factor
-plot(KARR_centretime75.sqrt.treat2) #no clustering issues
+#centretime75: (s) time >7.5cm away from edge
+KARR_centretime75.sqrt.red <- lmer(sqrt(centretime75) ~ 
+                                        ConditionFactor.C + Treatment*TrialDay + (1|TankID.combo) +  (1|FishID), data=KARRact.processed)
+Anova(KARR_centretime75.sqrt.red)         #ConditionFactor.C effect
+summary(KARR_centretime75.sqrt.red)       #ArenaID V = 0.000, TrialRound V = 1.601e-08
+plot(KARR_centretime75.sqrt.red)          #Evidence of censoring
+r2_nakagawa(KARR_centretime75.sqrt.red)
 
-KARR_centretime100.sqrt.treat2 <- lmer(centretime100.sqrt ~ 
-                                         ConditionFactor + Treatment*TrialDay + (1|TankID.combo) + (1|FishID), data=KARRact.processed)
-Anova(KARR_centretime100.sqrt.treat2) #ConditionFactor effect
-summary(KARR_centretime100.sqrt.treat2) #no Treatment*TrialDay effects
-plot(KARR_centretime100.sqrt.treat2) #no clustering issues
+
+#centretime100: (s) time >10cm away from edge
+KARR_centretime100.sqrt.red <- lmer(sqrt(centretime100) ~ 
+                                         ConditionFactor.C + Treatment*TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) +  (1|FishID), data=KARRact.processed)
+Anova(KARR_centretime100.sqrt.red)        #ConditionFactor effect, Treatment effect  
+summary(KARR_centretime100.sqrt.red)      #All random effects resolve some variance
+plot(KARR_centretime100.sqrt.red)         #Evidence of censoring
+r2_nakagawa(KARR_centretime100.sqrt.red)
+
+
+#centrescore: (NA) calculated from the proportion of time spent in each area
+KARR_centrescore.sqrt.red <- lmer(sqrt(centrescore) ~ 
+                                      ConditionFactor.C + Treatment*TrialDay + (1|TankID.combo) + (1|FishID), data=KARRact.processed)
+Anova(KARR_centrescore.sqrt.red)        #ConditionFactor effect, Treatment effect  
+summary(KARR_centrescore.sqrt.red)      #All random effects resolve some variance
+plot(KARR_centrescore.sqrt.red)         #Evidence of censoring
+r2_nakagawa(KARR_centrescore.sqrt.red)  #performs better than other versions
 
 
 
 ### K.2.3 Testing for consistency of behaviour under treatments ----
 
-#  Variable             Raw Repeatability       Adj Repeatability
-#  avespeed_tot.sqrt:   0.645 [0.483, 0.768]    0.718 [0.594, 0.842]
-#  avespeed_mob:        0.346 [0.105, 0.593]    0.373 [0.144, 0.639]
-#  aveacceler:          0.646 [0.471, 0.792]    0.711 [0.578, 0.836]
-#  propmoving:          0.691 [0.501, 0.801]    0.752 [0.631, 0.849]
-#  dist.sqrt:           0.650 [0.450, 0.768]    0.721 [0.616, 0.846]
-#  frozenevents:        0.586 [0.388, 0.735]    0.593 [0.417, 0.779]
-#  timefrozen_tot:      0.719 [0.449, 0.819]    0.763 [0.633, 0.888]
-#  timefrozen_ave.ln:   0.706 [0.495, 0.823]    0.722 [0.559, 0.866]
-#  centretime50.sqrt:   0.573 [0.356, 0.747]    0.577 [0.390, 0.763]
-#  centretime75.sqrt:   0.535 [0.296, 0.715]    0.537 [0.353, 0.708]
-#  centretime100.sqrt:  0.605 [0.382, 0.712]    0.596 [0.407, 0.755]
+#Calculating:             
+# - Raw Repeatability       
+# - Adj Repeatability, no Treatment effect included      
+# - Adj Repeatability, Treatment effect included
 
 
 #Using simplified approach becuase it had convergence issuse with the full random effects structure
-KARR_avespeed_tot.sqrt.mod.rpt1 <- rpt(avespeed_tot.sqrt ~ (1 | FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_avespeed_tot.sqrt.mod.rpt1 <- rpt(sqrt(avespeed_tot) ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                              nboot = 100, npermut = 0)
 KARR_avespeed_tot.sqrt.mod.rpt1
-KARR_avespeed_tot.sqrt.mod.rpt2 <- rpt(avespeed_tot.sqrt ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_avespeed_tot.sqrt.mod.rpt2 <- rpt(sqrt(avespeed_tot) ~ TrialDay + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                        nboot = 100, npermut = 0)
 KARR_avespeed_tot.sqrt.mod.rpt2
+KARR_avespeed_tot.sqrt.mod.rpt3 <- rpt(sqrt(avespeed_tot) ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+                                       nboot = 100, npermut = 0)
+KARR_avespeed_tot.sqrt.mod.rpt3
+
 
 KARR_avespeed_mob.mod.rpt1 <- rpt(avespeed_mob ~ (1 | FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                        nboot = 100, npermut = 0)
 KARR_avespeed_mob.mod.rpt1
-KARR_avespeed_mob.mod.rpt2 <- rpt(avespeed_mob ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_avespeed_mob.mod.rpt2 <- rpt(avespeed_mob ~ TrialDay + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                        nboot = 100, npermut = 0)
 KARR_avespeed_mob.mod.rpt2
-
-KARR_aveacceler.mod.rpt1 <- rpt(aveacceler ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_avespeed_mob.mod.rpt3 <- rpt(avespeed_mob ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                   nboot = 100, npermut = 0)
-KARR_aveacceler.mod.rpt1
-KARR_aveacceler.mod.rpt2 <- rpt(aveacceler ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
-                                  nboot = 100, npermut = 0)
-KARR_aveacceler.mod.rpt2
+KARR_avespeed_mob.mod.rpt3
 
-KARR_propmoving.mod.rpt1 <- rpt(propmoving ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+
+KARR_propmoving.mod.rpt1 <- rpt(sqrt(propmoving) ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                 nboot = 100, npermut = 0)
 KARR_propmoving.mod.rpt1
-KARR_propmoving.mod.rpt2 <- rpt(propmoving ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_propmoving.mod.rpt2 <- rpt(sqrt(propmoving) ~ TrialDay + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                 nboot = 100, npermut = 0)
 KARR_propmoving.mod.rpt2
+KARR_propmoving.mod.rpt3 <- rpt(sqrt(propmoving) ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+                                nboot = 100, npermut = 0)
+KARR_propmoving.mod.rpt3
 
-KARR_dist.sqrt.mod.rpt1 <- rpt(dist.sqrt ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+
+KARR_dist.sqrt.mod.rpt1 <- rpt(sqrt(dist) ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                 nboot = 100, npermut = 0)
 KARR_dist.sqrt.mod.rpt1
-KARR_dist.sqrt.mod.rpt2 <- rpt(dist.sqrt ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_dist.sqrt.mod.rpt2 <- rpt(sqrt(dist) ~ TrialDay + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                 nboot = 100, npermut = 0)
 KARR_dist.sqrt.mod.rpt2
-
-KARR_frozenevents.mod.rpt1 <- rpt(frozenevents ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_dist.sqrt.mod.rpt3 <- rpt(sqrt(dist) ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                nboot = 100, npermut = 0)
-KARR_frozenevents.mod.rpt1
-KARR_frozenevents.mod.rpt2 <- rpt(frozenevents ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_dist.sqrt.mod.rpt3
+
+KARR_timefrozen_tot.invsqrt.mod.rpt1 <- rpt(sqrt(1200-timefrozen_tot) ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                nboot = 100, npermut = 0)
-KARR_frozenevents.mod.rpt2
+KARR_timefrozen_tot.invsqrt.mod.rpt1
+KARR_timefrozen_tot.invsqrt.mod.rpt2 <- rpt(sqrt(1200-timefrozen_tot) ~ TrialDay + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+                               nboot = 100, npermut = 0)
+KARR_timefrozen_tot.invsqrt.mod.rpt2
+KARR_timefrozen_tot.invsqrt.mod.rpt3 <- rpt(sqrt(1200-timefrozen_tot) ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+                               nboot = 100, npermut = 0)
+KARR_timefrozen_tot.invsqrt.mod.rpt3
 
-KARR_timefrozen_tot.mod.rpt1 <- rpt(timefrozen_tot ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
-                                  nboot = 100, npermut = 0)
-KARR_timefrozen_tot.mod.rpt1
-KARR_timefrozen_tot.mod.rpt2 <- rpt(timefrozen_tot ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
-                                  nboot = 100, npermut = 0)
-KARR_timefrozen_tot.mod.rpt2
-
-KARR_timefrozen_ave.ln.mod.rpt1 <- rpt(timefrozen_ave.ln ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
-                                    nboot = 100, npermut = 0)
-KARR_timefrozen_ave.ln.mod.rpt1
-KARR_timefrozen_ave.ln.mod.rpt2 <- rpt(timefrozen_ave.ln ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
-                                    nboot = 100, npermut = 0)
-KARR_timefrozen_ave.ln.mod.rpt2
-
-KARR_centretime50.sqrt.mod.rpt1 <- rpt(centretime50.sqrt ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_centretime50.sqrt.mod.rpt1 <- rpt(sqrt(centretime50) ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                        nboot = 100, npermut = 0)
 KARR_centretime50.sqrt.mod.rpt1
-KARR_centretime50.sqrt.mod.rpt2 <- rpt(centretime50.sqrt ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_centretime50.sqrt.mod.rpt2 <- rpt(sqrt(centretime50) ~ TrialDay + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                        nboot = 100, npermut = 0)
 KARR_centretime50.sqrt.mod.rpt2
+KARR_centretime50.sqrt.mod.rpt3 <- rpt(sqrt(centretime50) ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+                                       nboot = 100, npermut = 0)
+KARR_centretime50.sqrt.mod.rpt3
 
-KARR_centretime75.sqrt.mod.rpt1 <- rpt(centretime75.sqrt ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+
+KARR_centretime75.sqrt.mod.rpt1 <- rpt(sqrt(centretime75) ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                        nboot = 100, npermut = 0)
 KARR_centretime75.sqrt.mod.rpt1
-KARR_centretime75.sqrt.mod.rpt2 <- rpt(centretime75.sqrt ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_centretime75.sqrt.mod.rpt2 <- rpt(sqrt(centretime75) ~ TrialDay + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                        nboot = 100, npermut = 0)
 KARR_centretime75.sqrt.mod.rpt2
+KARR_centretime75.sqrt.mod.rpt3 <- rpt(sqrt(centretime75) ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+                                       nboot = 100, npermut = 0)
+KARR_centretime75.sqrt.mod.rpt3
 
-KARR_centretime100.sqrt.mod.rpt1 <- rpt(centretime100.sqrt ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+
+KARR_centretime100.sqrt.mod.rpt1 <- rpt(sqrt(centretime100) ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                        nboot = 100, npermut = 0)
 KARR_centretime100.sqrt.mod.rpt1
-KARR_centretime100.sqrt.mod.rpt2 <- rpt(centretime100.sqrt ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_centretime100.sqrt.mod.rpt2 <- rpt(sqrt(centretime100) ~ TrialDay + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                        nboot = 100, npermut = 0)
 KARR_centretime100.sqrt.mod.rpt2
+KARR_centretime100.sqrt.mod.rpt3 <- rpt(sqrt(centretime100) ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+                                       nboot = 100, npermut = 0)
+KARR_centretime100.sqrt.mod.rpt3
+
+
+KARR_centrescore.sqrt.mod.rpt1 <- rpt(sqrt(centrescore) ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+                                        nboot = 100, npermut = 0)
+KARR_centrescore.sqrt.mod.rpt1
+KARR_centrescore.sqrt.mod.rpt2 <- rpt(sqrt(centrescore) ~ TrialDay + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+                                        nboot = 100, npermut = 0)
+KARR_centrescore.sqrt.mod.rpt2
+KARR_centrescore.sqrt.mod.rpt3 <- rpt(sqrt(centrescore) ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+                                        nboot = 100, npermut = 0)
+KARR_centrescore.sqrt.mod.rpt3
+
 
 
 
