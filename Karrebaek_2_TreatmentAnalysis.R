@@ -260,8 +260,14 @@ plot(KARR_centrescore.sqrt.red)         #Evidence of censoring
 r2_nakagawa(KARR_centrescore.sqrt.red)  #performs better than other versions
 
 
+save(KARR_dist.sqrt.red, file = "./Output_Karrebaek/KARR_dist.sqrt.red.RData")
+save(KARR_propmoving.sqrt.red, file = "./Output_Karrebaek/KARR_propmoving.sqrt.red.RData")
+save(KARR_avespeed_mob.mod.red, file = "./Output_Karrebaek/KARR_avespeed_mob.mod.red.RData")
+save(KARR_centrescore.sqrt.red, file = "./Output_Karrebaek/KARR_centrescore.sqrt.red.RData")
 
-### K.2.3 Testing for consistency of behaviour under treatments ----
+
+
+### K.2.2 Testing for consistency of behaviour under treatments ----
 
 #Calculating:             
 # - Raw Repeatability       
@@ -269,14 +275,14 @@ r2_nakagawa(KARR_centrescore.sqrt.red)  #performs better than other versions
 # - Adj Repeatability, Treatment effect included
 
 
-#Using simplified approach becuase it had convergence issuse with the full random effects structure
+#Using using same model parameters as above
 KARR_avespeed_tot.sqrt.mod.rpt1 <- rpt(sqrt(avespeed_tot) ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                              nboot = 100, npermut = 0)
 KARR_avespeed_tot.sqrt.mod.rpt1
-KARR_avespeed_tot.sqrt.mod.rpt2 <- rpt(sqrt(avespeed_tot) ~ TrialDay + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_avespeed_tot.sqrt.mod.rpt2 <- rpt(sqrt(avespeed_tot) ~ TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                        nboot = 100, npermut = 0)
 KARR_avespeed_tot.sqrt.mod.rpt2
-KARR_avespeed_tot.sqrt.mod.rpt3 <- rpt(sqrt(avespeed_tot) ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_avespeed_tot.sqrt.mod.rpt3 <- rpt(sqrt(avespeed_tot) ~ TrialDay*Treatment + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                        nboot = 100, npermut = 0)
 KARR_avespeed_tot.sqrt.mod.rpt3
 
@@ -284,34 +290,35 @@ KARR_avespeed_tot.sqrt.mod.rpt3
 KARR_avespeed_mob.mod.rpt1 <- rpt(avespeed_mob ~ (1 | FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                        nboot = 100, npermut = 0)
 KARR_avespeed_mob.mod.rpt1
-KARR_avespeed_mob.mod.rpt2 <- rpt(avespeed_mob ~ TrialDay + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_avespeed_mob.mod.rpt2 <- rpt(avespeed_mob ~ TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                        nboot = 100, npermut = 0)
 KARR_avespeed_mob.mod.rpt2
-KARR_avespeed_mob.mod.rpt3 <- rpt(avespeed_mob ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_avespeed_mob.mod.rpt3 <- rpt(avespeed_mob ~ TrialDay*Treatment + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                   nboot = 100, npermut = 0)
 KARR_avespeed_mob.mod.rpt3
 
 
-KARR_propmoving.mod.rpt1 <- rpt(sqrt(propmoving) ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_propmoving.sqrt.mod.rpt1 <- rpt(sqrt(propmoving) ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                 nboot = 100, npermut = 0)
-KARR_propmoving.mod.rpt1
-KARR_propmoving.mod.rpt2 <- rpt(sqrt(propmoving) ~ TrialDay + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_propmoving.sqrt.mod.rpt1
+KARR_propmoving.sqrt.mod.rpt2 <- rpt(sqrt(propmoving) ~ TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                 nboot = 100, npermut = 0)
-KARR_propmoving.mod.rpt2
-KARR_propmoving.mod.rpt3 <- rpt(sqrt(propmoving) ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_propmoving.sqrt.mod.rpt2
+KARR_propmoving.sqrt.mod.rpt3 <- rpt(sqrt(propmoving) ~ TrialDay*Treatment + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                 nboot = 100, npermut = 0)
-KARR_propmoving.mod.rpt3
+KARR_propmoving.sqrt.mod.rpt3
 
 
 KARR_dist.sqrt.mod.rpt1 <- rpt(sqrt(dist) ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                 nboot = 100, npermut = 0)
 KARR_dist.sqrt.mod.rpt1
-KARR_dist.sqrt.mod.rpt2 <- rpt(sqrt(dist) ~ TrialDay + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_dist.sqrt.mod.rpt2 <- rpt(sqrt(dist) ~ TrialDay + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                 nboot = 100, npermut = 0)
 KARR_dist.sqrt.mod.rpt2
-KARR_dist.sqrt.mod.rpt3 <- rpt(sqrt(dist) ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_dist.sqrt.mod.rpt3 <- rpt(sqrt(dist) ~ TrialDay*Treatment + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound) + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                nboot = 100, npermut = 0)
 KARR_dist.sqrt.mod.rpt3
+
 
 KARR_timefrozen_tot.invsqrt.mod.rpt1 <- rpt(sqrt(1200-timefrozen_tot) ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                nboot = 100, npermut = 0)
@@ -322,6 +329,7 @@ KARR_timefrozen_tot.invsqrt.mod.rpt2
 KARR_timefrozen_tot.invsqrt.mod.rpt3 <- rpt(sqrt(1200-timefrozen_tot) ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                nboot = 100, npermut = 0)
 KARR_timefrozen_tot.invsqrt.mod.rpt3
+
 
 KARR_centretime50.sqrt.mod.rpt1 <- rpt(sqrt(centretime50) ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                        nboot = 100, npermut = 0)
@@ -359,38 +367,58 @@ KARR_centretime100.sqrt.mod.rpt3
 KARR_centrescore.sqrt.mod.rpt1 <- rpt(sqrt(centrescore) ~ (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                         nboot = 100, npermut = 0)
 KARR_centrescore.sqrt.mod.rpt1
-KARR_centrescore.sqrt.mod.rpt2 <- rpt(sqrt(centrescore) ~ TrialDay + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_centrescore.sqrt.mod.rpt2 <- rpt(sqrt(centrescore) ~ TrialDay + (1|TankID.combo) + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                         nboot = 100, npermut = 0)
 KARR_centrescore.sqrt.mod.rpt2
-KARR_centrescore.sqrt.mod.rpt3 <- rpt(sqrt(centrescore) ~ TrialDay*Treatment + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
+KARR_centrescore.sqrt.mod.rpt3 <- rpt(sqrt(centrescore) ~ TrialDay*Treatment + (1|TankID.combo) + (1|FishID), grname = "FishID", data = KARRact.processed, datatype = "Gaussian", 
                                         nboot = 100, npermut = 0)
 KARR_centrescore.sqrt.mod.rpt3
 
 
+save(KARR_dist.sqrt.mod.rpt1, file = "./Output_Karrebaek/KARR_dist.sqrt.mod.rpt1.RData")
+save(KARR_dist.sqrt.mod.rpt2, file = "./Output_Karrebaek/KARR_dist.sqrt.mod.rpt2.RData")
+save(KARR_dist.sqrt.mod.rpt3, file = "./Output_Karrebaek/KARR_dist.sqrt.mod.rpt3.RData")
+
+save(KARR_propmoving.sqrt.mod.rpt1, file = "./Output_Karrebaek/KARR_propmoving.sqrt.mod.rpt1.RData")
+save(KARR_propmoving.sqrt.mod.rpt2, file = "./Output_Karrebaek/KARR_propmoving.sqrt.mod.rpt2.RData")
+save(KARR_propmoving.sqrt.mod.rpt3, file = "./Output_Karrebaek/KARR_propmoving.sqrt.mod.rpt3.RData")
+
+save(KARR_avespeed_mob.mod.rpt1, file = "./Output_Karrebaek/KARR_avespeed_mob.mod.rpt1.RData")
+save(KARR_avespeed_mob.mod.rpt2, file = "./Output_Karrebaek/KARR_avespeed_mob.mod.rpt2.RData")
+save(KARR_avespeed_mob.mod.rpt3, file = "./Output_Karrebaek/KARR_avespeed_mob.mod.rpt3.RData")
+
+save(KARR_centrescore.sqrt.mod.rpt1, file = "./Output_Karrebaek/KARR_centrescore.sqrt.mod.rpt1.RData")
+save(KARR_centrescore.sqrt.mod.rpt2, file = "./Output_Karrebaek/KARR_centrescore.sqrt.mod.rpt2.RData")
+save(KARR_centrescore.sqrt.mod.rpt3, file = "./Output_Karrebaek/KARR_centrescore.sqrt.mod.rpt3.RData")
 
 
-### K.2.4 Testing for treatment effects on survival ----
+### K.2.3 Testing for treatment effects on survival ----
 #Fish monitored for survival over 10 weeks, from 10-11-2020 to 19-01-2020
 #   - When fish were found dead, time to death was set as the midpoint between the date found and the previous check date
 #   - when fish euthanised (e.g. due to severe lethargy or wounds), time to death was set at the time of euthanisation
 KARR_surv <- read.csv('~/trophicpersonalities_A/Data_Karrebaek/KARRfish_survival19012021.csv')
 
+KARR_surv$Treatment[KARR_surv$Treatment == 'cont'] <- "Control"
+KARR_surv$Treatment[KARR_surv$Treatment == 'finclip'] <- "PIT+clip"
+KARR_surv$Treatment[KARR_surv$Treatment == 'pit'] <- "PITtagged"
+KARR_surv$Treatment <- ordered(KARR_surv$Treatment, levels = c("Control","PITtagged","PIT+clip"))
 
 # Creating survfit object, using the Kaplan-Meier method (non-parametric approach, to create step function)
 Surv(KARR_surv$SurvivalTime, KARR_surv$Status)[1:48]
 Karr_surv_fn <- survfit(Surv(SurvivalTime, Status) ~ Treatment, data = KARR_surv)
 names(Karr_surv_fn)
-
+save(Karr_surv_fn, file = "./Output_Karrebaek/Karr_surv_fn.RData")
 
 # Plotting survival (appears that CIs are not possible, likely due to >50% death, so no median is calculated)
 Karr_surv_plot <- ggsurvplot(Karr_surv_fn, conf.int = FALSE, 
                              legend = "right",
-                             palette = c('#45B39D', '#9B59B6', '#EB984E'),
+                             palette = c("black","seashell3","red"),
                              xlab = "Days", 
                              ylab = "Overall survival probability")
+Karr_surv_plot <- Karr_surv_plot$plot + geom_vline(xintercept = 70, linetype = "longdash")
 Karr_surv_plot
 
-ggsave(file = "~/trophicpersonalities_A/Data_Karrebaek/Fig_surv.jpg", width = 15, height = 9, units = "cm", print(Karr_surv_plot), dpi = 600)
+ggsave(file = "~/trophicpersonalities_A/Output_Karrebaek/Fig_surv.jpg", width = 15, height = 9, units = "cm", print(Karr_surv_plot), dpi = 600)
 
 
 # Testing for treatment effects
@@ -403,35 +431,28 @@ Karr_surv_treteff #No significant effect of treatment
 
 
 
-### K.2.5 Testing for treatment effects on growth ----
+### K.2.4 Testing for treatment effects on growth ----
 KARRfish_initial <- read.csv('~/trophicpersonalities_A/Data_Karrebaek/KARRfish_10112020.csv')
 KARRfish_final <- read.csv('~/trophicpersonalities_A/Data_Karrebaek/KARRfish_19012021.csv')
 KARRfish_final <- select(KARRfish_final, -c(Treatment, TankID, PITID))
 
+#Calculating initial and final condition factors
+KARRfish_initial$ConditionFactor <- 100* (KARRfish_initial$Weight / (KARRfish_initial$TL)^3)
+KARRfish_final$ConditionFactor <- 100* (KARRfish_final$Weight / (KARRfish_final$TL)^3)
 
+#Merging databases
 KARRgrowth <- merge(KARRfish_initial, KARRfish_final, by = 'FishID', all.x = FALSE)
 KARRgrowth <- select(KARRgrowth, -c(RANDBETWEEN.0.1000000.))
 labels(KARRgrowth)
 
-#Response variables
-# Absolute growth in total length (dTL)
-# Proportional growth in total length (pTL)
-# Absolute growth in standard length (dSL)
-# Proportional growth in standard length (pTL)
-# Absolute growth in weight (dWeight)
-# Proportional growth in weight (pWeight)
+#Formatting variables
+KARRgrowth$Treatment[KARRgrowth$Treatment == 'cont'] <- "Control"
+KARRgrowth$Treatment[KARRgrowth$Treatment == 'finclip'] <- "PIT+clip"
+KARRgrowth$Treatment[KARRgrowth$Treatment == 'pit'] <- "PITtagged"
+KARRgrowth$Treatment <- ordered(KARRgrowth$Treatment, levels = c("Control","PITtagged","PIT+clip"))
 
-#Creating variables
-KARRgrowth$dTL <- KARRgrowth$TL - KARRgrowth$TL_initial
-KARRgrowth$pTL <- KARRgrowth$dTL/KARRgrowth$TL_initial
-KARRgrowth$dSL <- KARRgrowth$SL - KARRgrowth$SL_initial
-KARRgrowth$pSL <- KARRgrowth$dSL/KARRgrowth$SL_initial
-KARRgrowth$dWeight <- KARRgrowth$Weight - KARRgrowth$Weight_initial
-KARRgrowth$pWeight <- KARRgrowth$dWeight/KARRgrowth$Weight_initial
-
-#Including holding tank as a random effect
-KARRgrowth$TankID.combo <- KARRgrowth$TankID
 #Running Tank ID as 2 categories, D and E, as these were connected
+KARRgrowth$TankID.combo <- KARRgrowth$TankID
 KARRgrowth$TankID.combo[KARRgrowth$TankID.combo == "D_4"] <- "D"
 KARRgrowth$TankID.combo[KARRgrowth$TankID.combo == "D_3"] <- "D"
 KARRgrowth$TankID.combo[KARRgrowth$TankID.combo == "D_2"] <- "D"
@@ -442,66 +463,53 @@ KARRgrowth$TankID.combo[KARRgrowth$TankID.combo == "E_2"] <- "E"
 KARRgrowth$TankID.combo[KARRgrowth$TankID.combo == "E_1"] <- "E"
 
 
+#Response variables
+# Change in totaly length
+# Change in standard length (dSL)
+# Change in weight (dWeight)
 
-
-#Using TankID as a random effect, Treatment as fixed effect
-KARR_dTL.treat1 <- lmer(dTL ~ Treatment + (1|TankID.combo), data=KARRgrowth)
-summary(KARR_dTL.treat1) #negative effect for fin clip group, as expected
-Anova(KARR_dTL.treat1)
-
-KARR_pTL.treat1 <- lmer(pTL ~ Treatment + (1|TankID.combo), data=KARRgrowth)
-summary(KARR_pTL.treat1) #non.sig negative effect for fin clip group, as expected
-Anova(KARR_pTL.treat1)
-
-
-
-KARR_dSL.treat1 <- lmer(dSL ~ Treatment + (1|TankID.combo), data=KARRgrowth)
-summary(KARR_dSL.treat1) #no negative effect
-Anova(KARR_dSL.treat1)
-
-KARR_pSL.treat1 <- lmer(pSL ~ Treatment + (1|TankID.combo), data=KARRgrowth)
-summary(KARR_pSL.treat1) #non.sig negative effect for fin clip group, as expected
-Anova(KARR_pSL.treat1)
-
-
-
-KARR_dSL.dWeight <- lmer(dWeight ~ Treatment + (1|TankID.combo), data=KARRgrowth)
-summary(KARR_dSL.dWeight) #negative effect for fin clip group, as expected
-Anova(KARR_dSL.dWeight)
-
-KARR_pWeight.treat1 <- lmer(pWeight ~ Treatment + (1|TankID.combo), data=KARRgrowth)
-summary(KARR_pWeight.treat1) #non.sig negative effect for fin clip group, as expected
-Anova(KARR_pWeight.treat1)
-
+#Creating variables
+KARRgrowth$dTL <- KARRgrowth$TL.y - KARRgrowth$TL.x
+KARRgrowth$dSL <- KARRgrowth$SL.y - KARRgrowth$SL.x
+KARRgrowth$dWeight <- KARRgrowth$Weight.y - KARRgrowth$Weight.x
+KARRgrowth$dConditionFactor <- KARRgrowth$ConditionFactor.y - KARRgrowth$ConditionFactor.x
 
 
 #Using TankID as a random effect, Sex + InfectionScore + Treatment as fixed effects
-KARR_dTL.treat1 <- lmer(dTL ~ Sex + InfectionScore + Treatment + (1|TankID.combo), data=KARRgrowth)
-summary(KARR_dTL.treat1) #negative effect for fin clip group, as expected
-Anova(KARR_dTL.treat1)
+KARR_treat.dTL <- lmer(dTL ~ Sex + InfectionScore + Treatment + (1|TankID.combo), data=KARRgrowth)
+Anova(KARR_treat.dTL) #Sex effect (positive effect for males)
+summary(KARR_treat.dTL) #Substantial prop of variance associated with TankID
+plot(KARR_treat.dTL) #no patterns
+r2_nakagawa(KARR_treat.dTL) #Conditional R2: 0.485, Marginal R2: 0.212
 
-KARR_pTL.treat1 <- lmer(pTL ~ Sex + InfectionScore + Treatment + (1|TankID.combo), data=KARRgrowth)
-summary(KARR_pTL.treat1) #non.sig negative effect for fin clip group, as expected
-Anova(KARR_pTL.treat1)
+KARR_treat.dSL <- lmer(dSL ~ Sex + InfectionScore + Treatment + (1|TankID.combo), data=KARRgrowth)
+Anova(KARR_treat.dSL) #No fixed effects
+summary(KARR_treat.dSL) #Some variance associated with TankID
+plot(KARR_treat.dSL) #no patterns
+r2_nakagawa(KARR_treat.dSL) #  Conditional R2: 0.244, Marginal R2: 0.135
+
+KARR_treat.dWeight <- lmer(dWeight ~ Sex + InfectionScore + Treatment + (1|TankID.combo), data=KARRgrowth)
+Anova(KARR_treat.dWeight) #Sex effect (positive effect for males)
+summary(KARR_treat.dWeight) #Very little variance associated with TankID
+plot(KARR_treat.dWeight) #no patterns
+r2_nakagawa(KARR_treat.dWeight) # Conditional R2: 0.166, Marginal R2: 0.165
+
+KARR_treat.dConditionFactor <- lmer(dConditionFactor ~ Sex + InfectionScore + Treatment + (1|TankID.combo), data=KARRgrowth)
+Anova(KARR_treat.dConditionFactor) #No fixed effects
+summary(KARR_treat.dConditionFactor) #Substantial prop of variance associated with TankID
+Anova(KARR_treat.dConditionFactor)#no patterns
+r2_nakagawa(KARR_treat.dConditionFactor) #Conditional R2: 0.408, Marginal R2: 0.073
+
+save(KARR_treat.dTL, file = "./Output_Karrebaek/KARR_treat.dTL.RData")
+save(KARR_treat.dSL, file = "./Output_Karrebaek/KARR_treat.dSL.RData")
+save(KARR_treat.dWeight, file = "./Output_Karrebaek/KARR_treat.dWeight.RData")
+save(KARR_treat.dConditionFactor, file = "./Output_Karrebaek/KARR_treat.dConditionFactor.RData")
 
 
+#Saving growth data
+labels(KARRgrowth)
+KARRgrowth <- select(KARRgrowth, -c(Notes.x, Notes.y, Weight.x, Weight.y, TL.x, TL.y, ConditionFactor.x, ConditionFactor.y))
+write.csv(KARRgrowth, "~/trophicpersonalities_A/Data_Karrebaek/KARRgrowth.csv")
 
-KARR_dSL.treat1 <- lmer(dSL ~ Sex + InfectionScore + Treatment + (1|TankID.combo), data=KARRgrowth)
-summary(KARR_dSL.treat1) #no negative effect
-Anova(KARR_dSL.treat1)
-
-KARR_pSL.treat1 <- lmer(pSL ~ Sex + InfectionScore + Treatment + (1|TankID.combo), data=KARRgrowth)
-summary(KARR_pSL.treat1) #non.sig negative effect for fin clip group, as expected
-Anova(KARR_pSL.treat1)
-
-
-
-KARR_dSL.dWeight <- lmer(dWeight ~ Sex + InfectionScore + Treatment + (1|TankID.combo), data=KARRgrowth)
-summary(KARR_dSL.dWeight) #negative effect for fin clip group, as expected
-Anova(KARR_dSL.dWeight)
-
-KARR_pWeight.treat1 <- lmer(pWeight ~ Sex + InfectionScore + Treatment + (1|TankID.combo), data=KARRgrowth)
-summary(KARR_pWeight.treat1) #non.sig negative effect for fin clip group, as expected
-Anova(KARR_pWeight.treat1)
 
 

@@ -165,15 +165,15 @@ KARRact$Treatment[KARRact$Treatment == 'clip'] <- "PIT+clip"
 KARRact$Treatment[KARRact$Treatment == 'pit'] <- "PITtagged"
 KARRact$Treatment <- ordered(KARRact$Treatment, levels = c("Control","PITtagged","PIT+clip"))
 
-ggplot(KARRact, aes(x = TrialDay, y = avespeed_tot, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
-ggplot(KARRact, aes(x = TrialDay, y = avespeed_mob, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
-ggplot(KARRact, aes(x = TrialDay, y = propmoving, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
-ggplot(KARRact, aes(x = TrialDay, y = dist, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
-ggplot(KARRact, aes(x = TrialDay, y = timefrozen_tot, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
-ggplot(KARRact, aes(x = TrialDay, y = centretime50, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
-ggplot(KARRact, aes(x = TrialDay, y = centretime75, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
-ggplot(KARRact, aes(x = TrialDay, y = centretime100, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
-ggplot(KARRact, aes(x = TrialDay, y = centrescore, fill=factor(Treatment))) + geom_boxplot() + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = dist, fill=factor(Treatment))) + geom_boxplot() + scale_fill_manual(values=c("white","seashell2","red")) + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = propmoving, fill=factor(Treatment))) + geom_boxplot() + scale_fill_manual(values=c("white","seashell2","red")) + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = avespeed_mob, fill=factor(Treatment))) + geom_boxplot() + scale_fill_manual(values=c("white","seashell2","red")) + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = centrescore, fill=factor(Treatment))) + geom_boxplot() + scale_fill_manual(values=c("white","seashell2","red")) + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = avespeed_tot, fill=factor(Treatment))) + geom_boxplot() + scale_fill_manual(values=c("white","seashell2","red")) + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = timefrozen_tot, fill=factor(Treatment))) + geom_boxplot() + scale_fill_manual(values=c("white","seashell2","red")) + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = centretime50, fill=factor(Treatment))) + geom_boxplot() + scale_fill_manual(values=c("white","seashell2","red")) + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = centretime75, fill=factor(Treatment))) + geom_boxplot() + scale_fill_manual(values=c("white","seashell2","red")) + simpletheme 
+ggplot(KARRact, aes(x = TrialDay, y = centretime100, fill=factor(Treatment))) + geom_boxplot() + scale_fill_manual(values=c("white","seashell2","red")) + simpletheme 
 #Notable reduction in activity, and potential increase in center time in day 10
 
 
@@ -249,76 +249,3 @@ write.csv(KARRact, "~/trophicpersonalities_A/Data_Karrebaek/KARR_ACTdat_processe
 
 
 
-
-## OBSOLETE Creating alternate response databases ----
-#KARRact0 <- subset(KARRact, TrialDay == 'Day 0')
-#KARRact2 <- subset(KARRact, TrialDay == 'Day 2')
-#KARRact10 <- subset(KARRact, TrialDay == 'Day 10')
-#labels(KARRact)
-#
-#KARRact2 <- select(KARRact2, -c(TankID.combo, ConditionFactor, TrialDay, TrialRound, ArenaID, TankID, PITID, Treatment, 
-#                                Sex, Notes, Date, TimeLoaded, TrialType, TL,  SL, Weight, InfectionScore))
-#KARRact2<- rename(KARRact2, UniqueID_Day2 = UniqueID)
-#
-#KARRact10 <- select(KARRact10, -c(TankID.combo, ConditionFactor, TrialDay, TrialRound, ArenaID, TankID, PITID, Treatment, 
-#                                  Sex, Notes, Date, TimeLoaded, TrialType, TL,  SL, Weight, InfectionScore))
-#KARRact10<- rename(KARRact10, UniqueID_Day10 = UniqueID)
-#
-#
-##Using the ratio of post-trial behaviour to pre-trial behaviour
-#KARRact.RESP <- merge(KARRact0, KARRact2, by = 'FishID', all.x = TRUE)
-#labels(KARRact.RESP)
-#KARRact.RESP$avespeed_tot.2 <- KARRact.RESP$avespeed_tot.y/KARRact.RESP$avespeed_tot.x
-#KARRact.RESP$avespeed_mob.2 <- KARRact.RESP$avespeed_mob.y/KARRact.RESP$avespeed_mob.x
-#KARRact.RESP$propmoving.2 <- KARRact.RESP$propmoving.y/KARRact.RESP$propmoving.x
-#KARRact.RESP$dist.2 <- KARRact.RESP$dist.y/KARRact.RESP$dist.x
-#KARRact.RESP$centretime50.2 <- KARRact.RESP$centretime50.y/KARRact.RESP$centretime50.x
-#KARRact.RESP$centretime75.2 <- KARRact.RESP$centretime75.y/KARRact.RESP$centretime75.x
-#KARRact.RESP$centretime100.2 <- KARRact.RESP$centretime100.y/KARRact.RESP$centretime100.x
-#
-#
-#KARRact.RESP <- merge(KARRact.RESP, KARRact10, by = 'FishID', all.x = TRUE)
-#labels(KARRact.RESP)
-#KARRact.RESP$avespeed_tot.10 <- KARRact.RESP$avespeed_tot/KARRact.RESP$avespeed_tot.x
-#KARRact.RESP$avespeed_mob.10 <- KARRact.RESP$avespeed_mob/KARRact.RESP$avespeed_mob.x
-#KARRact.RESP$propmoving.10 <- KARRact.RESP$propmoving/KARRact.RESP$propmoving.x
-#KARRact.RESP$dist.10 <- KARRact.RESP$dist/KARRact.RESP$dist.x
-#KARRact.RESP$centretime50.10 <- KARRact.RESP$centretime50/KARRact.RESP$centretime50.x
-#KARRact.RESP$centretime75.10 <- KARRact.RESP$centretime75/KARRact.RESP$centretime75.x
-#KARRact.RESP$centretime100.10 <- KARRact.RESP$centretime100/KARRact.RESP$centretime100.x
-#
-#
-#KARRact.RESP <- select(KARRact.RESP, -c(avespeed_tot, avespeed_mob, propmoving,  dist, centretime50, centretime75, 
-#                                        centretime100, centretime100.y, avespeed_tot.y, avespeed_mob.y, propmoving.y, 
-#                                        dist.y, centretime50.y, centretime75.y, avespeed_tot.x,
-#                                        avespeed_mob.x, propmoving.x, dist.x, centretime50.x, centretime75.x, 
-#                                        centretime100.x))
-#KARRact.RESP<- rename(KARRact.RESP, UniqueID_Day0 = UniqueID)
-#labels(KARRact.RESP)
-#
-##reordering some variables
-#KARRact.RESP <- KARRact.RESP %>% relocate(UniqueID_Day2, .after = UniqueID_Day0)
-#KARRact.RESP <- KARRact.RESP %>% relocate(UniqueID_Day10, .after = UniqueID_Day2)
-#KARRact.RESP <- KARRact.RESP %>% relocate(ConditionFactor, .after = Weight)
-#KARRact.RESP <- KARRact.RESP %>% relocate(TankID.combo, .after = TankID)
-#
-#
-#
-##Visualising responses across treatment groups
-#ggplot(KARRact.RESP, aes(x = Treatment, y = log(avespeed_tot.2))) + geom_boxplot(fill = 'deeppink') + simpletheme
-#ggplot(KARRact.RESP, aes(x = Treatment, y = log(avespeed_mob.2))) + geom_boxplot(fill = 'deeppink') + simpletheme
-#ggplot(KARRact.RESP, aes(x = Treatment, y = log(propmoving.2))) + geom_boxplot(fill = 'deeppink') + simpletheme
-#ggplot(KARRact.RESP, aes(x = Treatment, y = log(dist.2))) + geom_boxplot(fill = 'deeppink') + simpletheme
-#ggplot(KARRact.RESP, aes(x = Treatment, y = log(centretime50.2))) + geom_boxplot(fill = 'deeppink') + simpletheme
-#ggplot(KARRact.RESP, aes(x = Treatment, y = log(centretime75.2))) + geom_boxplot(fill = 'deeppink') + simpletheme
-#ggplot(KARRact.RESP, aes(x = Treatment, y = log(centretime100.2))) + geom_boxplot(fill = 'deeppink') + simpletheme
-#
-#ggplot(KARRact.RESP, aes(x = Treatment, y = log(avespeed_tot.10))) + geom_boxplot(fill = 'deeppink') + simpletheme
-#ggplot(KARRact.RESP, aes(x = Treatment, y = log(avespeed_mob.10))) + geom_boxplot(fill = 'deeppink') + simpletheme
-#ggplot(KARRact.RESP, aes(x = Treatment, y = log(propmoving.10))) + geom_boxplot(fill = 'deeppink') + simpletheme
-#ggplot(KARRact.RESP, aes(x = Treatment, y = log(dist.10))) + geom_boxplot(fill = 'deeppink') + simpletheme
-#ggplot(KARRact.RESP, aes(x = Treatment, y = log(centretime50.10))) + geom_boxplot(fill = 'deeppink') + simpletheme
-#ggplot(KARRact.RESP, aes(x = Treatment, y = log(centretime75.10))) + geom_boxplot(fill = 'deeppink') + simpletheme
-#ggplot(KARRact.RESP, aes(x = Treatment, y = log(centretime100.10))) + geom_boxplot(fill = 'deeppink') + simpletheme
-#
-#
