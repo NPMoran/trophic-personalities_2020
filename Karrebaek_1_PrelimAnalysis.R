@@ -216,9 +216,9 @@ n_distinct(subset(KARRact, Sex == 'M')$FishID) #n = 32
 
 # - TL
 summary(KARRact$TL) #range 10.1 - 18.6 cm
-#cor.test(KARRact.processed$TL, KARRact.processed$SL)
+#cor.test(KARRact$TL, KARRact$SL)
 #TL and SL strongly correlated, so TL used here
-#cor.test(KARRact.processed$TL, KARRact.processed$Weight)
+#cor.test(KARRact$TL, KARRact$Weight)
 #TL and SL also strongly correlated, so only TL used here
 
 # - Condition factor
@@ -245,4 +245,8 @@ KARRact <- KARRact %>% relocate(Sex, .after = Treatment)
 
 #Writing dataset
 write.csv(KARRact, "~/trophicpersonalities_A/Data_Karrebaek/KARR_ACTdat_processed.csv")
+
+
+#### #### 
+
 

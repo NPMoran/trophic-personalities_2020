@@ -79,10 +79,10 @@ ggqqplot(sqrt(KARRact$centrescore)) #root transformation is improved
 #Full Models- including all random and fixed effects
 
 #  Variable        Transformation/Distribution    Random effects                                Fixed effects
-#  dist.sqrt       sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
-#  propmoving      sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
-#  avespeed_mob    nil/Gaussian                   TankID.combo, ArenaID, FishID, TrialRound     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
-#  centrescore     sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Sex + TL + ConditionFactor + InfectionScore + Treatment*TrialDay
+#  dist.sqrt       sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Sex + TL.C + ConditionFactor.C + InfectionScore.C + Treatment*TrialDay
+#  propmoving      sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Sex + TL.C + ConditionFactor.C + InfectionScore.C + Treatment*TrialDay
+#  avespeed_mob    nil/Gaussian                   TankID.combo, ArenaID, FishID, TrialRound     Sex + TL.C + ConditionFactor.C + InfectionScore.C + Treatment*TrialDay
+#  centrescore     sqrt/Gaussian                  TankID.combo, ArenaID, FishID, TrialRound     Sex + TL.C + ConditionFactor.C + InfectionScore.C + Treatment*TrialDay
 
 
 #dist: (mm) total distance travelled during trial
@@ -525,5 +525,9 @@ KARRgrowth$Treatment[KARRgrowth$Treatment == 3] <- 'PIT+clip'
 KARRgrowth <- select(KARRgrowth, -c(Notes.x, Notes.y, Weight.x, Weight.y, TL.x, TL.y, ConditionFactor.x, ConditionFactor.y))
 write.csv(KARRgrowth, "~/trophicpersonalities_A/Data_Karrebaek/KARRgrowth.csv")
 
+
+
+
+#### #### 
 
 

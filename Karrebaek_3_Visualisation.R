@@ -15,28 +15,32 @@ library(ggplot2); library(dplyr); library(car); library(performance)
 
 
 ## K.3.1 Full Treatment*TrialDay Plots ----
-Fig.behav.dist <-  ggplot(KARRact, aes(x = TrialDay, y = (dist), fill=factor(Treatment))) + 
+KARRact.processed <- read.csv("~/trophicpersonalities_A/Data_Karrebaek/KARR_ACTdat_processed.csv")
+KARRact.processed$TrialDay <- ordered(KARRact.processed$TrialDay, levels = c("day 0","day 2","day 10"))
+KARRact.processed$Treatment <- ordered(KARRact.processed$Treatment, levels = c("control","PITtagged","PIT+clip"))
+
+Fig.behav.dist <-  ggplot(KARRact.processed, aes(x = TrialDay, y = (dist), fill=factor(Treatment))) + 
   geom_boxplot() + simpletheme + theme(legend.title = element_blank(), legend.key = element_rect(fill = "transparent", colour = "transparent")) +
   scale_fill_manual(values=c("white","seashell2","red")) + 
   labs(x = "Trial day",
        y = 'Distance (mm)')
 Fig.behav.dist
 
-Fig.behav.propmoving <-  ggplot(KARRact, aes(x = TrialDay, y = propmoving, fill=factor(Treatment))) + 
+Fig.behav.propmoving <-  ggplot(KARRact.processed, aes(x = TrialDay, y = propmoving, fill=factor(Treatment))) + 
   geom_boxplot() + simpletheme + theme(legend.title = element_blank(), legend.key = element_rect(fill = "transparent", colour = "transparent")) +
   scale_fill_manual(values=c("white","seashell2","red")) + 
   labs(x = "Trial day",
        y = "Proportion of time moving")
 Fig.behav.propmoving
 
-Fig.behav.avespeed_mob <-  ggplot(KARRact, aes(x = TrialDay, y = avespeed_mob, fill=factor(Treatment))) + 
+Fig.behav.avespeed_mob <-  ggplot(KARRact.processed, aes(x = TrialDay, y = avespeed_mob, fill=factor(Treatment))) + 
   geom_boxplot() + simpletheme + theme(legend.title = element_blank(), legend.key = element_rect(fill = "transparent", colour = "transparent")) +
   scale_fill_manual(values=c("white","seashell2","red")) + 
   labs(x = "Trial day",
        y = expression(paste('Mobility speed ', (mm.s^-1))))
 Fig.behav.avespeed_mob
 
-Fig.behav.centrescore <-  ggplot(KARRact, aes(x = TrialDay, y = centrescore, fill=factor(Treatment))) + 
+Fig.behav.centrescore <-  ggplot(KARRact.processed, aes(x = TrialDay, y = centrescore, fill=factor(Treatment))) + 
   geom_boxplot() + simpletheme + theme(legend.title = element_blank(), legend.key = element_rect(fill = "transparent", colour = "transparent")) +
   scale_fill_manual(values=c("white","seashell2","red")) + 
   labs(x = "Trial day",
@@ -85,11 +89,11 @@ KARRact.processed10 <- subset(KARRact.processed, TrialDay == 'day 10')
 labels(KARRact.processed0)
 
 KARRact.processed2 <- select(KARRact.processed2, -c(TankID.combo, ConditionFactor, TrialDay, TrialRound, ArenaID, TankID, PITID, Treatment, 
-                                Sex, Notes, Date, TimeLoaded, TrialType, TL,  SL, Weight, InfectionScore, X, TL.C, ConditionFactor.C, InfectionScore.C))
+                                Sex, Notes, Date, TimeLoaded, TrialType, TL,  SL, Weight, InfectionScore, X))
 KARRact.processed2<- rename(KARRact.processed2, UniqueID_Day2 = UniqueID)
 
 KARRact.processed10 <- select(KARRact.processed10, -c(TankID.combo, ConditionFactor, TrialDay, TrialRound, ArenaID, TankID, PITID, Treatment, 
-                                  Sex, Notes, Date, TimeLoaded, TrialType, TL,  SL, Weight, InfectionScore, X, TL.C, ConditionFactor.C, InfectionScore.C))
+                                  Sex, Notes, Date, TimeLoaded, TrialType, TL,  SL, Weight, InfectionScore, X))
 KARRact.processed10<- rename(KARRact.processed10, UniqueID_Day10 = UniqueID)
 
 
@@ -287,6 +291,10 @@ Fig.behav.dist.init
 KARRact.processed.RESP$Treatment <- as.numeric(KARRact.processed.RESP$Treatment)
 KARRact.processed.RESP$Treatment <- as.factor(KARRact.processed.RESP$Treatment)
 
+KARRact.processed.RESP$TL.C <- scale(KARRact.processed.RESP$TL)
+KARRact.processed.RESP$ConditionFactor.C <- scale(KARRact.processed.RESP$ConditionFactor)
+KARRact.processed.RESP$InfectionScore.C <- scale(KARRact.processed.RESP$InfectionScore)
+
 Mod.behav.dist.init <- lmer(sqrt(dist.x) ~ 
                                   Sex + TL.C + ConditionFactor.C + InfectionScore.C + Treatment + (1|TankID.combo) + (1|ArenaID) + (1|TrialRound), data=KARRact.processed.RESP)
 Anova(Mod.behav.dist.init)
@@ -298,5 +306,9 @@ Mod.behav.dist.init.red <- lmer(sqrt(dist.x) ~
 Anova(Mod.behav.dist.init.red)
 summary(Mod.behav.dist.init.red)
 plot(Mod.behav.dist.init.red)
+
+
+
+#### #### 
 
 
