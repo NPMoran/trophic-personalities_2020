@@ -18,7 +18,7 @@ simpletheme <-   theme(axis.text.y = element_text(size = 10, colour = "black"),a
 
 
 
-## G.1.1 Calibration of ToxTrac (ACT trials) ----
+## G.1.1 ToxTrac calibration (ACT trials) ----
 
 #Calibration pixel/mm ratios are calculated manually for each arena:
 
@@ -67,7 +67,7 @@ height_width_arenas
 
 
 
-## G.1.2 Optimization of ToxTrac (ACT trials) ----
+## G.1.2 ToxTrac Optimization (ACT trials) ----
 #Used same settings as Karrebaek fish to maximize comparability across experiments
 
 # Project Initials Settings: 
