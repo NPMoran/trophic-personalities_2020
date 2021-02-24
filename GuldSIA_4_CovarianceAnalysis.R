@@ -1,763 +1,723 @@
-# Experiment: Guldborgsund Pilot 2020
-#
-# Author: Nicholas Moran (Centre for Ocean Life- DTU Aqua, Technical University of Denmark)
-#
 # Project: Personality in Community Ecology Responses: Integrating the behaviour and species interactions of a marine invader — PinCER
+#
+# Experiment: Quantification of among-individual behavioural and trophic variation the invasive round goby
+#
+# Author: Nicholas Moran, The Centre for Ocean Life- DTU Aqua, Technical University of Denmark
+
+
+
+#### Guldborgsund SIA 3. SIA Variance analysis #### 
 
 
 Sys.setenv(LANG = "en")
-library(data.table)
+
+#Loading required packages- 
+library(dplyr); library(lme4); library(lmerTest); library(car); library(data.table)
 
 
-#7. Effects of fish traits on d15N d13C ----
+#Uploading phenotypic data calculated in Guldborgsund_2_VarianceAnalysis
+GULD_phenotypes <- read.csv('~/trophicpersonalities_A/Data_Guldborgsund/GULD_phenotypes.csv', strip.white = TRUE)
 
-### 7.1. Compiling individual behavioural and isotope datasets ----
-#SIA dataset
-GULD_SIA1 <- read.csv("~/trophicpersonalities_GULD/6_SIA_VarianceAnalysis/GULD_SIA1.processed.csv")
-labels(GULD_SIA1)
-GULD_SIA1 <- rename(GULD_SIA1, weight_packed = weight_packed..mg.)
-GULD_SIA1 <- rename(GULD_SIA1, FishID = fishID)
-GULD_SIA1 <- select(GULD_SIA1, -c(X, run.line, run.ID, date_packed, row, position, row.id))
-GULD_SIA1
+#Uploading stable isotope data processed 
+GULD_processed.fish <- read.csv('~/trophicpersonalities_A/Data_GuldborgsundSIA/GULD_processed.fish.csv', strip.white = TRUE)
+
+GULD_processed.fishfull <- merge(GULD_processed.fish, GULD_phenotypes, by = 'FishID', all.x = TRUE)
+labels(GULD_processed.fishfull)
 
 
-#Behavioural dataset
-GULD_behav_merged <- read.csv("~/trophicpersonalities_GULD/5_Behaviour_CovariationAnalysis/GULD_behav_merged.csv")
+## SIA.4.1. Raw correlations between fish traits and d15N d13C ----
+GULD_processed.fishmeans <- setDT(GULD_processed.fish)[ , list(d15N_mean = mean(d15N), d15N_sd = sd(d15N),
+                                                               d13C_mean = mean(d13C), d13C_sd = sd(d13C)), 
+                                                        by = .(FishID)]
+GULD_processed.fishmeans <- merge(GULD_processed.fishmeans, GULD_phenotypes, by = 'FishID', all.x = TRUE)
 
-#Separating each trial day out
-GULD_behav_merged.1 <- subset(GULD_behav_merged, TrialDay == 1)
-GULD_behav_merged.1 <- rename(GULD_behav_merged.1, Weight_1 = Weight)
-GULD_behav_merged.1 <- rename(GULD_behav_merged.1, avespeed_tot_1 = avespeed_tot)
-GULD_behav_merged.1 <- rename(GULD_behav_merged.1, avespeed_mob_1 = avespeed_mob)
-GULD_behav_merged.1 <- rename(GULD_behav_merged.1, aveacceler_1 = aveacceler)
-GULD_behav_merged.1 <- rename(GULD_behav_merged.1, dist_1 = dist)
-GULD_behav_merged.1 <- rename(GULD_behav_merged.1, timefrozen_tot.ln_1 = timefrozen_tot.ln)
-GULD_behav_merged.1 <- rename(GULD_behav_merged.1, propmoving.exp_1 = propmoving.exp)
-GULD_behav_merged.1 <- rename(GULD_behav_merged.1, centretime.lnplus1_1 = centretime.lnplus1)
-GULD_behav_merged.1 <- rename(GULD_behav_merged.1, emergelat.bin.B_1 = emergelat.bin.B)
-GULD_behav_merged.1 <- rename(GULD_behav_merged.1, endpointlat.bin.B_1 = endpointlat.bin.B)
-GULD_behav_merged.1 <- rename(GULD_behav_merged.1, PC1_1 = PC1)
-GULD_behav_merged.1 <- rename(GULD_behav_merged.1, PC2_1 = PC2)
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$TL, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$TL, method = 'spearman')
 
-GULD_behav_merged.2 <- subset(GULD_behav_merged, TrialDay == 2)
-GULD_behav_merged.2 <- select(GULD_behav_merged.2, -c(Weight, X, mergeID, TL, PITID, InfectionScore, Sex, TrialDay, TrialRound, TankID))
-GULD_behav_merged.2 <- rename(GULD_behav_merged.2, avespeed_tot_2 = avespeed_tot)
-GULD_behav_merged.2 <- rename(GULD_behav_merged.2, avespeed_mob_2 = avespeed_mob)
-GULD_behav_merged.2 <- rename(GULD_behav_merged.2, aveacceler_2 = aveacceler)
-GULD_behav_merged.2 <- rename(GULD_behav_merged.2, dist_2 = dist)
-GULD_behav_merged.2 <- rename(GULD_behav_merged.2, timefrozen_tot.ln_2 = timefrozen_tot.ln)
-GULD_behav_merged.2 <- rename(GULD_behav_merged.2, propmoving.exp_2 = propmoving.exp)
-GULD_behav_merged.2 <- rename(GULD_behav_merged.2, centretime.lnplus1_2 = centretime.lnplus1)
-GULD_behav_merged.2 <- rename(GULD_behav_merged.2, emergelat.bin.B_2 = emergelat.bin.B)
-GULD_behav_merged.2 <- rename(GULD_behav_merged.2, endpointlat.bin.B_2 = endpointlat.bin.B)
-GULD_behav_merged.2 <- rename(GULD_behav_merged.2, PC1_2 = PC1)
-GULD_behav_merged.2 <- rename(GULD_behav_merged.2, PC2_2 = PC2)
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$ConditionFactor, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$ConditionFactor, method = 'spearman')
 
-GULD_behav_merged.3 <- subset(GULD_behav_merged, TrialDay == 3)
-GULD_behav_merged.3 <- select(GULD_behav_merged.3, -c(Weight, X, mergeID, TL, PITID, InfectionScore, Sex, TrialDay, TrialRound, TankID))
-GULD_behav_merged.3 <- rename(GULD_behav_merged.3, avespeed_tot_3 = avespeed_tot)
-GULD_behav_merged.3 <- rename(GULD_behav_merged.3, avespeed_mob_3 = avespeed_mob)
-GULD_behav_merged.3 <- rename(GULD_behav_merged.3, aveacceler_3 = aveacceler)
-GULD_behav_merged.3 <- rename(GULD_behav_merged.3, dist_3 = dist)
-GULD_behav_merged.3 <- rename(GULD_behav_merged.3, timefrozen_tot.ln_3 = timefrozen_tot.ln)
-GULD_behav_merged.3 <- rename(GULD_behav_merged.3, propmoving.exp_3 = propmoving.exp)
-GULD_behav_merged.3 <- rename(GULD_behav_merged.3, centretime.lnplus1_3 = centretime.lnplus1)
-GULD_behav_merged.3 <- rename(GULD_behav_merged.3, emergelat.bin.B_3 = emergelat.bin.B)
-GULD_behav_merged.3 <- rename(GULD_behav_merged.3, endpointlat.bin.B_3 = endpointlat.bin.B)
-GULD_behav_merged.3 <- rename(GULD_behav_merged.3, PC1_3 = PC1)
-GULD_behav_merged.3 <- rename(GULD_behav_merged.3, PC2_3 = PC2)
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$InfectionScore, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$InfectionScore, method = 'spearman')
 
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$avespeed_tot.ACTT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$avespeed_tot.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$avespeed_tot.COEF, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$avespeed_tot.ACTT1, method = 'spearman') 
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$avespeed_tot.MEAN,  method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$avespeed_tot.COEF, COEF, method = 'spearman')
 
-GULD_behav_merged.SIA <- merge(GULD_behav_merged.1, GULD_behav_merged.2, by = 'FishID', all.x = TRUE)
-GULD_behav_merged.SIA <- merge(GULD_behav_merged.SIA, GULD_behav_merged.3, by = 'FishID', all.x = TRUE)
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$avespeed_mob.ACTT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$avespeed_mob.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$avespeed_mob.COEF, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$avespeed_mob.ACTT1, method = 'spearman') 
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$avespeed_mob.MEAN,  method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$avespeed_mob.COEF, COEF, method = 'spearman')
 
-#Creating 3-trial averages
-GULD_behav_merged.averages <-  setDT(GULD_behav_merged)[ , list(avespeed_tot_mean = mean(avespeed_tot),
-                                                                avespeed_mob_mean = mean(avespeed_mob),
-                                                                aveacceler_mean = mean(aveacceler),
-                                                                dist_mean = mean(dist),
-                                                                timefrozen_tot.ln_mean = mean(timefrozen_tot.ln),
-                                                                propmoving.exp_mean = mean(propmoving.exp),
-                                                                centretime.lnplus1_mean = mean(centretime.lnplus1),
-                                                                emergelat.bin.B_mean = mean(emergelat.bin.B),
-                                                                endpointlat.bin.B_mean = mean(endpointlat.bin.B),
-                                                                PC1_mean = mean(PC1),
-                                                                PC2_mean = mean(PC2)),
-                                                         by = .(FishID)]
-GULD_behav_merged.SIA <- merge(GULD_behav_merged.SIA, GULD_behav_merged.averages, by = 'FishID', all.x = TRUE) 
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$aveacceler.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$aveacceler.ACTT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$aveacceler.COEF, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$aveacceler.MEAN, method = 'spearman') 
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$aveacceler.ACTT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$aveacceler.COEF, COEF, method = 'spearman')
 
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$propmoving.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$propmoving.ACTT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$propmoving.invlog.COEF, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$propmoving.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$propmoving.ACTT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$propmoving.invlog.COEF, method = 'spearman')
 
-#Adding in SIA data
-GULD_behav_merged.SIA.ready <- merge(GULD_SIA1, GULD_behav_merged.SIA, by = 'FishID', all.x = TRUE)
-GULD_behav_merged.SIA.ready$InfectionScore <- as.factor(GULD_behav_merged.SIA.ready$InfectionScore)
-GULD_behav_merged.SIA.ready$emergelat.bin.B_1 <- as.factor(GULD_behav_merged.SIA.ready$emergelat.bin.B_1)
-GULD_behav_merged.SIA.ready$endpointlat.bin.B_1 <- as.factor(GULD_behav_merged.SIA.ready$endpointlat.bin.B_1)
-GULD_behav_merged.SIA.ready$Sex <- as.factor(GULD_behav_merged.SIA.ready$Sex)
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$dist.ACTT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$dist.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$dist.COEF, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$dist.ACTT1, method = 'spearman') 
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$dist.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$dist.COEF, method = 'spearman')
 
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$frozenevents.ACTT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$frozenevents.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$frozenevents.sqrt.COEF, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$frozenevents.ACTT1, method = 'spearman') 
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$frozenevents.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$frozenevents.sqrt.COEF, method = 'spearman')
 
-### 7.2. Effects of Non-behavioural variables ----
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$timefrozen_tot.ACTT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$timefrozen_tot.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$timefrozen_tot.sqrt.COEF, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$timefrozen_tot.ACTT1, method = 'spearman') 
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$timefrozen_tot.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$timefrozen_tot.sqrt.COEF, method = 'spearman')
 
-#Non behavioural variables to test:
-#    TL
-#    Weight_1 (just using first weight, as most likely to reflect size differences in the wild)
-#    InfectionScore
-#    Sex
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$centrescore.ACTT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$centrescore.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$centrescore.COEF, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$centrescore.ACTT1, method = 'spearman') #marginally significant
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$centrescore.MEAN, method = 'spearman') #sig. effect
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$centrescore.COEF, method = 'spearman')
 
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$centretime50.ACTT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$centretime50.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$centretime50.sqrt.COEF, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$centretime50.ACTT1, method = 'spearman') 
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$centretime50.MEAN, method = 'spearman') #sig. effect
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$centretime50.sqrt.COEF, method = 'spearman')
 
-#d15N
-GULD_N.TL.mod <- lmer(d15N ~ TL + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.TL.mod)
-confint(GULD_N.TL.mod)
-plot(GULD_N.TL.mod)
-plot(GULD_behav_merged.SIA.ready$TL, GULD_behav_merged.SIA.ready$d15N)
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$centretime75.ACTT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$centretime75.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$centretime75.sqrt.COEF, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$centretime75.ACTT1, method = 'spearman') 
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$centretime75.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$centretime75.sqrt.COEF, method = 'spearman')
 
-GULD_N.Weight_1.mod <- lmer(d15N ~ Weight_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.Weight_1.mod)
-confint(GULD_N.Weight_1.mod)
-plot(GULD_N.Weight_1.mod)
-plot(GULD_behav_merged.SIA.ready$Weight_1, GULD_behav_merged.SIA.ready$d15N)
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$centretime100.ACTT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$centretime100.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$centretime100.sqrt.COEF, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$centretime100.ACTT1, method = 'spearman') #marginally significant
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$centretime100.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$centretime100.sqrt.COEF, method = 'spearman')
 
-GULD_N.InfectionScore.mod <- lmer(d15N ~ InfectionScore + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.InfectionScore.mod)
-confint(GULD_N.InfectionScore.mod)
-plot(GULD_N.InfectionScore.mod)
-plot(GULD_behav_merged.SIA.ready$InfectionScore, GULD_behav_merged.SIA.ready$d15N)
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$emergelat.bin.EXPLT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$emergelat.bin.MEAN  , method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$emergelat.bin.COEF  , method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$emergelat.bin.EXPLT1, method = 'spearman') 
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$emergelat.bin.MEAN  , method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$emergelat.bin.COEF  , method = 'spearman')
 
-GULD_N.Sex.mod <- lmer(d15N ~ Sex + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.Sex.mod)
-confint(GULD_N.Sex.mod)
-plot(GULD_N.Sex.mod)
-plot(GULD_behav_merged.SIA.ready$Sex, GULD_behav_merged.SIA.ready$d15N)
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$endpointlat.bin.EXPLT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$endpointlat.bin.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$endpointlat.bin.COEF, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$endpointlat.bin.EXPLT1, method = 'spearman') 
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$endpointlat.bin.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$endpointlat.bin.COEF, method = 'spearman')
 
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$endpointspeed.EXPLT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$endpointspeed.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$endpointspeed.ln.COEF, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$endpointspeed.EXPLT1, method = 'spearman') #marginally significant
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$endpointspeed.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$endpointspeed.ln.COEF, method = 'spearman')
 
-#d13C
-GULD_C.TL.mod <- lmer(d13C ~ TL + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.TL.mod)
-confint(GULD_C.TL.mod)
-plot(GULD_C.TL.mod)
-plot(GULD_behav_merged.SIA.ready$TL, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.Weight_1.mod <- lmer(d13C ~ Weight_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.Weight_1.mod) #Marginally significant effect of weight on #d15C
-confint(GULD_C.Weight_1.mod)
-plot(GULD_C.Weight_1.mod)
-plot(GULD_behav_merged.SIA.ready$Weight_1, GULD_behav_merged.SIA.ready$d13C) 
-
-GULD_C.InfectionScore.mod <- lmer(d13C ~ InfectionScore + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.InfectionScore.mod)
-confint(GULD_C.InfectionScore.mod)
-plot(GULD_C.InfectionScore.mod)
-plot(GULD_behav_merged.SIA.ready$InfectionScore, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.Sex.mod <- lmer(d13C ~ Sex + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.Sex.mod)
-confint(GULD_C.Sex.mod)
-plot(GULD_C.Sex.mod)
-plot(GULD_behav_merged.SIA.ready$Sex, GULD_behav_merged.SIA.ready$d13C)
-
-#Summary: only a marginally signigficant negative effect of weight on d13C
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$refugereturnlat.EXPLT1, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$refugereturnlat.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d15N_mean, GULD_processed.fishmeans$refugereturnlat.ln.COEF, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$refugereturnlat.EXPLT1, method = 'spearman') 
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$refugereturnlat.MEAN, method = 'spearman')
+cor.test(GULD_processed.fishmeans$d13C_mean, GULD_processed.fishmeans$refugereturnlat.ln.COEF, method = 'spearman')
 
 
-### 7.3. Effects of Trial 1 behavioural variables ----
 
-#Behavioural variables to test for effects on d15N and d13C
-#     avespeed_tot_1
-#     avespeed_mob_1
-#     aveacceler_1
-#     dist_1
-#     timefrozen_tot.ln_1
-#     propmoving.exp_1
-#     centretime.lnplus1_1
-#     emergelat.bin.B_1
-#     endpointlat.bin.B_1
-#     PC1_1
-#     PC2_1
+
+
+## SIA.4.2. Fixed effect models of d15N d13C ----
+#Non behavioural variables:
+#TL.C
+#ConditionFactor.C
+#InfectionScore.C 
+
+##Z-transformation/scaling of continuous fixed effects
+GULD_processed.fishfull$TL.C <- scale(GULD_processed.fishfull$TL)  
+GULD_processed.fishfull$ConditionFactor.C <- scale(GULD_processed.fishfull$ConditionFactor)  
+GULD_processed.fishfull$InfectionScore.C <- scale(GULD_processed.fishfull$InfectionScore)  
 
 #d15N
-GULD_N.avespeed_tot_1.mod <- lmer(d15N ~ avespeed_tot_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.avespeed_tot_1.mod)
-confint(GULD_N.avespeed_tot_1.mod)
-plot(GULD_N.avespeed_tot_1.mod)
-plot(GULD_behav_merged.SIA.ready$avespeed_tot_1, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.avespeed_mob_1.mod <- lmer(d15N ~ avespeed_mob_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.avespeed_mob_1.mod)
-confint(GULD_N.avespeed_mob_1.mod)
-plot(GULD_N.avespeed_mob_1.mod)
-plot(GULD_behav_merged.SIA.ready$avespeed_mob_1, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.aveacceler_1.mod <- lmer(d15N ~ aveacceler_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.aveacceler_1.mod)
-confint(GULD_N.aveacceler_1.mod)
-plot(GULD_N.aveacceler_1.mod)
-plot(GULD_behav_merged.SIA.ready$aveacceler_1, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.dist_1.mod <- lmer(d15N ~ dist_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.dist_1.mod)
-confint(GULD_N.dist_1.mod)
-plot(GULD_N.dist_1.mod)
-plot(GULD_behav_merged.SIA.ready$dist_1, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.timefrozen_tot.ln_1.mod <- lmer(d15N ~ timefrozen_tot.ln_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.timefrozen_tot.ln_1.mod)
-confint(GULD_N.timefrozen_tot.ln_1.mod)
-plot(GULD_N.timefrozen_tot.ln_1.mod)
-plot(GULD_behav_merged.SIA.ready$timefrozen_tot.ln_1, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.propmoving.exp_1.mod <- lmer(d15N ~ propmoving.exp_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.propmoving.exp_1.mod) #close to signficant
-confint(GULD_N.propmoving.exp_1.mod)
-plot(GULD_N.propmoving.exp_1.mod)
-plot(GULD_behav_merged.SIA.ready$propmoving.exp_1, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.centretime.lnplus1_1.mod <- lmer(d15N ~ centretime.lnplus1_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.centretime.lnplus1_1.mod)
-confint(GULD_N.centretime.lnplus1_1.mod)
-plot(GULD_N.centretime.lnplus1_1.mod)
-plot(GULD_behav_merged.SIA.ready$centretime.lnplus1_1, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.emergelat.bin.B_1.mod <- lmer(d15N ~ emergelat.bin.B_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.emergelat.bin.B_1.mod)
-confint(GULD_N.emergelat.bin.B_1.mod)
-plot(GULD_N.emergelat.bin.B_1.mod)
-plot(GULD_behav_merged.SIA.ready$emergelat.bin.B_1, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.endpointlat.bin.B_1.mod <- lmer(d15N ~ endpointlat.bin.B_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.endpointlat.bin.B_1.mod)
-confint(GULD_N.endpointlat.bin.B_1.mod)
-plot(GULD_N.endpointlat.bin.B_1.mod)
-plot(GULD_behav_merged.SIA.ready$endpointlat.bin.B_1, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.PC1_1.mod <- lmer(d15N ~ PC1_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.PC1_1.mod)
-confint(GULD_N.PC1_1.mod)
-plot(GULD_N.PC1_1.mod)
-plot(GULD_behav_merged.SIA.ready$PC1_1, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.PC2_1.mod <- lmer(d15N ~ PC2_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.PC2_1.mod)
-confint(GULD_N.PC2_1.mod)
-plot(GULD_N.PC2_1.mod)
-plot(GULD_behav_merged.SIA.ready$PC2_1, GULD_behav_merged.SIA.ready$d15N)
-
+GULD_N.nonbehav.mod <- lmer(d15N ~ TL.C + ConditionFactor.C + InfectionScore.C + (1|FishID), data=GULD_processed.fishfull)
+Anova(GULD_N.nonbehav.mod) #sig effect of ConditionFactor.C
+summary(GULD_N.nonbehav.mod) 
+confint(GULD_N.nonbehav.mod) #small positive effect that just overlaps zero
+plot(GULD_N.nonbehav.mod) 
 
 #d13C
-GULD_C.avespeed_tot_1.mod <- lmer(d13C ~ avespeed_tot_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.avespeed_tot_1.mod)
-confint(GULD_C.avespeed_tot_1.mod)
-plot(GULD_C.avespeed_tot_1.mod)
-plot(GULD_behav_merged.SIA.ready$avespeed_tot_1, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.avespeed_mob_1.mod <- lmer(d13C ~ avespeed_mob_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.avespeed_mob_1.mod)
-confint(GULD_C.avespeed_mob_1.mod)
-plot(GULD_C.avespeed_mob_1.mod)
-plot(GULD_behav_merged.SIA.ready$avespeed_mob_1, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.aveacceler_1.mod <- lmer(d13C ~ aveacceler_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.aveacceler_1.mod)
-confint(GULD_C.aveacceler_1.mod)
-plot(GULD_C.aveacceler_1.mod)
-plot(GULD_behav_merged.SIA.ready$aveacceler_1, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.dist_1.mod <- lmer(d13C ~ dist_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.dist_1.mod)
-confint(GULD_C.dist_1.mod)
-plot(GULD_C.dist_1.mod)
-plot(GULD_behav_merged.SIA.ready$dist_1, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.timefrozen_tot.ln_1.mod <- lmer(d13C ~ timefrozen_tot.ln_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.timefrozen_tot.ln_1.mod)
-confint(GULD_C.timefrozen_tot.ln_1.mod)
-plot(GULD_C.timefrozen_tot.ln_1.mod)
-plot(GULD_behav_merged.SIA.ready$timefrozen_tot.ln_1, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.propmoving.exp_1.mod <- lmer(d13C ~ propmoving.exp_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.propmoving.exp_1.mod)
-confint(GULD_C.propmoving.exp_1.mod)
-plot(GULD_C.propmoving.exp_1.mod)
-plot(GULD_behav_merged.SIA.ready$propmoving.exp_1, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.centretime.lnplus1_1.mod <- lmer(d13C ~ centretime.lnplus1_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.centretime.lnplus1_1.mod) #significant negative effect of centre area use and d13C
-confint(GULD_C.centretime.lnplus1_1.mod)
-plot(GULD_C.centretime.lnplus1_1.mod)
-plot(GULD_behav_merged.SIA.ready$centretime.lnplus1_1, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.emergelat.bin.B_1.mod <- lmer(d13C ~ emergelat.bin.B_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.emergelat.bin.B_1.mod)
-confint(GULD_C.emergelat.bin.B_1.mod)
-plot(GULD_C.emergelat.bin.B_1.mod)
-plot(GULD_behav_merged.SIA.ready$emergelat.bin.B_1, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.endpointlat.bin.B_1.mod <- lmer(d13C ~ endpointlat.bin.B_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.endpointlat.bin.B_1.mod)
-confint(GULD_C.endpointlat.bin.B_1.mod)
-plot(GULD_C.endpointlat.bin.B_1.mod)
-plot(GULD_behav_merged.SIA.ready$endpointlat.bin.B_1, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.PC1_1.mod <- lmer(d13C ~ PC1_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.PC1_1.mod)
-confint(GULD_C.PC1_1.mod)
-plot(GULD_C.PC1_1.mod)
-plot(GULD_behav_merged.SIA.ready$PC1_1, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.PC2_1.mod <- lmer(d13C ~ PC2_1 + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.PC2_1.mod)
-confint(GULD_C.PC2_1.mod)
-plot(GULD_C.PC2_1.mod)
-plot(GULD_behav_merged.SIA.ready$PC2_1, GULD_behav_merged.SIA.ready$d13C)
-
-
-
-#Summary:
-#Significant effect of centretime.lnplus1_1 on d13C
-#propmoving.exp looks like there may be a trend in d13C, but for one major outlier
-
-
-### 7.4. Effects of 3 trial averages of behavioural variables ----
-
-#Behavioural variables to test for effects on d15N and d13C
-#     avespeed_tot_mean
-#     avespeed_mob_mean
-#     aveacceler_mean
-#     dist_mean
-#     timefrozen_tot.ln_mean
-#     propmoving.exp_mean
-#     centretime.lnplus1_mean
-#     emergelat.bin.B_mean
-#     endpointlat.bin.B_mean
-#     PC1_mean
-#     PC2_mean
-
-
-#d15N
-GULD_N.avespeed_tot_mean.mod <- lmer(d15N ~ avespeed_tot_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.avespeed_tot_mean.mod)
-confint(GULD_N.avespeed_tot_mean.mod)
-plot(GULD_N.avespeed_tot_mean.mod)
-plot(GULD_behav_merged.SIA.ready$avespeed_tot_mean, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.avespeed_mob_mean.mod <- lmer(d15N ~ avespeed_mob_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.avespeed_mob_mean.mod)
-confint(GULD_N.avespeed_mob_mean.mod)
-plot(GULD_N.avespeed_mob_mean.mod)
-plot(GULD_behav_merged.SIA.ready$avespeed_mob_mean, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.aveacceler_mean.mod <- lmer(d15N ~ aveacceler_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.aveacceler_mean.mod)
-confint(GULD_N.aveacceler_mean.mod)
-plot(GULD_N.aveacceler_mean.mod)
-plot(GULD_behav_merged.SIA.ready$aveacceler_mean, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.dist_mean.mod <- lmer(d15N ~ dist_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.dist_mean.mod)
-confint(GULD_N.dist_mean.mod)
-plot(GULD_N.dist_mean.mod)
-plot(GULD_behav_merged.SIA.ready$dist_mean, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.timefrozen_tot.ln_mean.mod <- lmer(d15N ~ timefrozen_tot.ln_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.timefrozen_tot.ln_mean.mod)
-confint(GULD_N.timefrozen_tot.ln_mean.mod)
-plot(GULD_N.timefrozen_tot.ln_mean.mod)
-plot(GULD_behav_merged.SIA.ready$timefrozen_tot.ln_mean, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.propmoving.exp_mean.mod <- lmer(d15N ~ propmoving.exp_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.propmoving.exp_mean.mod) #close to signficant
-confint(GULD_N.propmoving.exp_mean.mod)
-plot(GULD_N.propmoving.exp_mean.mod)
-plot(GULD_behav_merged.SIA.ready$propmoving.exp_mean, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.centretime.lnplus1_mean.mod <- lmer(d15N ~ centretime.lnplus1_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.centretime.lnplus1_mean.mod)
-confint(GULD_N.centretime.lnplus1_mean.mod)
-plot(GULD_N.centretime.lnplus1_mean.mod)
-plot(GULD_behav_merged.SIA.ready$centretime.lnplus1_mean, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.emergelat.bin.B_mean.mod <- lmer(d15N ~ emergelat.bin.B_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.emergelat.bin.B_mean.mod)
-confint(GULD_N.emergelat.bin.B_mean.mod)
-plot(GULD_N.emergelat.bin.B_mean.mod)
-plot(GULD_behav_merged.SIA.ready$emergelat.bin.B_mean, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.endpointlat.bin.B_mean.mod <- lmer(d15N ~ endpointlat.bin.B_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.endpointlat.bin.B_mean.mod)
-confint(GULD_N.endpointlat.bin.B_mean.mod)
-plot(GULD_N.endpointlat.bin.B_mean.mod)
-plot(GULD_behav_merged.SIA.ready$endpointlat.bin.B_mean, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.PC1_mean.mod <- lmer(d15N ~ PC1_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.PC1_mean.mod)
-confint(GULD_N.PC1_mean.mod)
-plot(GULD_N.PC1_mean.mod)
-plot(GULD_behav_merged.SIA.ready$PC1_mean, GULD_behav_merged.SIA.ready$d15N)
-
-GULD_N.PC2_mean.mod <- lmer(d15N ~ PC2_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_N.PC2_mean.mod)
-confint(GULD_N.PC2_mean.mod)
-plot(GULD_N.PC2_mean.mod)
-plot(GULD_behav_merged.SIA.ready$PC2_mean, GULD_behav_merged.SIA.ready$d15N)
-
-
-#d13C
-GULD_C.avespeed_tot_mean.mod <- lmer(d13C ~ avespeed_tot_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.avespeed_tot_mean.mod)
-confint(GULD_C.avespeed_tot_mean.mod)
-plot(GULD_C.avespeed_tot_mean.mod)
-plot(GULD_behav_merged.SIA.ready$avespeed_tot_mean, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.avespeed_mob_mean.mod <- lmer(d13C ~ avespeed_mob_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.avespeed_mob_mean.mod) #Marginally significant positive effect
-confint(GULD_C.avespeed_mob_mean.mod)
-plot(GULD_C.avespeed_mob_mean.mod)
-plot(GULD_behav_merged.SIA.ready$avespeed_mob_mean, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.aveacceler_mean.mod <- lmer(d13C ~ aveacceler_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.aveacceler_mean.mod)
-confint(GULD_C.aveacceler_mean.mod)
-plot(GULD_C.aveacceler_mean.mod)
-plot(GULD_behav_merged.SIA.ready$aveacceler_mean, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.dist_mean.mod <- lmer(d13C ~ dist_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.dist_mean.mod)
-confint(GULD_C.dist_mean.mod)
-plot(GULD_C.dist_mean.mod)
-plot(GULD_behav_merged.SIA.ready$dist_mean, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.timefrozen_tot.ln_mean.mod <- lmer(d13C ~ timefrozen_tot.ln_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.timefrozen_tot.ln_mean.mod)
-confint(GULD_C.timefrozen_tot.ln_mean.mod)
-plot(GULD_C.timefrozen_tot.ln_mean.mod)
-plot(GULD_behav_merged.SIA.ready$timefrozen_tot.ln_mean, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.propmoving.exp_mean.mod <- lmer(d13C ~ propmoving.exp_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.propmoving.exp_mean.mod)
-confint(GULD_C.propmoving.exp_mean.mod)
-plot(GULD_C.propmoving.exp_mean.mod)
-plot(GULD_behav_merged.SIA.ready$propmoving.exp_mean, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.centretime.lnplus1_mean.mod <- lmer(d13C ~ centretime.lnplus1_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.centretime.lnplus1_mean.mod) 
-confint(GULD_C.centretime.lnplus1_mean.mod)
-plot(GULD_C.centretime.lnplus1_mean.mod)
-plot(GULD_behav_merged.SIA.ready$centretime.lnplus1_mean, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.emergelat.bin.B_mean.mod <- lmer(d13C ~ emergelat.bin.B_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.emergelat.bin.B_mean.mod)
-confint(GULD_C.emergelat.bin.B_mean.mod)
-plot(GULD_C.emergelat.bin.B_mean.mod)
-plot(GULD_behav_merged.SIA.ready$emergelat.bin.B_mean, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.endpointlat.bin.B_mean.mod <- lmer(d13C ~ endpointlat.bin.B_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.endpointlat.bin.B_mean.mod)
-confint(GULD_C.endpointlat.bin.B_mean.mod)
-plot(GULD_C.endpointlat.bin.B_mean.mod)
-plot(GULD_behav_merged.SIA.ready$endpointlat.bin.B_mean, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.PC1_mean.mod <- lmer(d13C ~ PC1_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.PC1_mean.mod)
-confint(GULD_C.PC1_mean.mod)
-plot(GULD_C.PC1_mean.mod)
-plot(GULD_behav_merged.SIA.ready$PC1_mean, GULD_behav_merged.SIA.ready$d13C)
-
-GULD_C.PC2_mean.mod <- lmer(d13C ~ PC2_mean + (1|FishID), data=GULD_behav_merged.SIA.ready)
-summary(GULD_C.PC2_mean.mod)
-confint(GULD_C.PC2_mean.mod)
-plot(GULD_C.PC2_mean.mod)
-plot(GULD_behav_merged.SIA.ready$PC2_mean, GULD_behav_merged.SIA.ready$d13C)
-
-
-
-#Summary:
-#No significant effect of behaviour
-#Marginally significant positive effect of aveacceler on d13C
-
-
-
-### 7.5. Effects of Trial 1 behavioural variables (Excluding SIA outlier, G34)----
-GULD_behav_merged.SIA.excl <- subset(GULD_behav_merged.SIA.ready, FishID != 'G34')
-
-
-#d15N
-GULD_N.avespeed_tot_1.mod <- lmer(d15N ~ avespeed_tot_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.avespeed_tot_1.mod)
-confint(GULD_N.avespeed_tot_1.mod)
-plot(GULD_N.avespeed_tot_1.mod)
-plot(GULD_behav_merged.SIA.excl$avespeed_tot_1, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.avespeed_mob_1.mod <- lmer(d15N ~ avespeed_mob_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.avespeed_mob_1.mod)
-confint(GULD_N.avespeed_mob_1.mod)
-plot(GULD_N.avespeed_mob_1.mod)
-plot(GULD_behav_merged.SIA.excl$avespeed_mob_1, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.aveacceler_1.mod <- lmer(d15N ~ aveacceler_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.aveacceler_1.mod)
-confint(GULD_N.aveacceler_1.mod)
-plot(GULD_N.aveacceler_1.mod)
-plot(GULD_behav_merged.SIA.excl$aveacceler_1, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.dist_1.mod <- lmer(d15N ~ dist_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.dist_1.mod)
-confint(GULD_N.dist_1.mod)
-plot(GULD_N.dist_1.mod)
-plot(GULD_behav_merged.SIA.excl$dist_1, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.timefrozen_tot.ln_1.mod <- lmer(d15N ~ timefrozen_tot.ln_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.timefrozen_tot.ln_1.mod)
-confint(GULD_N.timefrozen_tot.ln_1.mod)
-plot(GULD_N.timefrozen_tot.ln_1.mod)
-plot(GULD_behav_merged.SIA.excl$timefrozen_tot.ln_1, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.propmoving.exp_1.mod <- lmer(d15N ~ propmoving.exp_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.propmoving.exp_1.mod) #significant positive effect
-confint(GULD_N.propmoving.exp_1.mod)
-plot(GULD_N.propmoving.exp_1.mod)
-plot(GULD_behav_merged.SIA.excl$propmoving.exp_1, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.centretime.lnplus1_1.mod <- lmer(d15N ~ centretime.lnplus1_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.centretime.lnplus1_1.mod)
-confint(GULD_N.centretime.lnplus1_1.mod)
-plot(GULD_N.centretime.lnplus1_1.mod)
-plot(GULD_behav_merged.SIA.excl$centretime.lnplus1_1, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.emergelat.bin.B_1.mod <- lmer(d15N ~ emergelat.bin.B_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.emergelat.bin.B_1.mod)
-confint(GULD_N.emergelat.bin.B_1.mod)
-plot(GULD_N.emergelat.bin.B_1.mod)
-plot(GULD_behav_merged.SIA.excl$emergelat.bin.B_1, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.endpointlat.bin.B_1.mod <- lmer(d15N ~ endpointlat.bin.B_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.endpointlat.bin.B_1.mod)
-confint(GULD_N.endpointlat.bin.B_1.mod)
-plot(GULD_N.endpointlat.bin.B_1.mod)
-plot(GULD_behav_merged.SIA.excl$endpointlat.bin.B_1, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.PC1_1.mod <- lmer(d15N ~ PC1_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.PC1_1.mod)
-confint(GULD_N.PC1_1.mod)
-plot(GULD_N.PC1_1.mod)
-plot(GULD_behav_merged.SIA.excl$PC1_1, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.PC2_1.mod <- lmer(d15N ~ PC2_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.PC2_1.mod)
-confint(GULD_N.PC2_1.mod)
-plot(GULD_N.PC2_1.mod)
-plot(GULD_behav_merged.SIA.excl$PC2_1, GULD_behav_merged.SIA.excl$d15N)
-
-
-#d13C
-GULD_C.avespeed_tot_1.mod <- lmer(d13C ~ avespeed_tot_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.avespeed_tot_1.mod)
-confint(GULD_C.avespeed_tot_1.mod)
-plot(GULD_C.avespeed_tot_1.mod)
-plot(GULD_behav_merged.SIA.excl$avespeed_tot_1, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.avespeed_mob_1.mod <- lmer(d13C ~ avespeed_mob_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.avespeed_mob_1.mod)
-confint(GULD_C.avespeed_mob_1.mod)
-plot(GULD_C.avespeed_mob_1.mod)
-plot(GULD_behav_merged.SIA.excl$avespeed_mob_1, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.aveacceler_1.mod <- lmer(d13C ~ aveacceler_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.aveacceler_1.mod)
-confint(GULD_C.aveacceler_1.mod)
-plot(GULD_C.aveacceler_1.mod)
-plot(GULD_behav_merged.SIA.excl$aveacceler_1, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.dist_1.mod <- lmer(d13C ~ dist_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.dist_1.mod)
-confint(GULD_C.dist_1.mod)
-plot(GULD_C.dist_1.mod)
-plot(GULD_behav_merged.SIA.excl$dist_1, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.timefrozen_tot.ln_1.mod <- lmer(d13C ~ timefrozen_tot.ln_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.timefrozen_tot.ln_1.mod)
-confint(GULD_C.timefrozen_tot.ln_1.mod)
-plot(GULD_C.timefrozen_tot.ln_1.mod)
-plot(GULD_behav_merged.SIA.excl$timefrozen_tot.ln_1, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.propmoving.exp_1.mod <- lmer(d13C ~ propmoving.exp_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.propmoving.exp_1.mod)
-confint(GULD_C.propmoving.exp_1.mod)
-plot(GULD_C.propmoving.exp_1.mod)
-plot(GULD_behav_merged.SIA.excl$propmoving.exp_1, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.centretime.lnplus1_1.mod <- lmer(d13C ~ centretime.lnplus1_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.centretime.lnplus1_1.mod) #significant negative effect of centre area use and d13C
-confint(GULD_C.centretime.lnplus1_1.mod)
-plot(GULD_C.centretime.lnplus1_1.mod)
-plot(GULD_behav_merged.SIA.excl$centretime.lnplus1_1, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.emergelat.bin.B_1.mod <- lmer(d13C ~ emergelat.bin.B_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.emergelat.bin.B_1.mod)
-confint(GULD_C.emergelat.bin.B_1.mod)
-plot(GULD_C.emergelat.bin.B_1.mod)
-plot(GULD_behav_merged.SIA.excl$emergelat.bin.B_1, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.endpointlat.bin.B_1.mod <- lmer(d13C ~ endpointlat.bin.B_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.endpointlat.bin.B_1.mod)
-confint(GULD_C.endpointlat.bin.B_1.mod)
-plot(GULD_C.endpointlat.bin.B_1.mod)
-plot(GULD_behav_merged.SIA.excl$endpointlat.bin.B_1, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.PC1_1.mod <- lmer(d13C ~ PC1_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.PC1_1.mod)
-confint(GULD_C.PC1_1.mod)
-plot(GULD_C.PC1_1.mod)
-plot(GULD_behav_merged.SIA.excl$PC1_1, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.PC2_1.mod <- lmer(d13C ~ PC2_1 + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.PC2_1.mod)
-confint(GULD_C.PC2_1.mod)
-plot(GULD_C.PC2_1.mod)
-plot(GULD_behav_merged.SIA.excl$PC2_1, GULD_behav_merged.SIA.excl$d13C)
-
-
-
-#Summary:
-#Marginally significant effects of some activity variables on d15N, signfificant effect of propmoving.exp_1 on d15N
-#Significant effect of some centre area use variables on d13C
-
-
-
-### 7.6. Effects of 3 trial averages of behavioural variables (Excluding SIA outlier, G34)----
-
-#d15N
-GULD_N.avespeed_tot_mean.mod <- lmer(d15N ~ avespeed_tot_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.avespeed_tot_mean.mod)
-confint(GULD_N.avespeed_tot_mean.mod)
-plot(GULD_N.avespeed_tot_mean.mod)
-plot(GULD_behav_merged.SIA.excl$avespeed_tot_mean, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.avespeed_mob_mean.mod <- lmer(d15N ~ avespeed_mob_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.avespeed_mob_mean.mod)
-confint(GULD_N.avespeed_mob_mean.mod)
-plot(GULD_N.avespeed_mob_mean.mod)
-plot(GULD_behav_merged.SIA.excl$avespeed_mob_mean, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.aveacceler_mean.mod <- lmer(d15N ~ aveacceler_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.aveacceler_mean.mod)
-confint(GULD_N.aveacceler_mean.mod)
-plot(GULD_N.aveacceler_mean.mod)
-plot(GULD_behav_merged.SIA.excl$aveacceler_mean, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.dist_mean.mod <- lmer(d15N ~ dist_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.dist_mean.mod)
-confint(GULD_N.dist_mean.mod)
-plot(GULD_N.dist_mean.mod)
-plot(GULD_behav_merged.SIA.excl$dist_mean, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.timefrozen_tot.ln_mean.mod <- lmer(d15N ~ timefrozen_tot.ln_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.timefrozen_tot.ln_mean.mod)
-confint(GULD_N.timefrozen_tot.ln_mean.mod)
-plot(GULD_N.timefrozen_tot.ln_mean.mod)
-plot(GULD_behav_merged.SIA.excl$timefrozen_tot.ln_mean, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.propmoving.exp_mean.mod <- lmer(d15N ~ propmoving.exp_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.propmoving.exp_mean.mod) #close to signficant
-confint(GULD_N.propmoving.exp_mean.mod)
-plot(GULD_N.propmoving.exp_mean.mod)
-plot(GULD_behav_merged.SIA.excl$propmoving.exp_mean, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.centretime.lnplus1_mean.mod <- lmer(d15N ~ centretime.lnplus1_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.centretime.lnplus1_mean.mod)
-confint(GULD_N.centretime.lnplus1_mean.mod)
-plot(GULD_N.centretime.lnplus1_mean.mod)
-plot(GULD_behav_merged.SIA.excl$centretime.lnplus1_mean, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.emergelat.bin.B_mean.mod <- lmer(d15N ~ emergelat.bin.B_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.emergelat.bin.B_mean.mod)
-confint(GULD_N.emergelat.bin.B_mean.mod)
-plot(GULD_N.emergelat.bin.B_mean.mod)
-plot(GULD_behav_merged.SIA.excl$emergelat.bin.B_mean, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.endpointlat.bin.B_mean.mod <- lmer(d15N ~ endpointlat.bin.B_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.endpointlat.bin.B_mean.mod)
-confint(GULD_N.endpointlat.bin.B_mean.mod)
-plot(GULD_N.endpointlat.bin.B_mean.mod)
-plot(GULD_behav_merged.SIA.excl$endpointlat.bin.B_mean, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.PC1_mean.mod <- lmer(d15N ~ PC1_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.PC1_mean.mod)
-confint(GULD_N.PC1_mean.mod)
-plot(GULD_N.PC1_mean.mod)
-plot(GULD_behav_merged.SIA.excl$PC1_mean, GULD_behav_merged.SIA.excl$d15N)
-
-GULD_N.PC2_mean.mod <- lmer(d15N ~ PC2_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_N.PC2_mean.mod)
-confint(GULD_N.PC2_mean.mod)
-plot(GULD_N.PC2_mean.mod)
-plot(GULD_behav_merged.SIA.excl$PC2_mean, GULD_behav_merged.SIA.excl$d15N)
-
-
-#d13C
-GULD_C.avespeed_tot_mean.mod <- lmer(d13C ~ avespeed_tot_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.avespeed_tot_mean.mod)
-confint(GULD_C.avespeed_tot_mean.mod)
-plot(GULD_C.avespeed_tot_mean.mod)
-plot(GULD_behav_merged.SIA.excl$avespeed_tot_mean, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.avespeed_mob_mean.mod <- lmer(d13C ~ avespeed_mob_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.avespeed_mob_mean.mod) #Marginally significant positive effect
-confint(GULD_C.avespeed_mob_mean.mod)
-plot(GULD_C.avespeed_mob_mean.mod)
-plot(GULD_behav_merged.SIA.excl$avespeed_mob_mean, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.aveacceler_mean.mod <- lmer(d13C ~ aveacceler_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.aveacceler_mean.mod)
-confint(GULD_C.aveacceler_mean.mod)
-plot(GULD_C.aveacceler_mean.mod)
-plot(GULD_behav_merged.SIA.excl$aveacceler_mean, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.dist_mean.mod <- lmer(d13C ~ dist_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.dist_mean.mod)
-confint(GULD_C.dist_mean.mod)
-plot(GULD_C.dist_mean.mod)
-plot(GULD_behav_merged.SIA.excl$dist_mean, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.timefrozen_tot.ln_mean.mod <- lmer(d13C ~ timefrozen_tot.ln_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.timefrozen_tot.ln_mean.mod)
-confint(GULD_C.timefrozen_tot.ln_mean.mod)
-plot(GULD_C.timefrozen_tot.ln_mean.mod)
-plot(GULD_behav_merged.SIA.excl$timefrozen_tot.ln_mean, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.propmoving.exp_mean.mod <- lmer(d13C ~ propmoving.exp_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.propmoving.exp_mean.mod)
-confint(GULD_C.propmoving.exp_mean.mod)
-plot(GULD_C.propmoving.exp_mean.mod)
-plot(GULD_behav_merged.SIA.excl$propmoving.exp_mean, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.centretime.lnplus1_mean.mod <- lmer(d13C ~ centretime.lnplus1_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.centretime.lnplus1_mean.mod) 
-confint(GULD_C.centretime.lnplus1_mean.mod)
-plot(GULD_C.centretime.lnplus1_mean.mod)
-plot(GULD_behav_merged.SIA.excl$centretime.lnplus1_mean, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.emergelat.bin.B_mean.mod <- lmer(d13C ~ emergelat.bin.B_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.emergelat.bin.B_mean.mod)
-confint(GULD_C.emergelat.bin.B_mean.mod)
-plot(GULD_C.emergelat.bin.B_mean.mod)
-plot(GULD_behav_merged.SIA.excl$emergelat.bin.B_mean, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.endpointlat.bin.B_mean.mod <- lmer(d13C ~ endpointlat.bin.B_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.endpointlat.bin.B_mean.mod)
-confint(GULD_C.endpointlat.bin.B_mean.mod)
-plot(GULD_C.endpointlat.bin.B_mean.mod)
-plot(GULD_behav_merged.SIA.excl$endpointlat.bin.B_mean, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.PC1_mean.mod <- lmer(d13C ~ PC1_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.PC1_mean.mod)
-confint(GULD_C.PC1_mean.mod)
-plot(GULD_C.PC1_mean.mod)
-plot(GULD_behav_merged.SIA.excl$PC1_mean, GULD_behav_merged.SIA.excl$d13C)
-
-GULD_C.PC2_mean.mod <- lmer(d13C ~ PC2_mean + (1|FishID), data=GULD_behav_merged.SIA.excl)
-summary(GULD_C.PC2_mean.mod)
-confint(GULD_C.PC2_mean.mod)
-plot(GULD_C.PC2_mean.mod)
-plot(GULD_behav_merged.SIA.excl$PC2_mean, GULD_behav_merged.SIA.excl$d13C)
-
-
-#Marginally significant effects of some activity variables on d15N
-#Marginally significant effects of some centre area use variables on d13C
+GULD_C.nonbehav.mod <- lmer(d13C ~ TL.C + ConditionFactor.C + InfectionScore.C + (1|FishID), data=GULD_processed.fishfull)
+Anova(GULD_C.nonbehav.mod) #no sig effects
+summary(GULD_C.nonbehav.mod)
+confint(GULD_C.nonbehav.mod)
+plot(GULD_C.nonbehav.mod)
+#Summary: only a marginally significant positive effect of condition factor on d15N
+
+
+#Behavioural variables (need to cut back, many are strongly correlated with each other)
+#avespeed_tot: (mm/s) the average speed of the individual accross the full trial period
+#avespeed_tot.ACTT1
+#avespeed_tot.MEAN
+#avespeed_tot.COEF
+GULD_N.avespeed_tot.ACTT1.mod <- lmer(d15N ~ avespeed_tot.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.avespeed_tot.ACTT1.mod)
+confint(GULD_N.avespeed_tot.ACTT1.mod)
+plot(GULD_N.avespeed_tot.ACTT1.mod)
+
+GULD_N.avespeed_tot.MEAN.mod <- lmer(d15N ~ avespeed_tot.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.avespeed_tot.MEAN.mod)
+confint(GULD_N.avespeed_tot.MEAN.mod)
+plot(GULD_N.avespeed_tot.MEAN.mod)
+
+GULD_N.avespeed_tot.COEF.mod <- lmer(d15N ~ avespeed_tot.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.avespeed_tot.COEF.mod)
+confint(GULD_N.avespeed_tot.COEF.mod)
+plot(GULD_N.avespeed_tot.COEF.mod)
+
+GULD_C.avespeed_tot.ACTT1.mod <- lmer(d13C ~ avespeed_tot.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.avespeed_tot.ACTT1.mod)
+confint(GULD_C.avespeed_tot.ACTT1.mod)
+plot(GULD_C.avespeed_tot.ACTT1.mod)
+
+GULD_C.avespeed_tot.MEAN.mod <- lmer(d13C ~ avespeed_tot.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.avespeed_tot.MEAN.mod)
+confint(GULD_C.avespeed_tot.MEAN.mod)
+plot(GULD_C.avespeed_tot.MEAN.mod)
+
+GULD_C.avespeed_tot.COEF.mod <- lmer(d13C ~ avespeed_tot.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.avespeed_tot.COEF.mod)
+confint(GULD_C.avespeed_tot.COEF.mod)
+plot(GULD_C.avespeed_tot.COEF.mod)
+#Summary: No effects
+
+
+#avespeed_mob: (mm/s) the average speed of the individual excluding periods when it was immobile
+#avespeed_mob.ACTT1
+#avespeed_mob.MEAN
+#avespeed_mob.COEF
+GULD_N.avespeed_mob.ACTT1.mod <- lmer(d15N ~ avespeed_mob.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.avespeed_mob.ACTT1.mod)
+confint(GULD_N.avespeed_mob.ACTT1.mod)
+plot(GULD_N.avespeed_mob.ACTT1.mod)
+
+GULD_N.avespeed_mob.MEAN.mod <- lmer(d15N ~ avespeed_mob.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.avespeed_mob.MEAN.mod)
+confint(GULD_N.avespeed_mob.MEAN.mod)
+plot(GULD_N.avespeed_mob.MEAN.mod)
+
+GULD_N.avespeed_mob.COEF.mod <- lmer(d15N ~ avespeed_mob.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.avespeed_mob.COEF.mod)
+confint(GULD_N.avespeed_mob.COEF.mod)
+plot(GULD_N.avespeed_mob.COEF.mod)
+
+GULD_C.avespeed_mob.ACTT1.mod <- lmer(d13C ~ avespeed_mob.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.avespeed_mob.ACTT1.mod)
+confint(GULD_C.avespeed_mob.ACTT1.mod)
+plot(GULD_C.avespeed_mob.ACTT1.mod)
+
+GULD_C.avespeed_mob.MEAN.mod <- lmer(d13C ~ avespeed_mob.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.avespeed_mob.MEAN.mod)
+confint(GULD_C.avespeed_mob.MEAN.mod)
+plot(GULD_C.avespeed_mob.MEAN.mod)
+
+GULD_C.avespeed_mob.COEF.mod <- lmer(d13C ~ avespeed_mob.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.avespeed_mob.COEF.mod)
+confint(GULD_C.avespeed_mob.COEF.mod)
+plot(GULD_C.avespeed_mob.COEF.mod)
+#Summary: No effects
+
+
+#aveacceler: (mm/s^2) average rate of acceleration accross the trial
+#aveacceler.MEAN
+#aveacceler.ACTT1
+#aveacceler.COEF
+GULD_N.aveacceler.ACTT1.mod <- lmer(d15N ~ aveacceler.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.aveacceler.ACTT1.mod)
+confint(GULD_N.aveacceler.ACTT1.mod)
+plot(GULD_N.aveacceler.ACTT1.mod)
+
+GULD_N.aveacceler.MEAN.mod <- lmer(d15N ~ aveacceler.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.aveacceler.MEAN.mod)
+confint(GULD_N.aveacceler.MEAN.mod)
+plot(GULD_N.aveacceler.MEAN.mod)
+
+GULD_N.aveacceler.COEF.mod <- lmer(d15N ~ aveacceler.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.aveacceler.COEF.mod)
+confint(GULD_N.aveacceler.COEF.mod)
+plot(GULD_N.aveacceler.COEF.mod)
+
+GULD_C.aveacceler.ACTT1.mod <- lmer(d13C ~ aveacceler.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.aveacceler.ACTT1.mod)
+confint(GULD_C.aveacceler.ACTT1.mod)
+plot(GULD_C.aveacceler.ACTT1.mod)
+
+GULD_C.aveacceler.MEAN.mod <- lmer(d13C ~ aveacceler.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.aveacceler.MEAN.mod)
+confint(GULD_C.aveacceler.MEAN.mod)
+plot(GULD_C.aveacceler.MEAN.mod)
+
+GULD_C.aveacceler.COEF.mod <- lmer(d13C ~ aveacceler.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.aveacceler.COEF.mod)
+confint(GULD_C.aveacceler.COEF.mod)
+plot(GULD_C.aveacceler.COEF.mod)
+#Summary: No effects
+
+
+#propmoving: (proportional) proportion of time mobile
+#propmoving.MEAN
+#propmoving.ACTT1
+#propmoving.invlog.COEF
+GULD_N.propmoving.ACTT1.mod <- lmer(d15N ~ log(1-propmoving.ACTT1) +  (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.propmoving.ACTT1.mod)
+confint(GULD_N.propmoving.ACTT1.mod)
+plot(GULD_N.propmoving.ACTT1.mod)
+
+GULD_N.propmoving.MEAN.mod <- lmer(d15N ~ propmoving.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.propmoving.MEAN.mod)
+confint(GULD_N.propmoving.MEAN.mod)
+plot(GULD_N.propmoving.MEAN.mod)
+
+GULD_N.propmoving.invlog.COEF.mod <- lmer(d15N ~ propmoving.invlog.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.propmoving.invlog.COEF.mod)
+confint(GULD_N.propmoving.invlog.COEF.mod)
+plot(GULD_N.propmoving.invlog.COEF.mod)
+
+GULD_C.propmoving.ACTT1.mod <- lmer(d13C ~ propmoving.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.propmoving.ACTT1.mod)
+confint(GULD_C.propmoving.ACTT1.mod)
+plot(GULD_C.propmoving.ACTT1.mod)
+
+GULD_C.propmoving.MEAN.mod <- lmer(d13C ~ propmoving.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.propmoving.MEAN.mod)
+confint(GULD_C.propmoving.MEAN.mod)
+plot(GULD_C.propmoving.MEAN.mod)
+
+GULD_C.propmoving.invlog.COEF.mod <- lmer(d13C ~ propmoving.invlog.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.propmoving.invlog.COEF.mod)
+confint(GULD_C.propmoving.invlog.COEF.mod)
+plot(GULD_C.propmoving.invlog.COEF.mod)
+#Summary: propmoving.ACTT1 arginal effect of d15N
+
+
+#dist: (mm) total distance travelled during trial
+#dist.ACTT1
+#dist.MEAN
+#dist.COEF
+GULD_N.dist.ACTT1.mod <- lmer(d15N ~ dist.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.dist.ACTT1.mod)
+confint(GULD_N.dist.ACTT1.mod)
+plot(GULD_N.dist.ACTT1.mod)
+
+GULD_N.dist.MEAN.mod <- lmer(d15N ~ dist.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.dist.MEAN.mod)
+confint(GULD_N.dist.MEAN.mod)
+plot(GULD_N.dist.MEAN.mod)
+
+GULD_N.dist.COEF.mod <- lmer(d15N ~ dist.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.dist.COEF.mod)
+confint(GULD_N.dist.COEF.mod)
+plot(GULD_N.dist.COEF.mod)
+
+GULD_C.dist.ACTT1.mod <- lmer(d13C ~ dist.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.dist.ACTT1.mod)
+confint(GULD_C.dist.ACTT1.mod)
+plot(GULD_C.dist.ACTT1.mod)
+
+GULD_C.dist.MEAN.mod <- lmer(d13C ~ dist.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.dist.MEAN.mod)
+confint(GULD_C.dist.MEAN.mod)
+plot(GULD_C.dist.MEAN.mod)
+
+GULD_C.dist.COEF.mod <- lmer(d13C ~ dist.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.dist.COEF.mod)
+confint(GULD_C.dist.COEF.mod)
+plot(GULD_C.dist.COEF.mod)
+#Summary: No effects
+
+
+#frozenevents: (count) the number of times spent frozen during trial (min. frozen period 3 secs)
+#frozenevents.ACTT1
+#frozenevents.MEAN
+#frozenevents.sqrt.COEF
+GULD_N.frozenevents.ACTT1.mod <- lmer(d15N ~ frozenevents.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.frozenevents.ACTT1.mod)
+confint(GULD_N.frozenevents.ACTT1.mod)
+plot(GULD_N.frozenevents.ACTT1.mod)
+
+GULD_N.frozenevents.MEAN.mod <- lmer(d15N ~ frozenevents.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.frozenevents.MEAN.mod)
+confint(GULD_N.frozenevents.MEAN.mod)
+plot(GULD_N.frozenevents.MEAN.mod)
+
+GULD_N.frozenevents.sqrt.COEF.mod <- lmer(d15N ~ frozenevents.sqrt.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.frozenevents.sqrt.COEF.mod)
+confint(GULD_N.frozenevents.sqrt.COEF.mod)
+plot(GULD_N.frozenevents.sqrt.COEF.mod)
+
+GULD_C.frozenevents.ACTT1.mod <- lmer(d13C ~ frozenevents.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.frozenevents.ACTT1.mod)
+confint(GULD_C.frozenevents.ACTT1.mod)
+plot(GULD_C.frozenevents.ACTT1.mod)
+
+GULD_C.frozenevents.MEAN.mod <- lmer(d13C ~ frozenevents.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.frozenevents.MEAN.mod)
+confint(GULD_C.frozenevents.MEAN.mod)
+plot(GULD_C.frozenevents.MEAN.mod)
+
+GULD_C.frozenevents.sqrt.COEF.mod <- lmer(d13C ~ frozenevents.sqrt.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.frozenevents.sqrt.COEF.mod)
+confint(GULD_C.frozenevents.sqrt.COEF.mod)
+plot(GULD_C.frozenevents.sqrt.COEF.mod)
+#Summary: No effects
+
+
+#timefrozen_tot: (s) total time spent frozen during trial
+#timefrozen_tot.ACTT1
+#timefrozen_tot.MEAN
+#timefrozen_tot.sqrt.COEF
+GULD_N.timefrozen_tot.ACTT1.mod <- lmer(d15N ~ timefrozen_tot.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.timefrozen_tot.ACTT1.mod)
+confint(GULD_N.timefrozen_tot.ACTT1.mod)
+plot(GULD_N.timefrozen_tot.ACTT1.mod)
+
+GULD_N.timefrozen_tot.MEAN.mod <- lmer(d15N ~ timefrozen_tot.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.timefrozen_tot.MEAN.mod)
+confint(GULD_N.timefrozen_tot.MEAN.mod)
+plot(GULD_N.timefrozen_tot.MEAN.mod)
+
+GULD_N.timefrozen_tot.sqrt.COEF.mod <- lmer(d15N ~ timefrozen_tot.sqrt.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.timefrozen_tot.sqrt.COEF.mod)
+confint(GULD_N.timefrozen_tot.sqrt.COEF.mod)
+plot(GULD_N.timefrozen_tot.sqrt.COEF.mod)
+
+GULD_C.timefrozen_tot.ACTT1.mod <- lmer(d13C ~ timefrozen_tot.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.timefrozen_tot.ACTT1.mod)
+confint(GULD_C.timefrozen_tot.ACTT1.mod)
+plot(GULD_C.timefrozen_tot.ACTT1.mod)
+
+GULD_C.timefrozen_tot.MEAN.mod <- lmer(d13C ~ timefrozen_tot.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.timefrozen_tot.MEAN.mod)
+confint(GULD_C.timefrozen_tot.MEAN.mod)
+plot(GULD_C.timefrozen_tot.MEAN.mod)
+
+GULD_C.timefrozen_tot.sqrt.COEF.mod <- lmer(d13C ~ timefrozen_tot.sqrt.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.timefrozen_tot.sqrt.COEF.mod)
+confint(GULD_C.timefrozen_tot.sqrt.COEF.mod)
+plot(GULD_C.timefrozen_tot.sqrt.COEF.mod)
+#Summary: timefrozen_tot.ACTT1 marginal effect on N, timefrozen_tot.MEAN marginal effect on C
+
+
+#centrescore: (NA) calculated from the proportion of time spent in each area
+#centrescore.ACTT1
+#centrescore.MEAN
+#centrescore.COEF
+GULD_N.centrescore.ACTT1.mod <- lmer(d15N ~ centrescore.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.centrescore.ACTT1.mod)
+confint(GULD_N.centrescore.ACTT1.mod)
+plot(GULD_N.centrescore.ACTT1.mod)
+
+GULD_N.centrescore.MEAN.mod <- lmer(d15N ~ centrescore.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.centrescore.MEAN.mod)
+confint(GULD_N.centrescore.MEAN.mod)
+plot(GULD_N.centrescore.MEAN.mod)
+
+GULD_N.centrescore.COEF.mod <- lmer(d15N ~ centrescore.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.centrescore.COEF.mod)
+confint(GULD_N.centrescore.COEF.mod)
+plot(GULD_N.centrescore.COEF.mod)
+
+GULD_C.centrescore.ACTT1.mod <- lmer(d13C ~ centrescore.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.centrescore.ACTT1.mod)
+confint(GULD_C.centrescore.ACTT1.mod)
+plot(GULD_C.centrescore.ACTT1.mod)
+
+GULD_C.centrescore.MEAN.mod <- lmer(d13C ~ centrescore.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.centrescore.MEAN.mod)
+confint(GULD_C.centrescore.MEAN.mod)
+plot(GULD_C.centrescore.MEAN.mod)
+
+GULD_C.centrescore.COEF.mod <- lmer(d13C ~ centrescore.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.centrescore.COEF.mod)
+confint(GULD_C.centrescore.COEF.mod)
+plot(GULD_C.centrescore.COEF.mod)
+#Summary: No effects
+
+
+#centretime50: (s) time >5cm away from edge
+#centretime50.ACTT1
+#centretime50.MEAN
+#centretime50.sqrt.COEF
+GULD_N.centretime50.ACTT1.mod <- lmer(d15N ~ centretime50.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.centretime50.ACTT1.mod)
+confint(GULD_N.centretime50.ACTT1.mod)
+plot(GULD_N.centretime50.ACTT1.mod)
+
+GULD_N.centretime50.MEAN.mod <- lmer(d15N ~ centretime50.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.centretime50.MEAN.mod)
+confint(GULD_N.centretime50.MEAN.mod)
+plot(GULD_N.centretime50.MEAN.mod)
+
+GULD_N.centretime50.sqrt.COEF.mod <- lmer(d15N ~ centretime50.sqrt.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.centretime50.sqrt.COEF.mod)
+confint(GULD_N.centretime50.sqrt.COEF.mod)
+plot(GULD_N.centretime50.sqrt.COEF.mod)
+
+GULD_C.centretime50.ACTT1.mod <- lmer(d13C ~ centretime50.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.centretime50.ACTT1.mod)
+confint(GULD_C.centretime50.ACTT1.mod)
+plot(GULD_C.centretime50.ACTT1.mod)
+
+GULD_C.centretime50.MEAN.mod <- lmer(d13C ~ centretime50.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.centretime50.MEAN.mod)
+confint(GULD_C.centretime50.MEAN.mod)
+plot(GULD_C.centretime50.MEAN.mod)
+
+GULD_C.centretime50.sqrt.COEF.mod <- lmer(d13C ~ centretime50.sqrt.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.centretime50.sqrt.COEF.mod)
+confint(GULD_C.centretime50.sqrt.COEF.mod)
+plot(GULD_C.centretime50.sqrt.COEF.mod)
+#Summary: No effects
+
+
+#centretime75: (s) time >7.5cm away from edge
+#centretime75.ACTT1
+#centretime75.MEAN
+#centretime75.sqrt.COEF
+GULD_N.centretime75.ACTT1.mod <- lmer(d15N ~ centretime75.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.centretime75.ACTT1.mod)
+confint(GULD_N.centretime75.ACTT1.mod)
+plot(GULD_N.centretime75.ACTT1.mod)
+
+GULD_N.centretime75.MEAN.mod <- lmer(d15N ~ centretime75.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.centretime75.MEAN.mod)
+confint(GULD_N.centretime75.MEAN.mod)
+plot(GULD_N.centretime75.MEAN.mod)
+
+GULD_N.centretime75.sqrt.COEF.mod <- lmer(d15N ~ centretime75.sqrt.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.centretime75.sqrt.COEF.mod)
+confint(GULD_N.centretime75.sqrt.COEF.mod)
+plot(GULD_N.centretime75.sqrt.COEF.mod)
+
+GULD_C.centretime75.ACTT1.mod <- lmer(d13C ~ centretime75.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.centretime75.ACTT1.mod)
+confint(GULD_C.centretime75.ACTT1.mod)
+plot(GULD_C.centretime75.ACTT1.mod)
+
+GULD_C.centretime75.MEAN.mod <- lmer(d13C ~ centretime75.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.centretime75.MEAN.mod)
+confint(GULD_C.centretime75.MEAN.mod)
+plot(GULD_C.centretime75.MEAN.mod)
+
+GULD_C.centretime75.sqrt.COEF.mod <- lmer(d13C ~ centretime75.sqrt.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.centretime75.sqrt.COEF.mod)
+confint(GULD_C.centretime75.sqrt.COEF.mod)
+plot(GULD_C.centretime75.sqrt.COEF.mod)
+#Summary: No effects
+
+
+#centretime100: (s) time >10cm away from edge
+#centretime100.ACTT1
+#centretime100.MEAN
+#centretime100.sqrt.COEF
+GULD_N.centretime100.ACTT1.mod <- lmer(d15N ~ centretime100.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.centretime100.ACTT1.mod)
+confint(GULD_N.centretime100.ACTT1.mod)
+plot(GULD_N.centretime100.ACTT1.mod)
+
+GULD_N.centretime100.MEAN.mod <- lmer(d15N ~ centretime100.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.centretime100.MEAN.mod)
+confint(GULD_N.centretime100.MEAN.mod)
+plot(GULD_N.centretime100.MEAN.mod)
+
+GULD_N.centretime100.sqrt.COEF.mod <- lmer(d15N ~ centretime100.sqrt.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.centretime100.sqrt.COEF.mod)
+confint(GULD_N.centretime100.sqrt.COEF.mod)
+plot(GULD_N.centretime100.sqrt.COEF.mod)
+
+GULD_C.centretime100.ACTT1.mod <- lmer(d13C ~ centretime100.ACTT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.centretime100.ACTT1.mod)
+confint(GULD_C.centretime100.ACTT1.mod)
+plot(GULD_C.centretime100.ACTT1.mod)
+
+GULD_C.centretime100.MEAN.mod <- lmer(d13C ~ centretime100.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.centretime100.MEAN.mod)
+confint(GULD_C.centretime100.MEAN.mod)
+plot(GULD_C.centretime100.MEAN.mod)
+
+GULD_C.centretime100.sqrt.COEF.mod <- lmer(d13C ~ centretime100.sqrt.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.centretime100.sqrt.COEF.mod)
+confint(GULD_C.centretime100.sqrt.COEF.mod)
+plot(GULD_C.centretime100.sqrt.COEF.mod)
+#Summary: centretime100.ACTT1 marginal effect on d13C (sig. if sqrt transformed)
+
+
+#emergelat.bin: binomially converted latency to emerge from the shelter
+#emergelat.bin.EXPLT1
+#emergelat.bin.MEAN        
+#emergelat.bin.COEF        
+GULD_N.emergelat.bin.EXPLT1.mod <- lmer(d15N ~ emergelat.bin.EXPLT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.emergelat.bin.EXPLT1.mod)
+confint(GULD_N.emergelat.bin.EXPLT1.mod)
+plot(GULD_N.emergelat.bin.EXPLT1.mod)
+
+GULD_N.emergelat.bin.MEAN.mod <- lmer(d15N ~ emergelat.bin.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.emergelat.bin.MEAN.mod)
+confint(GULD_N.emergelat.bin.MEAN.mod)
+plot(GULD_N.emergelat.bin.MEAN.mod)
+
+GULD_N.emergelat.bin.COEF.mod <- lmer(d15N ~ emergelat.bin.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.emergelat.bin.COEF.mod)
+confint(GULD_N.emergelat.bin.COEF.mod)
+plot(GULD_N.emergelat.bin.COEF.mod)
+
+GULD_C.emergelat.bin.EXPLT1.mod <- lmer(d13C ~ emergelat.bin.EXPLT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.emergelat.bin.EXPLT1.mod)
+confint(GULD_C.emergelat.bin.EXPLT1.mod)
+plot(GULD_C.emergelat.bin.EXPLT1.mod)
+
+GULD_C.emergelat.bin.MEAN.mod <- lmer(d13C ~ emergelat.bin.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.emergelat.bin.MEAN.mod)
+confint(GULD_C.emergelat.bin.MEAN.mod)
+plot(GULD_C.emergelat.bin.MEAN.mod)
+
+GULD_C.emergelat.bin.COEF.mod <- lmer(d13C ~ emergelat.bin.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.emergelat.bin.COEF.mod)
+confint(GULD_C.emergelat.bin.COEF.mod)
+plot(GULD_C.emergelat.bin.COEF.mod)
+#Summary: No effects
+
+
+#endpointlat: binomially converted latency to explore to the endpoint from trial start time
+#endpointlat.bin.EXPLT1
+#endpointlat.bin.MEAN
+#endpointlat.bin.COEF
+GULD_N.endpointlat.bin.EXPLT1.mod <- lmer(d15N ~ endpointlat.bin.EXPLT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.endpointlat.bin.EXPLT1.mod)
+confint(GULD_N.endpointlat.bin.EXPLT1.mod)
+plot(GULD_N.endpointlat.bin.EXPLT1.mod)
+
+GULD_N.endpointlat.bin.MEAN.mod <- lmer(d15N ~ endpointlat.bin.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.endpointlat.bin.MEAN.mod)
+confint(GULD_N.endpointlat.bin.MEAN.mod)
+plot(GULD_N.endpointlat.bin.MEAN.mod)
+
+GULD_N.endpointlat.bin.COEF.mod <- lmer(d15N ~ endpointlat.bin.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.endpointlat.bin.COEF.mod)
+confint(GULD_N.endpointlat.bin.COEF.mod)
+plot(GULD_N.endpointlat.bin.COEF.mod)
+
+GULD_C.endpointlat.bin.EXPLT1.mod <- lmer(d13C ~ endpointlat.bin.EXPLT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.endpointlat.bin.EXPLT1.mod)
+confint(GULD_C.endpointlat.bin.EXPLT1.mod)
+plot(GULD_C.endpointlat.bin.EXPLT1.mod)
+
+GULD_C.endpointlat.bin.MEAN.mod <- lmer(d13C ~ endpointlat.bin.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.endpointlat.bin.MEAN.mod)
+confint(GULD_C.endpointlat.bin.MEAN.mod)
+plot(GULD_C.endpointlat.bin.MEAN.mod)
+
+GULD_C.endpointlat.bin.COEF.mod <- lmer(d13C ~ endpointlat.bin.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.endpointlat.bin.COEF.mod)
+confint(GULD_C.endpointlat.bin.COEF.mod)
+plot(GULD_C.endpointlat.bin.COEF.mod)
+#Summary: No effects
+
+
+#endpointspeed: (s) latency to explore to the endpoint from time of emergence (note: 46 NAs, where fish did not reach the end)
+#endpointspeed.EXPLT1
+#endpointspeed.MEAN
+#endpointspeed.ln.COEF
+GULD_N.endpointspeed.EXPLT1.mod <- lmer(d15N ~ endpointspeed.EXPLT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.endpointspeed.EXPLT1.mod)
+confint(GULD_N.endpointspeed.EXPLT1.mod)
+plot(GULD_N.endpointspeed.EXPLT1.mod)
+
+GULD_N.endpointspeed.MEAN.mod <- lmer(d15N ~ endpointspeed.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.endpointspeed.MEAN.mod)
+confint(GULD_N.endpointspeed.MEAN.mod)
+plot(GULD_N.endpointspeed.MEAN.mod)
+
+GULD_N.endpointspeed.ln.COEF.mod <- lmer(d15N ~ endpointspeed.ln.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.endpointspeed.ln.COEF.mod)
+confint(GULD_N.endpointspeed.ln.COEF.mod)
+plot(GULD_N.endpointspeed.ln.COEF.mod)
+
+GULD_C.endpointspeed.EXPLT1.mod <- lmer(d13C ~ endpointspeed.EXPLT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.endpointspeed.EXPLT1.mod)
+confint(GULD_C.endpointspeed.EXPLT1.mod)
+plot(GULD_C.endpointspeed.EXPLT1.mod)
+
+GULD_C.endpointspeed.MEAN.mod <- lmer(d13C ~ endpointspeed.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.endpointspeed.MEAN.mod)
+confint(GULD_C.endpointspeed.MEAN.mod)
+plot(GULD_C.endpointspeed.MEAN.mod)
+
+GULD_C.endpointspeed.ln.mod <- lmer(d13C ~ endpointspeed.ln.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.endpointspeed.ln.mod)
+confint(GULD_C.endpointspeed.ln.mod)
+plot(GULD_C.endpointspeed.ln.mod)
+#Summary: No effects
+
+
+#refugereturnlat: (s) latency to return to refuge after first emergence (note: 30 NAs, where fish did not return, or emerge at all)
+#refugereturnlat.EXPLT1
+#refugereturnlat.MEAN
+#refugereturnlat.ln.COEF
+GULD_N.refugereturnlat.EXPLT1.mod <- lmer(d15N ~ refugereturnlat.EXPLT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.refugereturnlat.EXPLT1.mod)
+confint(GULD_N.refugereturnlat.EXPLT1.mod)
+plot(GULD_N.refugereturnlat.EXPLT1.mod)
+
+GULD_N.refugereturnlat.MEAN.mod <- lmer(d15N ~ refugereturnlat.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.refugereturnlat.MEAN.mod)
+confint(GULD_N.refugereturnlat.MEAN.mod)
+plot(GULD_N.refugereturnlat.MEAN.mod)
+
+GULD_N.refugereturnlat.ln.COEF.mod <- lmer(d15N ~ refugereturnlat.ln.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_N.refugereturnlat.ln.COEF.mod)
+confint(GULD_N.refugereturnlat.ln.COEF.mod)
+plot(GULD_N.refugereturnlat.ln.COEF.mod)
+
+GULD_C.refugereturnlat.EXPLT1.mod <- lmer(d13C ~ refugereturnlat.EXPLT1 + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.refugereturnlat.EXPLT1.mod)
+confint(GULD_C.refugereturnlat.EXPLT1.mod)
+plot(GULD_C.refugereturnlat.EXPLT1.mod)
+
+GULD_C.refugereturnlat.MEAN.mod <- lmer(d13C ~ refugereturnlat.MEAN + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.refugereturnlat.MEAN.mod)
+confint(GULD_C.refugereturnlat.MEAN.mod)
+plot(GULD_C.refugereturnlat.MEAN.mod)
+
+GULD_C.refugereturnlat.ln.mod <- lmer(d13C ~ refugereturnlat.ln.COEF + (1|FishID), data=GULD_processed.fishfull)
+summary(GULD_C.refugereturnlat.ln.mod)
+confint(GULD_C.refugereturnlat.ln.mod)
+plot(GULD_C.refugereturnlat.ln.mod)
+#Summary: No effects
+
+
+
+#Additional options: 
+#excluding SIA outlier, G34)----
+

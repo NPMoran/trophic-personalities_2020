@@ -9,16 +9,14 @@
 #### Guldborgsund SIA 3. SIA Variance analysis #### 
 
 
-
 Sys.setenv(LANG = "en")
 
 #Loading required packages- 
-library(dplyr); library(lme4); library(rptR); library(data.table)
+library(dplyr); library(lme4); library(lmerTest); library(rptR); library(data.table)
 library(ggplot2); library(ggpubr); library(RColorBrewer)
 
 
 ## SIA.3.1. Round goby isotope distribution and variation  ----
-
 GULD_SIA1 <- read.csv("~/trophicpersonalities_A/Data_GuldborgsundSIA/GULD_SIAbatch1dat.csv")
 labels(GULD_SIA1)
 GULD_SIA1 <- rename(GULD_SIA1, d15N = d15N....vs.AIR)
