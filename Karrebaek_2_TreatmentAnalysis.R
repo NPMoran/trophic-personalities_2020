@@ -24,7 +24,7 @@ simpletheme <-   theme(axis.text.y = element_text(size = 10, colour = "black"), 
 KARRact.processed <- read.csv("~/trophic-personalities_2020/Data_Karrebaek/KARR_ACTdat_processed.csv")
 labels(KARRact.processed)
 
-getwd()
+
 #Z-transformation/scaling of continuous fixed effects
 KARRact.processed$TL.C <- scale(KARRact.processed$TL)  
 KARRact.processed$ConditionFactor.C <- scale(KARRact.processed$ConditionFactor)  
@@ -51,7 +51,7 @@ ggqqplot(sqrt(KARRact.processed$propmoving)) #sqrt transformation is improved
 ggplot(KARRact.processed) + aes(x = centrescore) + geom_histogram(color="black", fill="lightblue", binwidth = 0.2) + simpletheme 
 ggqqplot(KARRact.processed$centrescore) #minimal positive skew 
 ggplot(KARRact.processed) + aes(x = sqrt(centrescore)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.05) + simpletheme 
-ggqqplot(sqrt(KARRact.processed$centrescore)) #root transformation is improved
+ggqqplot(sqrt(KARRact$centrescore)) #root transformation is improved
 
 
 #ggplot(KARRact.processed) + aes(x = avespeed_tot) + geom_histogram(color="black", fill="lightblue", binwidth = 4.5) + simpletheme 
