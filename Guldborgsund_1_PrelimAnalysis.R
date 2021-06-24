@@ -131,7 +131,7 @@ abline(v = 25, col="purple") #Set to 25mm/s capture stable difference between be
 #Loading required dataset-
 GULDact <- read.csv("~/trophicpersonalities_A/Data_Guldborgsund/GULD_ACTdat.csv", strip.white = TRUE)
 labels(GULDact)
-GULDact <- subset (GULDact, PITID != 'NOFISH') #excluding rows with no fish
+GULDact <- subset(GULDact, PITID != 'NOFISH') #excluding rows with no fish
 nrow(GULDact) #124 trials
 n_distinct(GULDact$PITID) #data for 47 fish
 

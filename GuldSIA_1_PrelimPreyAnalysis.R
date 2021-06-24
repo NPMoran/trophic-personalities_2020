@@ -22,12 +22,12 @@ Sys.setenv(LANG = "en")
 #Bundfaunaraekke: Vaelg alle
 #Bundfaunaart: Vaelg alle
 #Prøvetagningsudstyr: Vaelg alle
-Novanadat <- read.csv("~/trophicpersonalities_A/Data_GuldborgsundSIA/HentData_UYGUPNWUIZ.csv", sep = ";")
+Novanadat <- read.csv("~/trophic-personalities_2020/Data_GuldborgsundSIA/HentData_UYGUPNWUIZ.csv", sep = ";")
 head(Novanadat)
 
 #Frequency of species by entries
 Novanadat_specfreq <- as.data.frame(table(Novanadat$Artsnavn))
-write.csv(Novanadat_specfreq, "~/trophicpersonalities_A/Data_GuldborgsundSIA/HentData_UYGUPNWUIZ_specfreq.csv")
+write.csv(Novanadat_specfreq, "~/trophic-personalities_2020/Data_GuldborgsundSIA/HentData_UYGUPNWUIZ_specfreq.csv")
 
 
 ##Positional data format editing (not currently required)

@@ -44,7 +44,7 @@ GULD_SIAfish$DateRemoved <- ""
 GULD_SIAfish$DateCleaned <- ""
 GULD_SIAfish$DateDried <- ""
 GULD_SIAfish$Notes <- ""
-write.csv(GULD_SIAfish, "~/trophicpersonalities_A/Data_GuldborgsundSIA/GULD_SIAfishproc.csv")
+write.csv(GULD_SIAfish, "~/trophic-personalities_2020/Data_GuldborgsundSIA/GULD_SIAfishproc.csv")
 
 
 #Building data frame for SIA analysis batch 1
@@ -93,7 +93,7 @@ GULD_SIAbatch1$δ15N <- ""
 GULD_SIAbatch1$δC13 <- ""
 GULD_SIAbatch1$N_percentage <- ""
 GULD_SIAbatch1$C_percentage <- ""
-write.csv(GULD_SIAbatch1, "~/trophicpersonalities_A/Data_GuldborgsundSIA/GULD_SIAbatch1.csv")
+write.csv(GULD_SIAbatch1, "~/trophic-personalities_2020/Data_GuldborgsundSIA/GULD_SIAbatch1.csv")
 
 
 #Building data frame for SIA analysis batch 3
@@ -111,7 +111,7 @@ GULD_SIAbatch3$δ15N <- ""
 GULD_SIAbatch3$δC13 <- ""
 GULD_SIAbatch3$N_percentage <- ""
 GULD_SIAbatch3$C_percentage <- ""
-write.csv(GULD_SIAbatch3, "~/trophicpersonalities_A/Data_GuldborgsundSIA/GULD_SIAbatch3.csv")
+write.csv(GULD_SIAbatch3, "~/trophic-personalities_2020/Data_GuldborgsundSIA/GULD_SIAbatch3.csv")
 
 
 #checking all samples are accounted for
