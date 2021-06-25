@@ -16,17 +16,17 @@ library(dplyr); library(lme4); library(lmerTest); library(car); library(data.tab
 
 
 #Uploading phenotypic data calculated in Guldborgsund_2_VarianceAnalysis
-GULD_phenotypes <- read.csv('~/trophicpersonalities_A/Data_Guldborgsund/GULD_phenotypes.csv', strip.white = TRUE)
+GULD_phenotypes <- read.csv('~/trophic-personalities_2020/Data_Guldborgsund/GULD_phenotypes.csv', strip.white = TRUE)
 
 #Uploading stable isotope data processed 
-GULD_processed.fish <- read.csv('~/trophicpersonalities_A/Data_GuldborgsundSIA/GULD_processed.fish.csv', strip.white = TRUE)
+GULD_processed.fins <- read.csv('~/trophic-personalities_2020/Data_GuldborgsundSIA/GULD_processed.fins.csv', strip.white = TRUE)
 
-GULD_processed.fishfull <- merge(GULD_processed.fish, GULD_phenotypes, by = 'FishID', all.x = TRUE)
+GULD_processed.fishfull <- merge(GULD_processed.fins, GULD_phenotypes, by = 'FishID', all.x = TRUE)
 labels(GULD_processed.fishfull)
 
 
 ## SIA.4.1. Raw correlations between fish traits and d15N d13C ----
-GULD_processed.fishmeans <- setDT(GULD_processed.fish)[ , list(d15N_mean = mean(d15N), d15N_sd = sd(d15N),
+GULD_processed.fishmeans <- setDT(GULD_processed.fins)[ , list(d15N_mean = mean(d15N), d15N_sd = sd(d15N),
                                                                d13C_mean = mean(d13C), d13C_sd = sd(d13C)), 
                                                         by = .(FishID)]
 GULD_processed.fishmeans <- merge(GULD_processed.fishmeans, GULD_phenotypes, by = 'FishID', all.x = TRUE)
