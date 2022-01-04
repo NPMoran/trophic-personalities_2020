@@ -81,8 +81,7 @@ height_width_arenas
 #  Frozen event. Max. Dist- 25mm (originally set to 5mm)
 #  Frozen Event Min. Time- 3s
 #  Transitions time Int.- 7s (not used)
-# Statistics Advanced Options:
-#  Mob min. speed- 10mm/s (originally set to 1mm/s)
+
 
 # Tracking Settings: Use defaults
 
