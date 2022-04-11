@@ -12,10 +12,11 @@ Sys.setenv(LANG = "en")
 
 #Loading required packages- 
 library(ggplot2); library(dplyr); library(car); library(performance)
+simpletheme <-   theme(axis.text.y = element_text(size = 10, colour = "black"),axis.text.x = element_text(size = 10, colour = "black"), panel.background = element_rect(fill = "white"),axis.title.y  = element_text(size=12, vjust = 2),axis.title.x  = element_text(size=12, vjust = 0.1),panel.border = element_rect(colour = "black", fill=NA, size = 1))
 
 
 ## K.3.1 Full Treatment*TrialDay Plots ----
-KARRact.processed <- read.csv("~/trophicpersonalities_A/Data_Karrebaek/KARR_ACTdat_processed.csv")
+KARRact.processed <- read.csv("~/trophic-personalities_2020/Data_Karrebaek/KARR_ACTdat_processed.csv")
 KARRact.processed$TrialDay <- ordered(KARRact.processed$TrialDay, levels = c("day 0","day 2","day 10"))
 KARRact.processed$Treatment <- ordered(KARRact.processed$Treatment, levels = c("control","PITtagged","PIT+clip"))
 
