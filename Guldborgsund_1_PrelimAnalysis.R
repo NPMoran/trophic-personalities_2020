@@ -214,7 +214,7 @@ ggplot(GULDact, aes(x = TankID, y = centretime50)) + geom_boxplot(fill = 'deepsk
 ggplot(GULDact, aes(x = TankID, y = centretime75)) + geom_boxplot(fill = 'deepskyblue') + simpletheme 
 ggplot(GULDact, aes(x = TankID, y = centretime100)) + geom_boxplot(fill = 'deepskyblue') + simpletheme 
 ggplot(GULDact, aes(x = TankID, y = centrescore)) + geom_boxplot(fill = 'deepskyblue') + simpletheme 
-#no clear patterns across trial rounds
+#no clear patterns across holding tanks
 
 
 
