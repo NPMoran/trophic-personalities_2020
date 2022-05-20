@@ -1,12 +1,13 @@
-# Project: Personality in Community Ecology Responses: Integrating the behaviour and species interactions of a marine invader — PinCER
 #
-# Experiment: Quantification of among-individual behavioural and trophic variation the invasive round goby
+# Title: How to Quantify Behavioural and Trophic Variation Among-Individuals: A case study using an invasive marine fish
 #
-# Author: Nicholas Moran, The Centre for Ocean Life- DTU Aqua, Technical University of Denmark
+# Author: Nicholas Moran, 
+#         Centre for Ocean Life- DTU Aqua
+#         National Institute for Aquatic Resources
+#         Technical University of Denmark
 
 
-
-#### Guldborgsund 1. Preliminary data processing and analysis ####
+#### 1. Preliminary data processing and analysis ####
 
 Sys.setenv(LANG = "en")
 
@@ -18,7 +19,7 @@ simpletheme <-   theme(axis.text.y = element_text(size = 10, colour = "black"),a
 
 
 
-## G.1.1 ToxTrac calibration (ACT trials) ----
+## 1.1 ToxTrac calibration (ACT trials) ----
 
 #Calibration pixel/mm ratios are calculated manually for each arena:
 
