@@ -14,7 +14,7 @@ Sys.setenv(LANG = "en")
 #Loading required packages- 
 library(dplyr); library(ggplot2); library(ggpubr)
 
-#Creating a general theme for ggplots-
+#General theme for ggplots-
 simpletheme <-   theme(axis.text.y = element_text(size = 10, colour = "black"),axis.text.x = element_text(size = 10, colour = "black"), panel.background = element_rect(fill = "white"),axis.title.y  = element_text(size=12, vjust = 2),axis.title.x  = element_text(size=12, vjust = 0.1),panel.border = element_rect(colour = "black", fill=NA, size = 1))
 
 
