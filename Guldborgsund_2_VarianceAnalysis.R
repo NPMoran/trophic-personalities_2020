@@ -1,23 +1,20 @@
-# Project: Personality in Community Ecology Responses: Integrating the behaviour and species interactions of a marine invader — PinCER
-#
-# Experiment: Quantification of among-individual behavioural and trophic variation the invasive round goby
-#
-# Author: Nicholas Moran, The Centre for Ocean Life- DTU Aqua, Technical University of Denmark
+# Title: Behavioural and trophic variation within a well-established invasive round goby population 
+# Author: Nicholas Moran
+# Date: March 2023
 
 
 
-#### Guldborgsund 2. Variance Analysis ####
-
+#### 2. Behavioural analysis ####
 Sys.setenv(LANG = "en")
-
 #Loading required packages- 
 library(dplyr); library(ggplot2); library(ggpubr)
 library(lme4); library(lmerTest); library(car); library(rptR); library(performance)
-
 #General theme for ggplots-
 simpletheme <-   theme(axis.text.y = element_text(size = 10, colour = "black"), axis.text.x = element_text(size = 10, colour = "black"),  panel.background = element_rect(fill = "white"), axis.title.y  = element_text(size=12, vjust = 2), axis.title.x  = element_text(size=12, vjust = 0.1), panel.border = element_rect(colour = "black", fill=NA, size = 1))
 
-## G.2.1. ACT distributions and variance analysis ----
+
+
+## 2.1. Activity, distributions and variance analysis ----
 GULDact.processed <- read.csv("~/trophicpersonalities_A/Data_Guldborgsund/GULD_ACTdat_processed.csv")
 nrow(GULDact.processed) #118 rows
 n_distinct(GULDact.processed$FishID) #43 fish included in analysis
