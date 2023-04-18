@@ -15,14 +15,14 @@ simpletheme <-   theme(axis.text.y = element_text(size = 10, colour = "black"), 
 
 
 ## 2.1. Activity, distributions and variance analysis ----
-GULDact.processed <- read.csv("~/trophicpersonalities_A/Data_Guldborgsund/GULD_ACTdat_processed.csv")
+GULDact.processed <- read.csv("~/trophic-personalities_2020/dat_behaviour/GULD_ACTdat_processed.csv")
 nrow(GULDact.processed) #118 rows
 n_distinct(GULDact.processed$FishID) #43 fish included in analysis
 
 #Z-transformation/scaling of continuous fixed effects
 GULDact.processed$TL.C <- scale(GULDact.processed$TL)  
 GULDact.processed$ConditionFactor.C <- scale(GULDact.processed$ConditionFactor)  
-GULDact.processed$InfectionScore.C <- scale(GULDact.processed$InfectionScore)  
+GULDact.processed$CondManual.C <- scale(GULDact.processed$CondManual)  
 
 
 # in: avespeed_tot
@@ -33,6 +33,7 @@ GULDact.processed$InfectionScore.C <- scale(GULDact.processed$InfectionScore)
 #     frozenevents
 #     timefrozen_tot
 #     centrescore
+#     centrescore2
 #     centretime50        
 #     centretime75
 #     centretime100 
@@ -46,15 +47,15 @@ ggqqplot(GULDact.processed$avespeed_tot) #approximately normal
 ggplot(GULDact.processed) + aes(x = avespeed_mob) + geom_histogram(color="black", fill="lightblue", binwidth = 5) + simpletheme 
 ggqqplot(GULDact.processed$avespeed_mob) #minor issue with 4-5 outliers at the very low end
 
-#aveacceler: (mm/s^2) average rate of acceleration accross the trial
-ggplot(GULDact.processed) + aes(x = aveacceler) + geom_histogram(color="black", fill="lightblue", binwidth = 14) + simpletheme 
-ggqqplot(GULDact.processed$aveacceler) #approximately normal
-
 #propmoving: (proportional) proportion of time mobile
 ggplot(GULDact.processed) + aes(x = propmoving) + geom_histogram(color="black", fill="lightblue", binwidth = 0.055) + simpletheme 
 ggqqplot(GULDact.processed$propmoving) #some left skew
 ggplot(GULDact.processed) + aes(x = log(1 - propmoving)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.1) + simpletheme 
 ggqqplot(log(1 - GULDact.processed$propmoving)) #inverse log approximately normals
+
+#aveacceler: (mm/s^2) average rate of acceleration accross the trial
+ggplot(GULDact.processed) + aes(x = aveacceler) + geom_histogram(color="black", fill="lightblue", binwidth = 14) + simpletheme 
+ggqqplot(GULDact.processed$aveacceler) #approximately normal
 
 #dist: (mm) total distance travelled during trial
 ggplot(GULDact.processed) + aes(x = dist) + geom_histogram(color="black", fill="lightblue", binwidth = 4800) + simpletheme 
@@ -76,7 +77,13 @@ ggqqplot(sqrt(GULDact.processed$timefrozen_tot)) #sqrt transformation closer to 
 ggplot(GULDact.processed) + aes(x = centrescore) + geom_histogram(color="black", fill="lightblue", binwidth = 0.2) + simpletheme 
 ggqqplot(GULDact.processed$centrescore) #potential minimal positive skew
 ggplot(GULDact.processed) + aes(x = sqrt(centrescore)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.05) + simpletheme 
-ggqqplot(sqrt(GULDact.processed$centrescore)) #sqrt transforamtion is better but maybe not neccessary
+ggqqplot(sqrt(GULDact.processed$centrescore)) #sqrt transformation is better but maybe not neccessary
+
+#centrescore: (NA) calculated from the proportion of time spent in each area
+ggplot(GULDact.processed) + aes(x = centrescore2) + geom_histogram(color="black", fill="lightblue", binwidth = 0.5) + simpletheme 
+ggqqplot(GULDact.processed$centrescore2) #potential minimal positive skew
+ggplot(GULDact.processed) + aes(x = sqrt(centrescore2)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.1) + simpletheme 
+ggqqplot(sqrt(GULDact.processed$centrescore2)) #sqrt transformation is better but maybe not neccessary
 
 #centretime50: (s) time >5cm away from edge
 ggplot(GULDact.processed) + aes(x = centretime50) + geom_histogram(color="black", fill="lightblue", binwidth = 50) + simpletheme 
@@ -88,13 +95,13 @@ ggqqplot(sqrt(GULDact.processed$centretime50)) #sqrt transformation close to nor
 ggplot(GULDact.processed) + aes(x = centretime75) + geom_histogram(color="black", fill="lightblue", binwidth = 50) + simpletheme 
 ggqqplot(GULDact.processed$centretime75) #strong positive skew
 ggplot(GULDact.processed) + aes(x = sqrt(centretime75)) + geom_histogram(color="black", fill="lightblue", binwidth = 2) + simpletheme 
-ggqqplot(sqrt(GULDact.processed$centretime75)) #sqrt transformation closer to normal
+ggqqplot(sqrt(GULDact.processed$centretime75)) #sqrt transformation close to normal
 
 #centretime100: (s) time >10cm away from edge
 ggplot(GULDact.processed) + aes(x = centretime100) + geom_histogram(color="black", fill="lightblue", binwidth = 10) + simpletheme 
 ggqqplot(GULDact.processed$centretime100) #strong skew
 ggplot(GULDact.processed) + aes(x = sqrt(centretime100)) + geom_histogram(color="black", fill="lightblue", binwidth = 1) + simpletheme 
-ggqqplot(sqrt(GULDact.processed$centretime100)) #sqrt transformation closer to normal
+ggqqplot(sqrt(GULDact.processed$centretime100)) #sqrt transformation close to normal
 
 
 
@@ -102,29 +109,29 @@ ggqqplot(sqrt(GULDact.processed$centretime100)) #sqrt transformation closer to n
 #  All ran as linear mixed effects models as distributions were/were transformed to approximately normal
 
 #  Variable        Transformation    Random effects                                 Fixed effects
-#  avespeed_tot    nil               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL + ConditionFactor + InfectionScore
-#  avespeed_mob    nil               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL + ConditionFactor + InfectionScore
-#  aveacceler       nii               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL + ConditionFactor + InfectionScore
-#  propmoving      log(1 - x)        TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL + ConditionFactor + InfectionScore
-#  dist            nil               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL + ConditionFactor + InfectionScore
-#  frozenevents    sqrt              TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL + ConditionFactor + InfectionScore
-#  timefrozen_tot  sqrt              TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL + ConditionFactor + InfectionScore
-#  centrescore     nil               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL + ConditionFactor + InfectionScore
-#  centretime50    sqrt              TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL + ConditionFactor + InfectionScore
-#  centretime75    sqrt              TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL + ConditionFactor + InfectionScore
-#  centretime100   sqrt              TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL + ConditionFactor + InfectionScore
+#  avespeed_tot    nil               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
+#  avespeed_mob    nil               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
+#  aveacceler       nii               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
+#  propmoving      log(1 - x)        TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL .C+ CondiManual.C
+#  dist            nil               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
+#  frozenevents    sqrt              TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
+#  timefrozen_tot  sqrt              TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
+#  centrescore     nil               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
+#  centretime50    sqrt              TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
+#  centretime75    sqrt              TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
+#  centretime100   sqrt              TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
 
 
 GULD_avespeed_tot.mod <- lmer(avespeed_tot ~ 
-                         Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+                         Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
 Anova(GULD_avespeed_tot.mod)                 #Sex, ConditionFactor.C effects
-summary(GULD_avespeed_tot.mod)               #TankID resolves no variance, TrialRound extremely little
+summary(GULD_avespeed_tot.mod)               #Can Exclude TankID, TrialRound
 plot(GULD_avespeed_tot.mod)                  #No clustering issues
 r2_nakagawa(GULD_avespeed_tot.mod)           #random structure error
 
 
 GULD_avespeed_mob.mod <- lmer(avespeed_mob ~ 
-                                Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+                                Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
 Anova(GULD_avespeed_mob.mod)                 #Sex effects
 summary(GULD_avespeed_mob.mod)               #ArenaID resolves no variance, TankID extremely little
 plot(GULD_avespeed_mob.mod)                  #No clustering issues
@@ -132,7 +139,7 @@ r2_nakagawa(GULD_avespeed_mob.mod)           #random structure error
 
 
 GULD_aveacceler.mod <- lmer(aveacceler ~ 
-                                Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+                              Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
 Anova(GULD_aveacceler.mod)                 #Sex effects
 summary(GULD_aveacceler.mod)               #TrialRound resolves no variance, TankID extremely little
 plot(GULD_aveacceler.mod)                  #No clustering issues
@@ -140,7 +147,7 @@ r2_nakagawa(GULD_aveacceler.mod)           #random structure error
 
 
 GULD_propmoving.invlog.mod <- lmer(log(1-propmoving) ~ 
-                              Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+                                     Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
 Anova(GULD_propmoving.invlog.mod)                 #Sex, ConditionFactor.C effects
 summary(GULD_propmoving.invlog.mod)               #TankID and TrialRound resolves no variance
 plot(GULD_propmoving.invlog.mod)                  #No clustering issues
@@ -148,7 +155,7 @@ r2_nakagawa(GULD_propmoving.invlog.mod)           #random structure error
 
 
 GULD_dist.mod <- lmer(dist ~ 
-                                     Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+                        Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
 Anova(GULD_dist.mod)                 #Sex, ConditionFactor.C effects
 summary(GULD_dist.mod)               #TankID resolves no variance, Trial round very little
 plot(GULD_dist.mod)                  #No clustering issues
@@ -156,7 +163,7 @@ r2_nakagawa(GULD_dist.mod)           #random structure error
 
 
 GULD_frozenevents.sqrt.mod <- lmer(sqrt(frozenevents) ~ 
-                        Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+                                     Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
 Anova(GULD_frozenevents.sqrt.mod)                 #ConditionFactor effect
 summary(GULD_frozenevents.sqrt.mod)               #TrialRound resolves no variance, TankID extremely little
 plot(GULD_frozenevents.sqrt.mod)                  #No clustering issues
@@ -164,7 +171,7 @@ r2_nakagawa(GULD_frozenevents.sqrt.mod)           #random structure error
 
 
 GULD_timefrozen_tot.sqrt.mod <- lmer(sqrt(timefrozen_tot) ~ 
-                                     Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+                                       Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
 Anova(GULD_timefrozen_tot.sqrt.mod)                 #Sex, ConditionFactor.C effects
 summary(GULD_timefrozen_tot.sqrt.mod)               #TankID and TrialRound resolve no variance
 plot(GULD_timefrozen_tot.sqrt.mod)                  #No clustering issues
@@ -172,15 +179,23 @@ r2_nakagawa(GULD_timefrozen_tot.sqrt.mod)           #random structure error
 
 
 GULD_centrescore.mod <- lmer(centrescore ~ 
-                                       Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+                               Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
 Anova(GULD_centrescore.mod)                 #TL effect
 summary(GULD_centrescore.mod)               #TrialDay resolve no variance, TankID extremely little
 plot(GULD_centrescore.mod)                  #No clustering issues
 r2_nakagawa(GULD_centrescore.mod)           #random structure error
 
 
+GULD_centrescore2.mod <- lmer(centrescore2 ~ 
+                                Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+Anova(GULD_centrescore2.mod)                 #TL effect
+summary(GULD_centrescore2.mod)               #TrialDay resolve no variance, TankID extremely little
+plot(GULD_centrescore2.mod)                  #No clustering issues
+r2_nakagawa(GULD_centrescore2.mod)           #random structure error
+
+
 GULD_centretime50.sqrt.mod <- lmer(sqrt(centretime50) ~ 
-                               Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+                                     Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
 Anova(GULD_centretime50.sqrt.mod)                 #No effects
 summary(GULD_centretime50.sqrt.mod)               #TrialRound resolves no variance, TankID extremely little
 plot(GULD_centretime50.sqrt.mod)                  #No clustering issues
@@ -188,7 +203,7 @@ r2_nakagawa(GULD_centretime50.sqrt.mod)           #random structure error
 
 
 GULD_centretime75.sqrt.mod <- lmer(sqrt(centretime75) ~ 
-                                     Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+                                     Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
 Anova(GULD_centretime75.sqrt.mod)                 #No effects
 summary(GULD_centretime75.sqrt.mod)               #TrialRound resolves no variance, TrialDay and TankID extremely little
 plot(GULD_centretime75.sqrt.mod)                  #No clustering issues
@@ -197,7 +212,7 @@ r2_nakagawa(GULD_centretime75.sqrt.mod)           #random structure error
 
 
 GULD_centretime100.sqrt.mod <- lmer(sqrt(centretime100) ~ 
-                                     Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+                                      Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
 Anova(GULD_centretime100.sqrt.mod)                 #No effects
 summary(GULD_centretime100.sqrt.mod)               #TrialRound resolves no variance, TrialDay and TankID extremely little
 plot(GULD_centretime100.sqrt.mod)                  #TrialRound, TrialDay, TankID resolve no variance

@@ -197,7 +197,7 @@ height_width_arenas
 
 #Statistics Advanced Options
 # - checking key settings by making stepwise adjustments to settings to visualize how this influences response vars)
-
+citation()
 # - Mob min. speed- 5mm/s (originally set to 1mm/s)
 Settings_test <- NULL
 Settings_test$minmobilityspeedset <- c(0, 1, 3, 6, 9, 12, 15, 18, 20) 
@@ -254,7 +254,7 @@ GULDact_processed <- GULDact_processed %>% relocate(CondManual, .after = Conditi
 GULDact_processed <- GULDact_processed %>% relocate(PITID, .after = FishID)
 
 #Writing dataset
-write.csv(GULDact, "~/trophic-personalities_2020/dat_behaviour/GULD_ACTdat_processed.csv", row.names = FALSE)
+write.csv(GULDact_processed, "~/trophic-personalities_2020/dat_behaviour/GULD_ACTdat_processed.csv", row.names = FALSE)
 
 
 
