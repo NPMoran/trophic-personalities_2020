@@ -19,59 +19,91 @@ GULDact.processed <- read.csv("~/trophic-personalities_2020/dat_behaviour/GULD_A
 nrow(GULDact.processed) #118 rows
 n_distinct(GULDact.processed$FishID) #43 fish included in analysis
 
-#Z-transformation/scaling of continuous fixed effects
+# - Z-transformation/scaling of continuous fixed effects
 GULDact.processed$TL.C <- scale(GULDact.processed$TL)  
-GULDact.processed$ConditionFactor.C <- scale(GULDact.processed$ConditionFactor)  
 GULDact.processed$CondManual.C <- scale(GULDact.processed$CondManual)  
+GULDact.processed$TrialDay.C <- scale(GULDact.processed$TrialDay)  
+
+# - Making TrialRound a unique variable for each round
+GULDact.processed$TrialRound <- paste(GULDact.processed$TrialDay, GULDact.processed$TrialRound, sep = "_")
+
+# - converting distance to meters for easier interpretation
+GULDact.processed$dist.m <- GULDact.processed$dist/1000
+
+summary(GULDact.processed)
 
 
-# in: avespeed_tot
+
+# in: dist
 #     avespeed_mob
-#     aveacceler
 #     propmoving
 #     dist        
-#     frozenevents
-#     timefrozen_tot
-#     centrescore
-#     centrescore2
-#     centretime50        
-#     centretime75
-#     centretime100 
+#     centrescore, centrescore2, centretime50, centretime75, centretime100 
 
-#Assessing distributions-
-#avespeed_tot: (mm/s) the average speed of the individual accross the full trial period
-ggplot(GULDact.processed) + aes(x = avespeed_tot) + geom_histogram(color="black", fill="lightblue", binwidth = 4.5) + simpletheme 
-ggqqplot(GULDact.processed$avespeed_tot) #approximately normal
 
-#avespeed_mob: (mm/s) the average speed of the individual excluding periods when it was immobile
-ggplot(GULDact.processed) + aes(x = avespeed_mob) + geom_histogram(color="black", fill="lightblue", binwidth = 5) + simpletheme 
-ggqqplot(GULDact.processed$avespeed_mob) #minor issue with 4-5 outliers at the very low end
+#Total distance moved accross the trial (mm, 'dist') 
+# - Assessing distributions
+ggplot(GULDact.processed) + aes(x = dist.m) + geom_histogram(color="black", fill="lightblue", binwidth = 4800) + simpletheme 
+ggqqplot(GULDact.processed$dist)
 
-#propmoving: (proportional) proportion of time mobile
+# - Full model
+GULD_dist.sqrt.mod <- lmer(dist.m ~ Sex + TL.C + CondManual.C + TrialDay.C + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID),  data=GULDact.processed)
+summary(GULD_dist.sqrt.mod) #TrialRound, TankID extremely low to zero variance explained
+plot(GULD_dist.sqrt.mod) #No issues
+
+# - Reduced model
+GULD_dist.mod.red <- lmer(dist.m ~ Sex + TL.C + CondManual.C + TrialDay.C + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+summary(GULD_dist.mod.red)  #Sex and TrialDay.C effect, marginal CondManual.C effect
+r2_nakagawa(GULD_dist.mod.red) #random structure error
+
+# - Repeatabilities
+GULD_dist.mod.rpt1 <- rpt(dist  ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
+                          nboot = 100, npermut = 0)
+GULD_dist.mod.rpt1
+GULD_dist.mod.rpt2 <- rpt(dist ~ (1|TrialDay) + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
+                          nboot = 100, npermut = 0)
+GULD_dist.mod.rpt2
+
+
+
+#Proportion of time moving (proportional, 'propmoving')
 ggplot(GULDact.processed) + aes(x = propmoving) + geom_histogram(color="black", fill="lightblue", binwidth = 0.055) + simpletheme 
 ggqqplot(GULDact.processed$propmoving) #some left skew
 ggplot(GULDact.processed) + aes(x = log(1 - propmoving)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.1) + simpletheme 
 ggqqplot(log(1 - GULDact.processed$propmoving)) #inverse log approximately normals
 
-#aveacceler: (mm/s^2) average rate of acceleration accross the trial
-ggplot(GULDact.processed) + aes(x = aveacceler) + geom_histogram(color="black", fill="lightblue", binwidth = 14) + simpletheme 
-ggqqplot(GULDact.processed$aveacceler) #approximately normal
+GULD_propmoving.invlog.mod <- lmer(log(1-propmoving) ~ Sex + TL.C + CondManual.C + TrialDay.C + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+summary(GULD_propmoving.invlog.mod)  #TrialRound, TankID extremely low to zero variance explained
+plot(GULD_propmoving.invlog.mod)  #No issues
 
-#dist: (mm) total distance travelled during trial
-ggplot(GULDact.processed) + aes(x = dist) + geom_histogram(color="black", fill="lightblue", binwidth = 4800) + simpletheme 
-ggqqplot(GULDact.processed$dist)  #minor issue with 5-10 outliers at the very low end
+GULD_propmoving.invlog.mod.red <- lmer(log(1-propmoving) ~ Sex + TL.C + CondManual.C + TrialDay.C + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+summary(GULD_propmoving.invlog.mod)  #CondManual.C, Sex, and TrialDay.C effect
+r2_nakagawa(GULD_propmoving.invlog.mod)  
 
-#frozenevents: (count) the number of times spent frozen during trial (min. frozen period 3 secs)
-ggplot(GULDact.processed) + aes(x = frozenevents) + geom_histogram(color="black", fill="lightblue", binwidth = 8) + simpletheme 
-ggqqplot(GULDact.processed$frozenevents)  #right skewed
-ggplot(GULDact.processed) + aes(x = sqrt(frozenevents)) + geom_histogram(color="black", fill="lightblue", binwidth = 1) + simpletheme 
-ggqqplot(sqrt(GULDact.processed$frozenevents)) #approximately normal
+GULD_propmoving.invlog.mod.rpt1 <- rpt(log(1-propmoving)  ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
+                                       nboot = 100, npermut = 0)
+GULD_propmoving.invlog.mod.rpt1
+GULD_propmoving.invlog.mod.rpt2 <- rpt(log(1-propmoving) ~  (1|TrialDay) + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
+                                       nboot = 100, npermut = 0)
+GULD_propmoving.invlog.mod.rpt2
 
-#timefrozen_tot: (s) total time spent frozen during trial
-ggplot(GULDact.processed) + aes(x = timefrozen_tot) + geom_histogram(color="black", fill="lightblue", binwidth = 85) + simpletheme 
-ggqqplot(GULDact.processed$timefrozen_tot) #right skewed 
-ggplot(GULDact.processed) + aes(x = sqrt(timefrozen_tot)) + geom_histogram(color="black", fill="lightblue", binwidth = 2) + simpletheme 
-ggqqplot(sqrt(GULDact.processed$timefrozen_tot)) #sqrt transformation closer to normal
+
+
+#Average speed (mm/s (avespeed_mob: (mm/s) the average speed of the individual excluding periods when it was immobile
+ggplot(GULDact.processed) + aes(x = avespeed_mob) + geom_histogram(color="black", fill="lightblue", binwidth = 5) + simpletheme 
+ggqqplot(GULDact.processed$avespeed_mob) #minor issue with 4-5 outliers at the very low end
+
+
+
+
+
+
+
+
+
+
+
+
 
 #centrescore: (NA) calculated from the proportion of time spent in each area
 ggplot(GULDact.processed) + aes(x = centrescore) + geom_histogram(color="black", fill="lightblue", binwidth = 0.2) + simpletheme 
@@ -108,26 +140,9 @@ ggqqplot(sqrt(GULDact.processed$centretime100)) #sqrt transformation close to no
 #Full Models- including all random and fixed effects
 #  All ran as linear mixed effects models as distributions were/were transformed to approximately normal
 
-#  Variable        Transformation    Random effects                                 Fixed effects
-#  avespeed_tot    nil               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
-#  avespeed_mob    nil               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
-#  aveacceler       nii               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
-#  propmoving      log(1 - x)        TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL .C+ CondiManual.C
-#  dist            nil               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
-#  frozenevents    sqrt              TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
-#  timefrozen_tot  sqrt              TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
-#  centrescore     nil               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
-#  centretime50    sqrt              TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
-#  centretime75    sqrt              TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
-#  centretime100   sqrt              TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL.C + CondManual.C
 
 
-GULD_avespeed_tot.mod <- lmer(avespeed_tot ~ 
-                         Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_avespeed_tot.mod)                 #Sex, ConditionFactor.C effects
-summary(GULD_avespeed_tot.mod)               #Can Exclude TankID, TrialRound
-plot(GULD_avespeed_tot.mod)                  #No clustering issues
-r2_nakagawa(GULD_avespeed_tot.mod)           #random structure error
+
 
 
 GULD_avespeed_mob.mod <- lmer(avespeed_mob ~ 
@@ -146,20 +161,8 @@ plot(GULD_aveacceler.mod)                  #No clustering issues
 r2_nakagawa(GULD_aveacceler.mod)           #random structure error
 
 
-GULD_propmoving.invlog.mod <- lmer(log(1-propmoving) ~ 
-                                     Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_propmoving.invlog.mod)                 #Sex, ConditionFactor.C effects
-summary(GULD_propmoving.invlog.mod)               #TankID and TrialRound resolves no variance
-plot(GULD_propmoving.invlog.mod)                  #No clustering issues
-r2_nakagawa(GULD_propmoving.invlog.mod)           #random structure error
 
 
-GULD_dist.mod <- lmer(dist ~ 
-                        Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_dist.mod)                 #Sex, ConditionFactor.C effects
-summary(GULD_dist.mod)               #TankID resolves no variance, Trial round very little
-plot(GULD_dist.mod)                  #No clustering issues
-r2_nakagawa(GULD_dist.mod)           #random structure error
 
 
 GULD_frozenevents.sqrt.mod <- lmer(sqrt(frozenevents) ~ 
@@ -282,12 +285,6 @@ plot(GULD_propmoving.invlog.mod.red)                  #No clustering issues
 r2_nakagawa(GULD_propmoving.invlog.mod.red)           #random structure error
 
 
-GULD_dist.mod.red <- lmer(dist ~ 
-                        Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TrialDay) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_dist.mod.red)                 #Sex, ConditionFactor.C effects
-summary(GULD_dist.mod.red)               #TankID resolves no variance
-plot(GULD_dist.mod.red)                  #No clustering issues
-r2_nakagawa(GULD_dist.mod.red)           #random structure error
 
 
 GULD_frozenevents.sqrt.mod.red <- lmer(sqrt(frozenevents) ~ 
@@ -377,13 +374,6 @@ GULD_aveacceler.mod.rpt1
 GULD_aveacceler.mod.rpt2 <- rpt(aveacceler ~ (1|TrialDay) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
                                   nboot = 100, npermut = 0)
 GULD_aveacceler.mod.rpt2
-
-GULD_propmoving.invlog.mod.rpt1 <- rpt(log(1-propmoving)  ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                nboot = 100, npermut = 0)
-GULD_propmoving.invlog.mod.rpt1
-GULD_propmoving.invlog.mod.rpt2 <- rpt(log(1-propmoving) ~ (1|TrialDay) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                nboot = 100, npermut = 0)
-GULD_propmoving.invlog.mod.rpt2
 
 GULD_dist.mod.rpt1 <- rpt(dist  ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
                                        nboot = 100, npermut = 0)
