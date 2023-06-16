@@ -13,8 +13,7 @@ library(lme4); library(lmerTest); library(car); library(rptR); library(performan
 simpletheme <-   theme(axis.text.y = element_text(size = 10, colour = "black"), axis.text.x = element_text(size = 10, colour = "black"),  panel.background = element_rect(fill = "white"), axis.title.y  = element_text(size=12, vjust = 2), axis.title.x  = element_text(size=12, vjust = 0.1), panel.border = element_rect(colour = "black", fill=NA, size = 1))
 
 
-
-## 2.1. Activity, distributions and variance analysis ----
+# 2.1. Activity, distributions and variance analysis ----
 GULDact.processed <- read.csv("~/trophic-personalities_2020/dat_behaviour/GULD_ACTdat_processed.csv")
 nrow(GULDact.processed) #118 rows
 n_distinct(GULDact.processed$FishID) #43 fish included in analysis
@@ -30,601 +29,279 @@ GULDact.processed$TrialRound <- paste(GULDact.processed$TrialDay, GULDact.proces
 # - converting distance to meters for easier interpretation
 GULDact.processed$dist.m <- GULDact.processed$dist/1000
 
-summary(GULDact.processed)
-
-
-
-# in: dist
-#     avespeed_mob
-#     propmoving
-#     dist        
-#     centrescore, centrescore2, centretime50, centretime75, centretime100 
-
-
-#Total distance moved accross the trial (mm, 'dist') 
+#    a. Total distance moved accross the trial (mm, 'dist') ----
 # - Assessing distributions
 ggplot(GULDact.processed) + aes(x = dist.m) + geom_histogram(color="black", fill="lightblue", binwidth = 4800) + simpletheme 
 ggqqplot(GULDact.processed$dist)
 
 # - Full model
-GULD_dist.sqrt.mod <- lmer(dist.m ~ Sex + TL.C + CondManual.C + TrialDay.C + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID),  data=GULDact.processed)
-summary(GULD_dist.sqrt.mod) #TrialRound, TankID extremely low to zero variance explained
-plot(GULD_dist.sqrt.mod) #No issues
+GULD_dist.mod <- lmer(dist.m ~ 
+                             Sex + TL.C + CondManual.C + TrialDay.C + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID),  data=GULDact.processed)
+summary(GULD_dist.mod) #TrialRound, TankID extremely low to zero variance explained
+plot(GULD_dist.mod) #No issues
 
 # - Reduced model
 GULD_dist.mod.red <- lmer(dist.m ~ Sex + TL.C + CondManual.C + TrialDay.C + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-summary(GULD_dist.mod.red)  #Sex and TrialDay.C effect, marginal CondManual.C effect
+summary(GULD_dist.mod.red)  #Sex and replicate effect, marginal condition effect
 r2_nakagawa(GULD_dist.mod.red) #random structure error
 
 # - Repeatabilities
 GULD_dist.mod.rpt1 <- rpt(dist  ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
                           nboot = 100, npermut = 0)
 GULD_dist.mod.rpt1
-GULD_dist.mod.rpt2 <- rpt(dist ~ (1|TrialDay) + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
+GULD_dist.mod.rpt2 <- rpt(dist ~ 
+                            (1|TrialDay) + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
                           nboot = 100, npermut = 0)
 GULD_dist.mod.rpt2
 
-
-
-#Proportion of time moving (proportional, 'propmoving')
-ggplot(GULDact.processed) + aes(x = propmoving) + geom_histogram(color="black", fill="lightblue", binwidth = 0.055) + simpletheme 
-ggqqplot(GULDact.processed$propmoving) #some left skew
-ggplot(GULDact.processed) + aes(x = log(1 - propmoving)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.1) + simpletheme 
-ggqqplot(log(1 - GULDact.processed$propmoving)) #inverse log approximately normals
-
-GULD_propmoving.invlog.mod <- lmer(log(1-propmoving) ~ Sex + TL.C + CondManual.C + TrialDay.C + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-summary(GULD_propmoving.invlog.mod)  #TrialRound, TankID extremely low to zero variance explained
-plot(GULD_propmoving.invlog.mod)  #No issues
-
-GULD_propmoving.invlog.mod.red <- lmer(log(1-propmoving) ~ Sex + TL.C + CondManual.C + TrialDay.C + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-summary(GULD_propmoving.invlog.mod)  #CondManual.C, Sex, and TrialDay.C effect
-r2_nakagawa(GULD_propmoving.invlog.mod)  
-
-GULD_propmoving.invlog.mod.rpt1 <- rpt(log(1-propmoving)  ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                       nboot = 100, npermut = 0)
-GULD_propmoving.invlog.mod.rpt1
-GULD_propmoving.invlog.mod.rpt2 <- rpt(log(1-propmoving) ~  (1|TrialDay) + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                       nboot = 100, npermut = 0)
-GULD_propmoving.invlog.mod.rpt2
+save(GULD_dist.mod, file = "./outputs_visualisations/GULD_dist.mod.RData")
+save(GULD_dist.mod.red, file = "./outputs_visualisations/GULD_dist.mod.red.RData")
+save(GULD_dist.mod.rpt1, file = "./outputs_visualisations/GULD_dist.mod.rpt1.RData")
+save(GULD_dist.mod.rpt2, file = "./outputs_visualisations/GULD_dist.mod.rpt2.RData")
 
 
 
-#Average speed (mm/s (avespeed_mob: (mm/s) the average speed of the individual excluding periods when it was immobile
+#    b. Average speed (mm/m, 'avespeed_mob') ----
 ggplot(GULDact.processed) + aes(x = avespeed_mob) + geom_histogram(color="black", fill="lightblue", binwidth = 5) + simpletheme 
 ggqqplot(GULDact.processed$avespeed_mob) #minor issue with 4-5 outliers at the very low end
 
-
-
-
-
-
-
-
-
-
-
-
-
-#centrescore: (NA) calculated from the proportion of time spent in each area
-ggplot(GULDact.processed) + aes(x = centrescore) + geom_histogram(color="black", fill="lightblue", binwidth = 0.2) + simpletheme 
-ggqqplot(GULDact.processed$centrescore) #potential minimal positive skew
-ggplot(GULDact.processed) + aes(x = sqrt(centrescore)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.05) + simpletheme 
-ggqqplot(sqrt(GULDact.processed$centrescore)) #sqrt transformation is better but maybe not neccessary
-
-#centrescore: (NA) calculated from the proportion of time spent in each area
-ggplot(GULDact.processed) + aes(x = centrescore2) + geom_histogram(color="black", fill="lightblue", binwidth = 0.5) + simpletheme 
-ggqqplot(GULDact.processed$centrescore2) #potential minimal positive skew
-ggplot(GULDact.processed) + aes(x = sqrt(centrescore2)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.1) + simpletheme 
-ggqqplot(sqrt(GULDact.processed$centrescore2)) #sqrt transformation is better but maybe not neccessary
-
-#centretime50: (s) time >5cm away from edge
-ggplot(GULDact.processed) + aes(x = centretime50) + geom_histogram(color="black", fill="lightblue", binwidth = 50) + simpletheme 
-ggqqplot(GULDact.processed$centretime50) #positive skew
-ggplot(GULDact.processed) + aes(x = sqrt(centretime50)) + geom_histogram(color="black", fill="lightblue", binwidth = 2) + simpletheme 
-ggqqplot(sqrt(GULDact.processed$centretime50)) #sqrt transformation close to normal
-
-#centretime75: (s) time >7.5cm away from edge
-ggplot(GULDact.processed) + aes(x = centretime75) + geom_histogram(color="black", fill="lightblue", binwidth = 50) + simpletheme 
-ggqqplot(GULDact.processed$centretime75) #strong positive skew
-ggplot(GULDact.processed) + aes(x = sqrt(centretime75)) + geom_histogram(color="black", fill="lightblue", binwidth = 2) + simpletheme 
-ggqqplot(sqrt(GULDact.processed$centretime75)) #sqrt transformation close to normal
-
-#centretime100: (s) time >10cm away from edge
-ggplot(GULDact.processed) + aes(x = centretime100) + geom_histogram(color="black", fill="lightblue", binwidth = 10) + simpletheme 
-ggqqplot(GULDact.processed$centretime100) #strong skew
-ggplot(GULDact.processed) + aes(x = sqrt(centretime100)) + geom_histogram(color="black", fill="lightblue", binwidth = 1) + simpletheme 
-ggqqplot(sqrt(GULDact.processed$centretime100)) #sqrt transformation close to normal
-
-
-
-#Full Models- including all random and fixed effects
-#  All ran as linear mixed effects models as distributions were/were transformed to approximately normal
-
-
-
-
-
-
 GULD_avespeed_mob.mod <- lmer(avespeed_mob ~ 
-                                Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_avespeed_mob.mod)                 #Sex effects
-summary(GULD_avespeed_mob.mod)               #ArenaID resolves no variance, TankID extremely little
-plot(GULD_avespeed_mob.mod)                  #No clustering issues
-r2_nakagawa(GULD_avespeed_mob.mod)           #random structure error
-
-
-GULD_aveacceler.mod <- lmer(aveacceler ~ 
-                              Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_aveacceler.mod)                 #Sex effects
-summary(GULD_aveacceler.mod)               #TrialRound resolves no variance, TankID extremely little
-plot(GULD_aveacceler.mod)                  #No clustering issues
-r2_nakagawa(GULD_aveacceler.mod)           #random structure error
-
-
-
-
-
-
-GULD_frozenevents.sqrt.mod <- lmer(sqrt(frozenevents) ~ 
-                                     Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_frozenevents.sqrt.mod)                 #ConditionFactor effect
-summary(GULD_frozenevents.sqrt.mod)               #TrialRound resolves no variance, TankID extremely little
-plot(GULD_frozenevents.sqrt.mod)                  #No clustering issues
-r2_nakagawa(GULD_frozenevents.sqrt.mod)           #random structure error
-
-
-GULD_timefrozen_tot.sqrt.mod <- lmer(sqrt(timefrozen_tot) ~ 
-                                       Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_timefrozen_tot.sqrt.mod)                 #Sex, ConditionFactor.C effects
-summary(GULD_timefrozen_tot.sqrt.mod)               #TankID and TrialRound resolve no variance
-plot(GULD_timefrozen_tot.sqrt.mod)                  #No clustering issues
-r2_nakagawa(GULD_timefrozen_tot.sqrt.mod)           #random structure error
-
-
-GULD_centrescore.mod <- lmer(centrescore ~ 
-                               Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_centrescore.mod)                 #TL effect
-summary(GULD_centrescore.mod)               #TrialDay resolve no variance, TankID extremely little
-plot(GULD_centrescore.mod)                  #No clustering issues
-r2_nakagawa(GULD_centrescore.mod)           #random structure error
-
-
-GULD_centrescore2.mod <- lmer(centrescore2 ~ 
-                                Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_centrescore2.mod)                 #TL effect
-summary(GULD_centrescore2.mod)               #TrialDay resolve no variance, TankID extremely little
-plot(GULD_centrescore2.mod)                  #No clustering issues
-r2_nakagawa(GULD_centrescore2.mod)           #random structure error
-
-
-GULD_centretime50.sqrt.mod <- lmer(sqrt(centretime50) ~ 
-                                     Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_centretime50.sqrt.mod)                 #No effects
-summary(GULD_centretime50.sqrt.mod)               #TrialRound resolves no variance, TankID extremely little
-plot(GULD_centretime50.sqrt.mod)                  #No clustering issues
-r2_nakagawa(GULD_centretime50.sqrt.mod)           #random structure error
-
-
-GULD_centretime75.sqrt.mod <- lmer(sqrt(centretime75) ~ 
-                                     Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_centretime75.sqrt.mod)                 #No effects
-summary(GULD_centretime75.sqrt.mod)               #TrialRound resolves no variance, TrialDay and TankID extremely little
-plot(GULD_centretime75.sqrt.mod)                  #No clustering issues
-r2_nakagawa(GULD_centretime75.sqrt.mod)           #random structure error
-
-
-
-GULD_centretime100.sqrt.mod <- lmer(sqrt(centretime100) ~ 
-                                      Sex + TL.C + CondManual.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_centretime100.sqrt.mod)                 #No effects
-summary(GULD_centretime100.sqrt.mod)               #TrialRound resolves no variance, TrialDay and TankID extremely little
-plot(GULD_centretime100.sqrt.mod)                  #TrialRound, TrialDay, TankID resolve no variance
-r2_nakagawa(GULD_centretime100.sqrt.mod)           #random structure error
-
-
-save(GULD_avespeed_tot.mod, file = "./Output_Guldborgsund/GULD_avespeed_tot.mod.RData")
-save(GULD_avespeed_mob.mod, file = "./Output_Guldborgsund/GULD_avespeed_mob.mod.RData")
-save(GULD_aveacceler.mod, file = "./Output_Guldborgsund/GULD_aveacceler.mod.RData")
-save(GULD_propmoving.invlog.mod, file = "./Output_Guldborgsund/GULD_propmoving.invlog.mod.RData")
-save(GULD_dist.mod, file = "./Output_Guldborgsund/GULD_dist.mod.RData")
-save(GULD_frozenevents.sqrt.mod, file = "./Output_Guldborgsund/GULD_frozenevents.sqrt.mod.RData")
-save(GULD_timefrozen_tot.sqrt.mod, file = "./Output_Guldborgsund/GULD_timefrozen_tot.sqrt.mod.RData")
-save(GULD_centrescore.mod, file = "./Output_Guldborgsund/GULD_centrescore.mod.RData")
-save(GULD_centretime50.sqrt.mod, file = "./Output_Guldborgsund/GULD_centretime50.sqrt.mod.RData")
-save(GULD_centretime75.sqrt.mod, file = "./Output_Guldborgsund/GULD_centretime75.sqrt.mod.RData")
-save(GULD_centretime100.sqrt.mod, file = "./Output_Guldborgsund/GULD_centretime100.sqrt.mod.RData")
-
-
-
-#Reduced Models- excluding random effects that collapse to zero (or extremely close to zero)
-#  All ran as linear mixed effects models as distributions were/were transformed to approximately normal
-
-#  Variable        Transformation    Random effects                 Fixed effects
-#  avespeed_tot    nil               TrialDay, ArenaID, FishID      Sex + TL + ConditionFactor + InfectionScore
-#  avespeed_mob    nil               TrialDay, TrialRound. FishID   Sex + TL + ConditionFactor + InfectionScore
-#  aveacceler       nii               TrialDay, ArenaID, FishID      Sex + TL + ConditionFactor + InfectionScore
-#  propmoving      log(1 - x)        TrialDay, ArenaID, FishID      Sex + TL + ConditionFactor + InfectionScore
-#  dist            nil               TrialDay, ArenaID, FishID      Sex + TL + ConditionFactor + InfectionScore
-#  frozenevents    sqrt              TrialDay, ArenaID, FishID      Sex + TL + ConditionFactor + InfectionScore
-#  timefrozen_tot  sqrt              TrialDay, ArenaID, FishID      Sex + TL + ConditionFactor + InfectionScore
-#  centrescore     nil               TrialRound. ArenaID, FishID    Sex + TL + ConditionFactor + InfectionScore
-#  centretime50    sqrt              TrialDay, ArenaID, FishID      Sex + TL + ConditionFactor + InfectionScore
-#  centretime75    sqrt              ArenaID, FishID                Sex + TL + ConditionFactor + InfectionScore
-#  centretime100   sqrt              ArenaID, FishID                Sex + TL + ConditionFactor + InfectionScore
-
-
-GULD_avespeed_tot.mod.red <- lmer(avespeed_tot ~ 
-                                Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TrialDay) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_avespeed_tot.mod.red)                 #Sex, ConditionFactor.C effects
-summary(GULD_avespeed_tot.mod.red)               #A lot of variance associated with Fish ID and TrialDay
-plot(GULD_avespeed_tot.mod.red)                  #No clustering issues
-r2_nakagawa(GULD_avespeed_tot.mod.red)           #Conditional R2: 0.775, Marginal R2: 0.179
-
+                                Sex + TL.C + CondManual.C + TrialDay.C + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID),  data=GULDact.processed)
+summary(GULD_avespeed_mob.mod)  #TrialRound, TankID, ArenaID extremely low to zero variance explained
+plot(GULD_avespeed_mob.mod)  #Small number of low end speed leading to some asymmetry
 
 GULD_avespeed_mob.mod.red <- lmer(avespeed_mob ~ 
-                                Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TrialDay) + (1|TrialRound) + (1|FishID), data=GULDact.processed)
-Anova(GULD_avespeed_mob.mod)                 #Sex effects
-summary(GULD_avespeed_mob.mod)               #A lot of variance associated with Fish ID and TrialDay
-plot(GULD_avespeed_mob.mod)                  #No clustering issues
-r2_nakagawa(GULD_avespeed_mob.mod)           #Conditional R2: 0.666, Marginal R2: 0.104
-
-
-GULD_aveacceler.mod.red <- lmer(aveacceler ~ 
-                              Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TrialDay) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_aveacceler.mod.red)                 #Sex effects
-summary(GULD_aveacceler.mod.red)               #A lot of variance associated with Fish ID and TrialDay, a bit to do with ArenaID
-plot(GULD_aveacceler.mod.red)                  #No clustering issues
-r2_nakagawa(GULD_aveacceler.mod.red)           #Conditional R2: 0.736, Marginal R2: 0.180
-
-
-GULD_propmoving.invlog.mod.red <- lmer(log(1-propmoving) ~ 
-                                     Sex + TL.C + ConditionFactor.C + InfectionScore.C  + (1|TrialDay) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_propmoving.invlog.mod.red)                 #Sex, ConditionFactor.C effects
-summary(GULD_propmoving.invlog.mod.red)               #TankID and TrialRound resolves no variance
-plot(GULD_propmoving.invlog.mod.red)                  #No clustering issues
-r2_nakagawa(GULD_propmoving.invlog.mod.red)           #random structure error
-
-
-
-
-GULD_frozenevents.sqrt.mod.red <- lmer(sqrt(frozenevents) ~ 
-                                     Sex + TL.C + ConditionFactor.C + InfectionScore.C  + (1|TrialDay) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_frozenevents.sqrt.mod.red)                 #ConditionFactor effect
-summary(GULD_frozenevents.sqrt.mod.red)               #TrialRound resolves no variance, TankID extremely little
-plot(GULD_frozenevents.sqrt.mod.red)                  #No clustering issues
-r2_nakagawa(GULD_frozenevents.sqrt.mod.red)           #random structure error
-
-
-GULD_timefrozen_tot.sqrt.mod.red <- lmer(sqrt(timefrozen_tot) ~ 
-                                       Sex + TL.C + ConditionFactor.C + InfectionScore.C  + (1|TrialDay) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_timefrozen_tot.sqrt.mod.red)                 #Sex, ConditionFactor.C effects
-summary(GULD_timefrozen_tot.sqrt.mod.red)               #TankID and TrialRound resolve no variance
-plot(GULD_timefrozen_tot.sqrt.mod.red)                  #No clustering issues
-r2_nakagawa(GULD_timefrozen_tot.sqrt.mod.red)           #random structure error
-
-
-GULD_centrescore.mod.red <- lmer(centrescore ~ 
-                               Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_centrescore.mod.red)                 #TL effect
-summary(GULD_centrescore.mod.red)               #TrialDay resolve no variance, TankID extremely little
-plot(GULD_centrescore.mod.red)                  #No clustering issues
-r2_nakagawa(GULD_centrescore.mod.red)           #random structure error
-
-
-GULD_centretime50.sqrt.mod.red <- lmer(sqrt(centretime50) ~ 
-                                     Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TrialDay) + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_centretime50.sqrt.mod.red)                 #No effects
-summary(GULD_centretime50.sqrt.mod.red)               #TrialRound resolves no variance, TankID extremely little
-plot(GULD_centretime50.sqrt.mod.red)                  #No clustering issues
-r2_nakagawa(GULD_centretime50.sqrt.mod.red)           #random structure error
-
-
-GULD_centretime75.sqrt.mod.red <- lmer(sqrt(centretime75) ~ 
-                                     Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_centretime75.sqrt.mod.red)                 #No effects
-summary(GULD_centretime75.sqrt.mod.red)               #TrialRound resolves no variance, TrialDay and TankID extremely little
-plot(GULD_centretime75.sqrt.mod.red)                  #No clustering issues
-r2_nakagawa(GULD_centretime75.sqrt.mod.red)           #random structure error
-
-
-GULD_centretime100.sqrt.mod.red <- lmer(sqrt(centretime100) ~ 
-                                      Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|ArenaID) + (1|FishID), data=GULDact.processed)
-Anova(GULD_centretime100.sqrt.mod.red)                 #No effects
-summary(GULD_centretime100.sqrt.mod.red)               #TrialRound resolves no variance, TrialDay and TankID extremely little
-plot(GULD_centretime100.sqrt.mod.red)                  #TrialRound, TrialDay, TankID resolve no variance
-r2_nakagawa(GULD_centretime100.sqrt.mod.red)           #random structure error
-
-
-save(GULD_avespeed_tot.mod.red, file = "./Output_Guldborgsund/GULD_avespeed_tot.mod.red.RData")
-save(GULD_avespeed_mob.mod.red, file = "./Output_Guldborgsund/GULD_avespeed_mob.mod.red.RData")
-save(GULD_aveacceler.mod.red, file = "./Output_Guldborgsund/GULD_aveacceler.mod.red.RData")
-save(GULD_propmoving.invlog.mod.red, file = "./Output_Guldborgsund/GULD_propmoving.invlog.mod.red.RData")
-save(GULD_dist.mod.red, file = "./Output_Guldborgsund/GULD_dist.mod.red.RData")
-save(GULD_frozenevents.sqrt.mod.red, file = "./Output_Guldborgsund/GULD_frozenevents.sqrt.mod.red.RData")
-save(GULD_timefrozen_tot.sqrt.mod.red, file = "./Output_Guldborgsund/GULD_timefrozen_tot.sqrt.mod.red.RData")
-save(GULD_centrescore.mod.red, file = "./Output_Guldborgsund/GULD_centrescore.mod.red.RData")
-save(GULD_centretime50.sqrt.mod.red, file = "./Output_Guldborgsund/GULD_centretime50.sqrt.mod.red.RData")
-save(GULD_centretime75.sqrt.mod.red, file = "./Output_Guldborgsund/GULD_centretime75.sqrt.mod.red.RData")
-save(GULD_centretime100.sqrt.mod.red, file = "./Output_Guldborgsund/GULD_centretime100.sqrt.mod.red.RData")
-
-
-
-## G.2.2. ACT repeatability analysis ----
-#Calculating:             
-# - Raw repeatability       
-# - Adj repeatability (random effects included)
-
-GULD_avespeed_tot.mod.rpt1 <- rpt(avespeed_tot ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                               nboot = 100, npermut = 0)
-GULD_avespeed_tot.mod.rpt1
-GULD_avespeed_tot.mod.rpt2 <- rpt(avespeed_tot ~ (1|TrialDay) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                               nboot = 100, npermut = 0)
-GULD_avespeed_tot.mod.rpt2
+                                Sex + TL.C + CondManual.C + TrialDay.C + (1|FishID),  data=GULDact.processed)
+summary(GULD_avespeed_mob.mod.red)  #Sex and replicate effect, 
+r2_nakagawa(GULD_avespeed_mob.mod.red) 
 
 GULD_avespeed_mob.mod.rpt1 <- rpt(avespeed_mob ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
                                   nboot = 100, npermut = 0)
 GULD_avespeed_mob.mod.rpt1
-GULD_avespeed_mob.mod.rpt2 <- rpt(avespeed_mob ~ (1|TrialDay) + (1|TrialRound) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
+GULD_avespeed_mob.mod.rpt2 <- rpt(avespeed_mob ~ 
+                                    (1|TrialDay) + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
                                   nboot = 100, npermut = 0)
 GULD_avespeed_mob.mod.rpt2
 
-GULD_aveacceler.mod.rpt1 <- rpt(aveacceler ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
+save(GULD_avespeed_mob.mod, file = "./outputs_visualisations/GULD_avespeed_mob.mod.RData")
+save(GULD_avespeed_mob.mod.red, file = "./outputs_visualisations/GULD_avespeed_mob.mod.red.RData")
+save(GULD_avespeed_mob.mod.rpt1, file = "./outputs_visualisations/GULD_avespeed_mob.mod.rpt1.RData")
+save(GULD_avespeed_mob.mod.rpt2, file = "./outputs_visualisations/GULD_avespeed_mob.mod.rpt2.RData")
+
+
+#    c. Time frozen (s, 'timefrozen_tot') ----
+ggplot(GULDact.processed) + aes(x = timefrozen_tot) + geom_histogram(color="black", fill="lightblue", binwidth = 85) + simpletheme 
+ggqqplot(GULDact.processed$timefrozen_tot)
+ggplot(GULDact.processed) + aes(x = log(timefrozen_tot)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.3) + simpletheme 
+ggqqplot(log(GULDact.processed$timefrozen_tot)) #still some skew bit much closer to normal
+
+GULD_timefrozen_tot.mod <- lmer(log(timefrozen_tot) ~ 
+                                       Sex + TL.C + CondManual.C + TrialDay.C + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID),  data=GULDact.processed)
+summary(GULD_timefrozen_tot.mod)  #TankID resolve no variance
+plot(GULD_timefrozen_tot.mod)  #No issues
+
+GULD_timefrozen_tot.mod.red <- lmer(log(timefrozen_tot) ~ 
+                                           Sex + TL.C + CondManual.C + TrialDay.C + (1|TrialRound) + (1|ArenaID) + (1|FishID),  data=GULDact.processed)
+summary(GULD_timefrozen_tot.mod.red)  #Sex, condition, and replicate effects
+r2_nakagawa(GULD_timefrozen_tot.mod.red) 
+
+GULD_timefrozen_tot.mod.rpt1 <- rpt(log(timefrozen_tot) ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
                                   nboot = 100, npermut = 0)
-GULD_aveacceler.mod.rpt1
-GULD_aveacceler.mod.rpt2 <- rpt(aveacceler ~ (1|TrialDay) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
+GULD_timefrozen_tot.mod.rpt1
+GULD_timefrozen_tot.mod.rpt2 <- rpt(log(timefrozen_tot) ~ 
+                                    (1|TrialDay) + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
                                   nboot = 100, npermut = 0)
-GULD_aveacceler.mod.rpt2
+GULD_timefrozen_tot.mod.rpt2
 
-GULD_dist.mod.rpt1 <- rpt(dist  ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                       nboot = 100, npermut = 0)
-GULD_dist.mod.rpt1
-GULD_dist.mod.rpt2 <- rpt(dist ~ (1|TrialDay) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                       nboot = 100, npermut = 0)
-GULD_dist.mod.rpt2
+save(GULD_timefrozen_tot.mod, file = "./outputs_visualisations/GULD_timefrozen_tot.mod.RData")
+save(GULD_timefrozen_tot.mod.red, file = "./outputs_visualisations/GULD_timefrozen_tot.mod.red.RData")
+save(GULD_timefrozen_tot.mod.rpt1, file = "./outputs_visualisations/GULD_timefrozen_tot.mod.rpt1.RData")
+save(GULD_timefrozen_tot.mod.rpt2, file = "./outputs_visualisations/GULD_timefrozen_tot.mod.rpt2.RData")
 
-GULD_frozenevents.sqrt.mod.rpt1 <- rpt(sqrt(frozenevents)  ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                          nboot = 100, npermut = 0)
-GULD_frozenevents.sqrt.mod.rpt1
-GULD_frozenevents.sqrt.mod.rpt2 <- rpt(sqrt(frozenevents) ~ (1|TrialDay) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                          nboot = 100, npermut = 0)
-GULD_frozenevents.sqrt.mod.rpt2
 
-GULD_timefrozen_tot.sqrt.mod.rpt1 <- rpt(sqrt(timefrozen_tot)  ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                       nboot = 100, npermut = 0)
-GULD_timefrozen_tot.sqrt.mod.rpt1
-GULD_timefrozen_tot.sqrt.mod.rpt2 <- rpt(sqrt(timefrozen_tot) ~ (1|TrialDay) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                       nboot = 100, npermut = 0)
-GULD_timefrozen_tot.sqrt.mod.rpt2
 
-GULD_centrescore.mod.rpt1 <- rpt(centrescore  ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                         nboot = 100, npermut = 0)
+#    d. Edge use, (mm, 'centrescore') ---- 
+ggplot(GULDact.processed) + aes(x = centrescore2) + geom_histogram(color="black", fill="lightblue", binwidth = 0.5) + simpletheme 
+ggqqplot(GULDact.processed$centrescore2) #potential minimal positive skew
+
+GULD_centrescore.mod <- lmer(centrescore2 ~ 
+                                Sex + TL.C + CondManual.C + TrialDay.C + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID),  data=GULDact.processed)
+summary(GULD_centrescore.mod)   #TankID and TrialRound resolve no variance
+plot(GULD_centrescore.mod)  #No issues
+
+GULD_centrescore.mod.red <- lmer(centrescore ~ 
+                                Sex + TL.C + CondManual.C + TrialDay.C + (1|ArenaID) + (1|FishID),  data=GULDact.processed)
+summary(GULD_centrescore.mod.red)  #length effect
+r2_nakagawa(GULD_centrescore.mod.red) 
+
+GULD_centrescore.mod.rpt1 <- rpt(centrescore2  ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
+                                 nboot = 100, npermut = 0)
 GULD_centrescore.mod.rpt1
-GULD_centrescore.mod.rpt2 <- rpt(centrescore ~ (1|TrialRound) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                         nboot = 100, npermut = 0)
+GULD_centrescore.mod.rpt2 <- rpt(centrescore2 ~ 
+                                   (1|TrialDay) + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
+                                 nboot = 100, npermut = 0)
 GULD_centrescore.mod.rpt2
 
-GULD_centretime50.sqrt.mod.rpt1 <- rpt(sqrt(centretime50)  ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                 nboot = 100, npermut = 0)
-GULD_centretime50.sqrt.mod.rpt1
-GULD_centretime50.sqrt.mod.rpt2 <- rpt(sqrt(centretime50) ~ (1|TrialDay) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                 nboot = 100, npermut = 0)
-GULD_centretime50.sqrt.mod.rpt2
-
-GULD_centretime75.sqrt.mod.rpt1 <- rpt(sqrt(centretime75)  ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                       nboot = 100, npermut = 0)
-GULD_centretime75.sqrt.mod.rpt1
-GULD_centretime75.sqrt.mod.rpt2 <- rpt(sqrt(centretime75) ~ (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                       nboot = 100, npermut = 0)
-GULD_centretime75.sqrt.mod.rpt2
-
-GULD_centretime100.sqrt.mod.rpt1 <- rpt(sqrt(centretime100)  ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                       nboot = 100, npermut = 0)
-GULD_centretime100.sqrt.mod.rpt1
-GULD_centretime100.sqrt.mod.rpt2 <- rpt(sqrt(centretime100) ~ (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
-                                       nboot = 100, npermut = 0)
-GULD_centretime100.sqrt.mod.rpt2
-
-
-save(GULD_avespeed_tot.mod.rpt1, file = "./Output_Guldborgsund/GULD_avespeed_tot.mod.rpt1.RData")
-save(GULD_avespeed_mob.mod.rpt1, file = "./Output_Guldborgsund/GULD_avespeed_mob.mod.rpt1.RData")
-save(GULD_aveacceler.mod.rpt1, file = "./Output_Guldborgsund/GULD_aveacceler.mod.rpt1.RData")
-save(GULD_propmoving.invlog.mod.rpt1, file = "./Output_Guldborgsund/GULD_propmoving.invlog.mod.rpt1.RData")
-save(GULD_dist.mod.rpt1, file = "./Output_Guldborgsund/GULD_dist.mod.rpt1.RData")
-save(GULD_frozenevents.sqrt.mod.rpt1, file = "./Output_Guldborgsund/GULD_frozenevents.sqrt.mod.rpt1.RData")
-save(GULD_timefrozen_tot.sqrt.mod.rpt1, file = "./Output_Guldborgsund/GULD_timefrozen_tot.sqrt.mod.rpt1.RData")
-save(GULD_centrescore.mod.rpt1, file = "./Output_Guldborgsund/GULD_centrescore.mod.rpt1.RData")
-save(GULD_centretime50.sqrt.mod.rpt1, file = "./Output_Guldborgsund/GULD_centretime50.sqrt.mod.rpt1.RData")
-save(GULD_centretime75.sqrt.mod.rpt1, file = "./Output_Guldborgsund/GULD_centretime75.sqrt.mod.rpt1.RData")
-save(GULD_centretime100.sqrt.mod.rpt1, file = "./Output_Guldborgsund/GULD_centretime100.sqrt.mod.rpt1.RData")
-
-
-save(GULD_avespeed_tot.mod.rpt2, file = "./Output_Guldborgsund/GULD_avespeed_tot.mod.rpt2.RData")
-save(GULD_avespeed_mob.mod.rpt2, file = "./Output_Guldborgsund/GULD_avespeed_mob.mod.rpt2.RData")
-save(GULD_aveacceler.mod.rpt2, file = "./Output_Guldborgsund/GULD_aveacceler.mod.rpt2.RData")
-save(GULD_propmoving.invlog.mod.rpt2, file = "./Output_Guldborgsund/GULD_propmoving.invlog.mod.rpt2.RData")
-save(GULD_dist.mod.rpt2, file = "./Output_Guldborgsund/GULD_dist.mod.rpt2.RData")
-save(GULD_frozenevents.sqrt.mod.rpt2, file = "./Output_Guldborgsund/GULD_frozenevents.sqrt.mod.rpt2.RData")
-save(GULD_timefrozen_tot.sqrt.mod.rpt2, file = "./Output_Guldborgsund/GULD_timefrozen_tot.sqrt.mod.rpt2.RData")
-save(GULD_centrescore.mod.rpt2, file = "./Output_Guldborgsund/GULD_centrescore.mod.rpt2.RData")
-save(GULD_centretime50.sqrt.mod.rpt2, file = "./Output_Guldborgsund/GULD_centretime50.sqrt.mod.rpt2.RData")
-save(GULD_centretime75.sqrt.mod.rpt2, file = "./Output_Guldborgsund/GULD_centretime75.sqrt.mod.rpt2.RData")
-save(GULD_centretime100.sqrt.mod.rpt2, file = "./Output_Guldborgsund/GULD_centretime100.sqrt.mod.rpt2.RData")
+save(GULD_centrescore.mod, file = "./outputs_visualisations/GULD_centrescore.mod.RData")
+save(GULD_centrescore.mod.red, file = "./outputs_visualisations/GULD_centrescore.mod.red.RData")
+save(GULD_centrescore.mod.rpt1, file = "./outputs_visualisations/GULD_centrescore.mod.rpt1.RData")
+save(GULD_centrescore.mod.rpt2, file = "./outputs_visualisations/GULD_centrescore.mod.rpt2.RData")
 
 
 
-## G.2.3. EXPL distributions and variance analysis ----
-GULDexpl.processed <- read.csv("~/trophicpersonalities_A/Data_Guldborgsund/GULD_EXPLdat_processed.csv")
-nrow(GULDexpl.processed) #113 rows
+# 2.2. EXPL distributions and variance analysis ----
+GULDexpl.processed <- read.csv("~/trophic-personalities_2020/dat_behaviour/GULD_EXPLdat_processed.csv")
+nrow(GULDexpl.processed) #111 trials
 n_distinct(GULDexpl.processed$FishID) #43 fish included in analysis
 
-#Z-transformation/scaling of continuous fixed effects
+# - Z-transformation/scaling of continuous fixed effects
 GULDexpl.processed$TL.C <- scale(GULDexpl.processed$TL)  
-GULDexpl.processed$ConditionFactor.C <- scale(GULDexpl.processed$ConditionFactor)  
-GULDexpl.processed$InfectionScore.C <- scale(GULDexpl.processed$InfectionScore)  
+GULDexpl.processed$CondManual.C <- scale(GULDexpl.processed$CondManual)  
+GULDexpl.processed$TrialDay.C <- scale(GULDexpl.processed$TrialDay)  
 
+# - Making TrialRound a unique variable for each round
+GULDexpl.processed$TrialRound <- paste(GULDexpl.processed$TrialDay, GULDexpl.processed$TrialRound, sep = "_")
 
-# in: emergelat.bin
-#     endpointlat.bin     
-#     endpointspeed     
-#     refugereturnlat
-
-
-#Assessing distributions (excluding binomial variables)-
-#endpointspeed: (s) latency to explore to the endpoint from time of emergence (note: 46 NAs, where fish did not reach the end)
-ggplot(GULDexpl.processed) + aes(x = endpointspeed) + geom_histogram(color="black", fill="lightblue", binwidth = 100) + simpletheme 
-ggqqplot(GULDexpl.processed$endpointspeed) 
-ggplot(GULDexpl.processed) + aes(x = log(endpointspeed)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.5) + simpletheme 
-ggqqplot(log(GULDexpl.processed$endpointspeed)) #still some right skew but much better
-
-#refugereturnlat: (s) latency to return to refuge after first emergence (note: 30 NAs, where fish did not return, or emerge at all)
-ggplot(GULDexpl.processed) + aes(x = refugereturnlat) + geom_histogram(color="black", fill="lightblue", binwidth = 40) + simpletheme 
-ggqqplot(GULDexpl.processed$refugereturnlat) 
-ggplot(GULDexpl.processed) + aes(x = log(refugereturnlat)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.5) + simpletheme 
-ggqqplot(log(GULDexpl.processed$refugereturnlat)) #near normal
-
-
-
-#Full Models- including all random and fixed effects
-
-#  Variable         Transformation    Random effects                                 Fixed effects
-#  emergelat.bin    NA (binomial)     TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL + ConditionFactor + InfectionScore
-#  endpointlat.bin  NA (binomial)     TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL + ConditionFactor + InfectionScore
-#  endpointspeed    log               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL + ConditionFactor + InfectionScore
-#  refugereturnlat  log               TankID, TrialDay, TrialRound. ArenaID, FishID  Sex + TL + ConditionFactor + InfectionScore
-
-
+#    e. Latency to emerge from the refuge (binary, 'emergelat.bin') ----
 GULD_emergelat.bin.mod <- glmer(emergelat.bin ~ 
-                                  Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), family = binomial, data=GULDexpl.processed)
-Anova(GULD_emergelat.bin.mod)                #No effects
-summary(GULD_emergelat.bin.mod)              #TrialRound, ArenaID and TrialDay resolve extremely low variance
-plot(GULD_emergelat.bin.mod)                 #No issues
-r2_nakagawa(GULD_emergelat.bin.mod)          #Conditional R2: 0.759, Marginal R2: 0.111
-#convergence failure
-
-GULD_endpointlat.bin.mod <- glmer(endpointlat.bin~ 
-                                    Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), family = binomial, data=GULDexpl.processed)
-Anova(GULD_endpointlat.bin.mod)               #No effects
-summary(GULD_endpointlat.bin.mod)             #TankID, ArenaID and TrialDay resolve extremely low variance
-plot(GULD_endpointlat.bin.mod)                #No issues
-r2_nakagawa(GULD_endpointlat.bin.mod)         #Conditional R2: 0.784, Marginal R2: 0.102
-
-
-GULD_endpointspeed.ln.mod <- lmer(log(endpointspeed) ~ 
-                                    Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDexpl.processed)
-Anova(GULD_endpointspeed.ln.mod)               #No effects
-summary(GULD_endpointspeed.ln.mod)             #TankID resolved zero variance, TrialDay resolves extremely low variance
-plot(GULD_endpointspeed.ln.mod)                #No issues
-r2_nakagawa(GULD_endpointspeed.ln.mod)         #fails
-
-
-GULD_refugereturnlat.ln.mod <- lmer(log(refugereturnlat) ~ 
-                                    Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDexpl.processed)
-Anova(GULD_refugereturnlat.ln.mod)               #No effects
-summary(GULD_refugereturnlat.ln.mod)             #ArenaID resolves extremely low variance
-plot(GULD_refugereturnlat.ln.mod)                #No issues
-r2_nakagawa(GULD_refugereturnlat.ln.mod)         #Conditional R2: 0.491, Marginal R2: 0.040
-
-
-save(GULD_emergelat.bin.mod, file = "./Output_Guldborgsund/GULD_emergelat.bin.mod.RData")
-save(GULD_endpointlat.bin.mod, file = "./Output_Guldborgsund/GULD_endpointlat.bin.mod.RData")
-save(GULD_endpointspeed.ln.mod, file = "./Output_Guldborgsund/GULD_endpointspeed.ln.mod.RData")
-save(GULD_refugereturnlat.ln.mod, file = "./Output_Guldborgsund/GULD_refugereturnlat.ln.mod.RData")
-
-
-
-#Reduced Models- excluding random effects that collapse to zero (or extremely close to zero)
-
-#  Variable         Transformation    Random effects                                 Fixed effects
-#  emergelat.bin    NA (binomial)     TankID, FishID                                 Sex + TL + ConditionFactor + InfectionScore
-#  endpointlat.bin  NA (binomial)     TrialRound, FishID                             Sex + TL + ConditionFactor + InfectionScore
-#  endpointspeed    log               TrialRound. ArenaID, FishID                    Sex + TL + ConditionFactor + InfectionScore
-#  refugereturnlat  log               TankID, TrialDay, TrialRound, FishID           Sex + TL + ConditionFactor + InfectionScore
-
-
+                                  Sex + TL.C + CondManual.C + TrialDay.C + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), family = binomial, data=GULDexpl.processed)
+summary(GULD_emergelat.bin.mod) #TrialRound, ArenaID and TrialDay resolve extremely low variance
+plot(GULD_emergelat.bin.mod)              
 
 GULD_emergelat.bin.mod.red <- glmer(emergelat.bin ~ 
-                                  Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|FishID), family = binomial, data=GULDexpl.processed)
-Anova(GULD_emergelat.bin.mod.red)                #No effects
-summary(GULD_emergelat.bin.mod.red)              #Most variance associated with FishID
-plot(GULD_emergelat.bin.mod.red)                 #No issues
-r2_nakagawa(GULD_emergelat.bin.mod.red)          #Conditional R2: 0.759, Marginal R2: 0.111
-#convergence failure
+                                  Sex + TL.C + CondManual.C + TrialDay.C + (1|FishID), family = binomial, data=GULDexpl.processed)
+summary(GULD_emergelat.bin.mod.red) #no effects
+r2_nakagawa(GULD_emergelat.bin.mod.red)              
 
-GULD_endpointlat.bin.mod.red <- glmer(endpointlat.bin~ 
-                                    Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TrialRound) + (1|FishID), family = binomial, data=GULDexpl.processed)
-Anova(GULD_endpointlat.bin.mod.red)               #No effects
-summary(GULD_endpointlat.bin.mod.red)             #Most variance associated with FishID
-plot(GULD_endpointlat.bin.mod.red)                #No issues
-r2_nakagawa(GULD_endpointlat.bin.mod.red)         #Conditional R2: 0.784, Marginal R2: 0.102
-
-
-GULD_endpointspeed.ln.mod.red <- lmer(log(endpointspeed) ~ 
-                                    Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TrialRound) + (1|ArenaID) + (1|FishID), data=GULDexpl.processed)
-Anova(GULD_endpointspeed.ln.mod.red)               #No effects
-summary(GULD_endpointspeed.ln.mod.red)             #FishID is largest component (other than residual)
-plot(GULD_endpointspeed.ln.mod.red)                #No issues
-r2_nakagawa(GULD_endpointspeed.ln.mod.red)         #Conditional R2: 0.391, Marginal R2: 0.034
-
-
-GULD_refugereturnlat.ln.mod.red <- lmer(log(refugereturnlat) ~ 
-                                      Sex + TL.C + ConditionFactor.C + InfectionScore.C + (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|FishID), data=GULDexpl.processed)
-Anova(GULD_refugereturnlat.ln.mod.red)               #No effects
-summary(GULD_refugereturnlat.ln.mod.red)             #FishID is largest component (other than residual)
-plot(GULD_refugereturnlat.ln.mod.red)                #No issues
-r2_nakagawa(GULD_refugereturnlat.ln.mod.red)         #Conditional R2: 0.491, Marginal R2: 0.040
-
-
-save(GULD_emergelat.bin.mod.red, file = "./Output_Guldborgsund/GULD_emergelat.bin.mod.red.RData")
-save(GULD_endpointlat.bin.mod.red, file = "./Output_Guldborgsund/GULD_endpointlat.bin.mod.red.RData")
-save(GULD_endpointspeed.ln.mod.red, file = "./Output_Guldborgsund/GULD_endpointspeed.ln.mod.red.RData")
-save(GULD_refugereturnlat.ln.mod.red, file = "./Output_Guldborgsund/GULD_refugereturnlat.ln.mod.red.RData")
-
-
-
-## G.2.4. EXPL repeatability analysis ----
-#Calculating:             
-# - Raw repeatability       
-# - Adj repeatability (random effects included)
-
-
-GULD_emergelat.bin.rpt1 <- rpt(emergelat.bin ~ (1|FishID), grname = "FishID", data = GULDexpl.processed, datatype = "Binary", 
-                                 nboot = 100, npermut = 0)
-GULD_emergelat.bin.rpt1
-GULD_emergelat.bin.rpt2 <- rpt(emergelat.bin ~ (1|TankID) + (1|FishID), grname = "FishID", data = GULDexpl.processed, datatype = "Binary", 
+GULD_emergelat.bin.mod.rpt1 <- rpt(emergelat.bin ~ (1|FishID), grname = "FishID", data = GULDexpl.processed, datatype = "Binary", 
                                nboot = 100, npermut = 0)
-GULD_emergelat.bin.rpt2
-
-GULD_endpointlat.bin.rpt1 <- rpt(endpointlat.bin ~ (1|FishID), grname = "FishID", data = GULDexpl.processed, datatype = "Binary", 
+GULD_emergelat.bin.mod.rpt1
+GULD_emergelat.bin.mod.rpt2 <- rpt(emergelat.bin ~ 
+                                 (1|TrialDay) + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDexpl.processed, datatype = "Binary", 
                                nboot = 100, npermut = 0)
-GULD_endpointlat.bin.rpt1
-GULD_endpointlat.bin.rpt2 <- rpt(endpointlat.bin ~ (1|TrialRound) + (1|FishID), grname = "FishID", data = GULDexpl.processed, datatype = "Binary", 
+GULD_emergelat.bin.mod.rpt2
+
+save(GULD_emergelat.bin.mod, file = "./outputs_visualisations/GULD_emergelat.bin.mod.RData")
+save(GULD_emergelat.bin.mod.red, file = "./outputs_visualisations/GULD_emergelat.bin.mod.red.RData")
+save(GULD_emergelat.bin.mod.rpt1, file = "./outputs_visualisations/GULD_emergelat.bin.mod.rpt1.RData")
+save(GULD_emergelat.bin.mod.rpt2, file = "./outputs_visualisations/GULD_emergelat.bin.mod.rpt2.RData")
+
+
+#    f. Latency to explore to the endpoint of the arena (binary, 'emergelat.bin') ----
+GULD_endpointlat.bin.mod <- glmer(endpointlat.bin ~ 
+                                  Sex + TL.C + CondManual.C + TrialDay.C + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), family = binomial, data=GULDexpl.processed)
+summary(GULD_endpointlat.bin.mod) #TrialRound, ArenaID and TrialDay resolve extremely low variance
+plot(GULD_endpointlat.bin.mod)              
+
+GULD_endpointlat.bin.mod.red <- glmer(endpointlat.bin ~ 
+                                      Sex + TL.C + CondManual.C + TrialDay.C + (1|FishID), family = binomial, data=GULDexpl.processed)
+summary(GULD_endpointlat.bin.mod.red) #no effects
+r2_nakagawa(GULD_endpointlat.bin.mod.red)              
+
+GULD_endpointlat.bin.mod.rpt1 <- rpt(endpointlat.bin ~ (1|FishID), grname = "FishID", data = GULDexpl.processed, datatype = "Binary", 
                                nboot = 100, npermut = 0)
-GULD_endpointlat.bin.rpt2
-
-GULD_endpointspeed.ln.rpt1 <- rpt(log(endpointspeed) ~ (1|FishID), grname = "FishID", data = GULDexpl.processed, datatype = "Gaussian", 
-                                 nboot = 100, npermut = 0)
-GULD_endpointspeed.ln.rpt1 #overlaps zero
-GULD_endpointspeed.ln.rpt2 <- rpt(log(endpointspeed) ~ (1|TrialRound) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDexpl.processed, datatype = "Gaussian", 
-                                  nboot = 100, npermut = 0)
-GULD_endpointspeed.ln.rpt2
-
-GULD_refugereturnlat.ln.rpt1 <- rpt(log(refugereturnlat) ~ (1|FishID), grname = "FishID", data = GULDexpl.processed, datatype = "Gaussian", 
-                                  nboot = 100, npermut = 0)
-GULD_refugereturnlat.ln.rpt1 #overlaps zero
-GULD_refugereturnlat.ln.rpt2 <- rpt(log(refugereturnlat) ~ (1|TankID) + (1|TrialDay) + (1|TrialRound) + (1|FishID), grname = c("FishID"), data = GULDexpl.processed, datatype = "Gaussian", 
-                                  nboot = 100, npermut = 0)
-GULD_refugereturnlat.ln.rpt2 
+GULD_endpointlat.bin.mod.rpt1
+GULD_endpointlat.bin.mod.rpt2 <- rpt(endpointlat.bin ~ 
+                                 (1|TrialDay) + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), grname = "FishID", data = GULDexpl.processed, datatype = "Binary", 
+                               nboot = 100, npermut = 0)
+GULD_endpointlat.bin.mod.rpt2
 
 
-save(GULD_emergelat.bin.rpt1, file = "./Output_Guldborgsund/GULD_emergelat.bin.rpt1.RData")
-save(GULD_endpointlat.bin.rpt1, file = "./Output_Guldborgsund/GULD_endpointlat.bin.rpt1.RData")
-save(GULD_endpointspeed.ln.rpt1, file = "./Output_Guldborgsund/GULD_endpointspeed.ln.rpt1.RData")
-save(GULD_refugereturnlat.ln.rpt1, file = "./Output_Guldborgsund/GULD_refugereturnlat.ln.rpt1.RData")
+save(GULD_endpointlat.bin.mod, file = "./outputs_visualisations/GULD_endpointlat.bin.mod.RData")
+save(GULD_endpointlat.bin.mod.red, file = "./outputs_visualisations/GULD_endpointlat.bin.mod.red.RData")
+save(GULD_endpointlat.bin.mod.rpt1, file = "./outputs_visualisations/GULD_endpointlat.bin.mod.rpt1.RData")
+save(GULD_endpointlat.bin.mod.rpt2, file = "./outputs_visualisations/GULD_endpointlat.bin.mod.rpt2.RData")
 
-save(GULD_emergelat.bin.rpt2, file = "./Output_Guldborgsund/GULD_emergelat.bin.rpt2.RData")
-save(GULD_endpointlat.bin.rpt2, file = "./Output_Guldborgsund/GULD_endpointlat.bin.rpt2.RData")
-save(GULD_endpointspeed.ln.rpt2, file = "./Output_Guldborgsund/GULD_endpointspeed.ln.rpt2.RData")
-save(GULD_refugereturnlat.ln.rpt2, file = "./Output_Guldborgsund/GULD_refugereturnlat.ln.rpt2.RData")
+
+
+
+#  2.3. Extracting data for tables ----
+#    a. Table 1 ----
+
+
+name <- as.data.frame(c("GULD_dist.mod.rpt",
+                        "GULD_avespeed_mob.mod.rpt",
+                        "GULD_timefrozen_tot.mod.rpt",
+                        "GULD_centrescore.mod.rpt",
+                        "GULD_emergelat.bin.mod.rpt",
+                        "GULD_endpointlat.bin.mod.rpt"))
+
+r1 <- rbind(GULD_dist.mod.rpt1$R, 
+            GULD_avespeed_mob.mod.rpt1$R, 
+            GULD_timefrozen_tot.mod.rpt1$R, 
+            GULD_centrescore.mod.rpt1$R, 
+            GULD_emergelat.bin.mod.rpt1$R[2, ], 
+            GULD_endpointlat.bin.mod.rpt1$R[2, ])
+
+cis <- rbind(GULD_dist.mod.rpt1$CI_emp,
+             GULD_avespeed_mob.mod.rpt1$CI_emp,
+             GULD_timefrozen_tot.mod.rpt1$CI_emp,
+             GULD_centrescore.mod.rpt1$CI_emp,
+             GULD_emergelat.bin.mod.rpt1$CI_emp$CI_link,
+             GULD_endpointlat.bin.mod.rpt1$CI_em$CI_link)
+
+p <- rbind(select(GULD_dist.mod.rpt1$P, -c(P_permut)), 
+           select(GULD_avespeed_mob.mod.rpt1$P, -c(P_permut)), 
+           select(GULD_timefrozen_tot.mod.rpt1$P, -c(P_permut)), 
+           select(GULD_centrescore.mod.rpt1$P, -c(P_permut)), 
+           select(GULD_emergelat.bin.mod.rpt1$P, -c(P_permut_org, P_permut_link)), 
+           select(GULD_endpointlat.bin.mod.rpt1$P, -c(P_permut_org, P_permut_link)))
+  
+r2 <- rbind(GULD_dist.mod.rpt2$R, 
+            GULD_avespeed_mob.mod.rpt2$R, 
+            GULD_timefrozen_tot.mod.rpt2$R, 
+            GULD_centrescore.mod.rpt2$R, 
+            GULD_emergelat.bin.mod.rpt2$R[2, ], 
+            GULD_endpointlat.bin.mod.rpt2$R[2, ])
+
+cis2 <- rbind(GULD_dist.mod.rpt2$CI_emp,
+             GULD_avespeed_mob.mod.rpt2$CI_emp,
+             GULD_timefrozen_tot.mod.rpt2$CI_emp,
+             GULD_centrescore.mod.rpt2$CI_emp,
+             GULD_emergelat.bin.mod.rpt2$CI_emp$CI_link,
+             GULD_endpointlat.bin.mod.rpt2$CI_em$CI_link)
+
+p2 <- rbind(select(GULD_dist.mod.rpt2$P, -c(P_permut)), 
+           select(GULD_avespeed_mob.mod.rpt2$P, -c(P_permut)), 
+           select(GULD_timefrozen_tot.mod.rpt2$P, -c(P_permut)), 
+           select(GULD_centrescore.mod.rpt2$P, -c(P_permut)), 
+           select(GULD_emergelat.bin.mod.rpt2$P, -c(P_permut_org, P_permut_link)), 
+           select(GULD_endpointlat.bin.mod.rpt2$P, -c(P_permut_org, P_permut_link)))
+
+table1 <- cbind(name, r1, cis, p, r2, cis2, p2)
+colnames(table1) <- c("var","r1","lci1","uci1","p1","r2","lci2","uci2","p2")
+
+table1$text1 <- paste((round(table1$r1, digits = 2)), (round(table1$lci1, digits = 2)), sep = " [")
+table1$text1 <- paste(table1$text1, (round(table1$uci1, digits = 2)), sep = ", ")
+
+table1a <- subset(table1, p1 <= 0.001)
+table1a$ptext <- "P < 0.001)"
+table1b <- subset(table1, p1 >= 0.001)
+table1b$ptext <- paste("P = ", (round(table1b$p1, digits = 4)), sep = "")
+table1b$ptext <- paste(table1b$ptext, ")", sep = "")
+
+table1 <-rbind(table1a, table1b)
+table1$text1 <- paste(table1$text1, table1$ptext, sep = "] (")
+
+
+table1$text2 <- paste((round(table1$r2, digits = 2)), (round(table1$lci2, digits = 2)), sep = " [")
+table1$text2 <- paste(table1$text2, (round(table1$uci2, digits = 2)), sep = ", ")
+table1$text2 <- paste(table1$text2, "P < 0.001)", sep = "] (")
+
+write.csv(table1, "./outputs_visualisations/table1.csv")
+
+
+
+
+
+
+#    a. Table 2 ----
+GULD_dist.mod.red
+GULD_avespeed_mob.mod.red
+GULD_timefrozen_tot.mod.red
+GULD_centrescore.mod.red
+GULD_emergelat.bin.mod.red
+GULD_endpointlat.bin.mod.red
 
 
 ## G.2.5. Building data frame for SIA correlation analysis ----
