@@ -215,7 +215,7 @@ save(GULD_endpointlat.bin.mod.rpt2, file = "./outputs_visualisations/GULD_endpoi
 
 
 
-#  2.3. Extracting data for tables ----
+# 2.3. Extracting data for tables ----
 #    a. Table 1 ----
 
 
@@ -292,16 +292,171 @@ write.csv(table1, "./outputs_visualisations/table1.csv")
 
 
 
-
-
-
 #    a. Table 2 ----
-GULD_dist.mod.red
-GULD_avespeed_mob.mod.red
-GULD_timefrozen_tot.mod.red
-GULD_centrescore.mod.red
-GULD_emergelat.bin.mod.red
-GULD_endpointlat.bin.mod.red
+#GULD_dist.mod.red
+fix2a <- as.data.frame(summary(GULD_dist.mod.red)$coefficients)
+cin2a <- as.data.frame(confint(GULD_dist.mod.red))
+cin2a_red <- cin2a[4:8, ]
+
+table2a <- cbind(fix2a,cin2a_red)
+
+colnames(table2a) <- c("Est","SE","df","t_z","P","CI25","CI95")
+table2a$Est <- round(table2a$Est, digits = 2)
+table2a$SE <- round(table2a$SE, digits = 2)
+table2a$df <- round(table2a$df, digits = 2)
+table2a$t_z <- round(table2a$t_z, digits = 2)
+table2a$CI25 <- round(table2a$CI25, digits = 2)
+table2a$CI95 <- round(table2a$CI95, digits = 2)
+table2a.1 <- subset(table2a, P <= 0.001)
+table2a.2 <- subset(table2a, P >= 0.001)
+table2a.1$Ptext <- "< 0.001"
+table2a.2$Ptext <- round(table2a.2$P, digits= 3)
+table2a <- rbind(table2a.1, table2a.2)
+table2a$text <- paste(table2a$Est, table2a$CI25, sep = " [")
+table2a$text <- paste(table2a$text, table2a$CI95, sep = ", ")
+table2a$text <- paste(table2a$text, "]", sep = "")
+table2a <- table2a[, c(9, 2, 3, 4, 8)]
+table2a$rownames <- rownames(table2a)
+table2a <- table2a %>% arrange(factor(rownames, levels = c("(Intercept)", "Sexm", "TL.C", "CondManual.C", "TrialDay.C")))
+
+
+#GULD_avespeed_mob.mod.red
+fix2b <- as.data.frame(summary(GULD_avespeed_mob.mod.red)$coefficients)
+cin2b <- as.data.frame(confint(GULD_avespeed_mob.mod.red))
+cin2b_red <- cin2b[3:7, ]
+
+table2b <- cbind(fix2b,cin2b_red)
+
+colnames(table2b) <- c("Est","SE","df","t_z","P","CI25","CI95")
+table2b$Est <- round(table2b$Est, digits = 2)
+table2b$SE <- round(table2b$SE, digits = 2)
+table2b$df <- round(table2b$df, digits = 2)
+table2b$t_z <- round(table2b$t_z, digits = 2)
+table2b$CI25 <- round(table2b$CI25, digits = 2)
+table2b$CI95 <- round(table2b$CI95, digits = 2)
+table2b.1 <- subset(table2b, P <= 0.001)
+table2b.2 <- subset(table2b, P >= 0.001)
+table2b.1$Ptext <- "< 0.001"
+table2b.2$Ptext <- round(table2b.2$P, digits= 3)
+table2b <- rbind(table2b.1, table2b.2)
+table2b$text <- paste(table2b$Est, table2b$CI25, sep = " [")
+table2b$text <- paste(table2b$text, table2b$CI95, sep = ", ")
+table2b$text <- paste(table2b$text, "]", sep = "")
+table2b <- table2b[, c(9, 2, 3, 4, 8)]
+table2b$rownames <- rownames(table2b)
+table2b <- table2b %>% arrange(factor(rownames, levels = c("(Intercept)", "Sexm", "TL.C", "CondManual.C", "TrialDay.C")))
+
+#GULD_timefrozen_tot.mod.red
+fix2c <- as.data.frame(summary(GULD_timefrozen_tot.mod.red)$coefficients)
+cin2c <- as.data.frame(confint(GULD_timefrozen_tot.mod.red))
+cin2c_red <- cin2c[5:9, ]
+
+table2c <- cbind(fix2c,cin2c_red)
+
+colnames(table2c) <- c("Est","SE","df","t_z","P","CI25","CI95")
+table2c$Est <- round(table2c$Est, digits = 2)
+table2c$SE <- round(table2c$SE, digits = 2)
+table2c$df <- round(table2c$df, digits = 2)
+table2c$t_z <- round(table2c$t_z, digits = 2)
+table2c$CI25 <- round(table2c$CI25, digits = 2)
+table2c$CI95 <- round(table2c$CI95, digits = 2)
+table2c.1 <- subset(table2c, P <= 0.001)
+table2c.2 <- subset(table2c, P >= 0.001)
+table2c.1$Ptext <- "< 0.001"
+table2c.2$Ptext <- round(table2c.2$P, digits= 3)
+table2c <- rbind(table2c.1, table2c.2)
+table2c$text <- paste(table2c$Est, table2c$CI25, sep = " [")
+table2c$text <- paste(table2c$text, table2c$CI95, sep = ", ")
+table2c$text <- paste(table2c$text, "]", sep = "")
+table2c <- table2c[, c(9, 2, 3, 4, 8)]
+table2c$rownames <- rownames(table2c)
+table2c <- table2c %>% arrange(factor(rownames, levels = c("(Intercept)", "Sexm", "TL.C", "CondManual.C", "TrialDay.C")))
+
+#GULD_centrescore.mod.red
+fix2d <- as.data.frame(summary(GULD_centrescore.mod.red)$coefficients)
+cin2d <- as.data.frame(confint(GULD_centrescore.mod.red))
+cin2d_red <- cin2d[4:8, ]
+
+table2d <- cbind(fix2d,cin2d_red)
+
+colnames(table2d) <- c("Est","SE","df","t_z","P","CI25","CI95")
+table2d$Est <- round(table2d$Est, digits = 2)
+table2d$SE <- round(table2d$SE, digits = 2)
+table2d$df <- round(table2d$df, digits = 2)
+table2d$t_z <- round(table2d$t_z, digits = 2)
+table2d$CI25 <- round(table2d$CI25, digits = 2)
+table2d$CI95 <- round(table2d$CI95, digits = 2)
+table2d.1 <- subset(table2d, P <= 0.001)
+table2d.2 <- subset(table2d, P >= 0.001)
+table2d.1$Ptext <- "< 0.001"
+table2d.2$Ptext <- round(table2d.2$P, digits= 3)
+table2d <- rbind(table2d.1, table2d.2)
+table2d$text <- paste(table2d$Est, table2d$CI25, sep = " [")
+table2d$text <- paste(table2d$text, table2d$CI95, sep = ", ")
+table2d$text <- paste(table2d$text, "]", sep = "")
+table2d <- table2d[, c(9, 2, 3, 4, 8)]
+table2d$rownames <- rownames(table2d)
+table2d <- table2d %>% arrange(factor(rownames, levels = c("(Intercept)", "Sexm", "TL.C", "CondManual.C", "TrialDay.C")))
+
+
+#GULD_emergelat.bin.mod.red
+fix2e <- as.data.frame(summary(GULD_emergelat.bin.mod.red)$coefficients)
+cin2e <- as.data.frame(confint(GULD_emergelat.bin.mod.red, method="Wald"))
+cin2e_red <- cin2e[2:6, ]
+table2e <- cbind(fix2e,cin2e_red)
+table2e$df <- "NA"
+
+colnames(table2e) <- c("Est","SE","t_z","P","CI25","CI95","df")
+table2e$Est <- round(table2e$Est, digits = 2)
+table2e$SE <- round(table2e$SE, digits = 2)
+table2e$t_z <- round(table2e$t_z, digits = 2)
+table2e$CI25 <- round(table2e$CI25, digits = 2)
+table2e$CI95 <- round(table2e$CI95, digits = 2)
+table2e$Ptext <- round(table2e$P, digits= 3)
+table2e$text <- paste(table2e$Est, table2e$CI25, sep = " [")
+table2e$text <- paste(table2e$text, table2e$CI95, sep = ", ")
+table2e$text <- paste(table2e$text, "]", sep = "")
+table2e <- table2e[, c(9, 2, 7, 3, 8)]
+table2e$rownames <- rownames(table2e)
+table2e <- table2e %>% arrange(factor(rownames, levels = c("(Intercept)", "Sexm", "TL.C", "CondManual.C", "TrialDay.C")))
+
+
+#GULD_endpointlat.bin.mod.red
+fix2f <- as.data.frame(summary(GULD_endpointlat.bin.mod.red)$coefficients)
+cin2f <- as.data.frame(confint(GULD_endpointlat.bin.mod.red, method="Wald"))
+cin2f_red <- cin2f[2:6, ]
+table2f <- cbind(fix2f,cin2f_red)
+table2f$df <- "NA"
+
+colnames(table2f) <- c("Est","SE","t_z","P","CI25","CI95","df")
+table2f$Est <- round(table2f$Est, digits = 2)
+table2f$SE <- round(table2f$SE, digits = 2)
+table2f$t_z <- round(table2f$t_z, digits = 2)
+table2f$CI25 <- round(table2f$CI25, digits = 2)
+table2f$CI95 <- round(table2f$CI95, digits = 2)
+table2f$Ptext <- round(table2f$P, digits= 3)
+table2f$text <- paste(table2f$Est, table2f$CI25, sep = " [")
+table2f$text <- paste(table2f$text, table2f$CI95, sep = ", ")
+table2f$text <- paste(table2f$text, "]", sep = "")
+table2f <- table2f[, c(9, 2, 7, 3, 8)]
+table2f$rownames <- rownames(table2f)
+table2f <- table2f %>% arrange(factor(rownames, levels = c("(Intercept)", "Sexm", "TL.C", "CondManual.C", "TrialDay.C")))
+
+table2 <- rbind(table2a,
+                table2b,
+                table2c,
+                table2d,
+                table2e,
+                table2f)
+
+write.csv(table2, "./outputs_visualisations/table2.csv")
+
+
+# 2.4. Correlations between behavioural variables ----
+
+
+
+
 
 
 ## G.2.5. Building data frame for SIA correlation analysis ----
