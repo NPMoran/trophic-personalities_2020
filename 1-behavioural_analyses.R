@@ -26,24 +26,22 @@ GULDact.processed$TrialDay.C <- scale(GULDact.processed$TrialDay)
 # - Making TrialRound a unique variable for each round
 GULDact.processed$TrialRound <- paste(GULDact.processed$TrialDay, GULDact.processed$TrialRound, sep = "_")
 
-# - converting distance to meters for easier interpretation
-GULDact.processed$dist.m <- GULDact.processed$dist/1000
 
 #    a. Total distance moved accross the trial (mm, 'dist') ----
 # - Assessing distributions
-ggplot(GULDact.processed) + aes(x = dist.m) + geom_histogram(color="black", fill="lightblue", binwidth = 4800) + simpletheme 
+ggplot(GULDact.processed) + aes(x = dist) + geom_histogram(color="black", fill="lightblue", binwidth = 4800) + simpletheme 
 ggqqplot(GULDact.processed$dist)
 
 # - Full model
-GULD_dist.mod <- lmer(dist.m ~ 
+GULD_dist.mod <- lmer(dist ~ 
                              Sex + TL.C + CondManual.C + TrialDay.C + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID),  data=GULDact.processed)
 summary(GULD_dist.mod) #TrialRound, TankID extremely low to zero variance explained
 plot(GULD_dist.mod) #No issues
 
 # - Reduced model
-GULD_dist.mod.red <- lmer(dist.m ~ Sex + TL.C + CondManual.C + TrialDay.C + (1|ArenaID) + (1|FishID), data=GULDact.processed)
+GULD_dist.mod.red <- lmer(dist ~ Sex + TL.C + CondManual.C + TrialDay.C + (1|ArenaID) + (1|FishID), data=GULDact.processed)
 summary(GULD_dist.mod.red)  #Sex and replicate effect, marginal condition effect
-r2_nakagawa(GULD_dist.mod.red) #random structure error
+r2_nakagawa(GULD_dist.mod.red) 
 
 # - Repeatabilities
 GULD_dist.mod.rpt1 <- rpt(dist  ~ (1|FishID), grname = "FishID", data = GULDact.processed, datatype = "Gaussian", 
@@ -154,6 +152,7 @@ GULDexpl.processed <- read.csv("~/trophic-personalities_2020/dat_behaviour/GULD_
 nrow(GULDexpl.processed) #111 trials
 n_distinct(GULDexpl.processed$FishID) #43 fish included in analysis
 
+
 # - Z-transformation/scaling of continuous fixed effects
 GULDexpl.processed$TL.C <- scale(GULDexpl.processed$TL)  
 GULDexpl.processed$CondManual.C <- scale(GULDexpl.processed$CondManual)  
@@ -217,7 +216,6 @@ save(GULD_endpointlat.bin.mod.rpt2, file = "./outputs_visualisations/GULD_endpoi
 
 # 2.3. Extracting data for tables ----
 #    a. Table 1 ----
-
 
 name <- as.data.frame(c("GULD_dist.mod.rpt",
                         "GULD_avespeed_mob.mod.rpt",
@@ -453,10 +451,29 @@ write.csv(table2, "./outputs_visualisations/table2.csv")
 
 
 # 2.4. Correlations between behavioural variables ----
+labels(GULDact.processed.working)
+labels(GULDexpl.processed.working)
 
+GULDexpl.processed.working <- select(GULDexpl.processed, -c("PITID", "Date","TL", "ConditionFactor", "CondManual", "Sex", "TrialType", "TankID",
+                                                            "TL.C", "CondManual.C", "TrialDay.C"))
+GULDexpl.processed.working <- rename(GULDexpl.processed.working, EXPLTrialRound = TrialRound)
+GULDexpl.processed.working <- rename(GULDexpl.processed.working, EXPLArenaID = ArenaID)
+GULDexpl.processed.working <- rename(GULDexpl.processed.working, EXPLUniqueID = UniqueID)
 
+GULDact.processed.working  <- select(GULDexpl.processed, -c("TL",  "Date", "TimeLoaded", "TrialType"))
+GULDact.processed.working  <- rename(GULDact.processed, ACTTrialRound = TrialRound)
+GULDact.processed.working  <- rename(GULDact.processed, ACTArenaID = ArenaID)
+GULDact.processed.working  <- rename(GULDact.processed, ACTUniqueID = UniqueID)
 
+GULDact.processed.working$mergeID <- paste(GULDact.processed.working$FishID, GULDact.processed.working$TrialDay, sep = "_") 
+GULDexpl.processed.working$mergeID <- paste(GULDexpl.processed.working$FishID, GULDexpl.processed.working$TrialDay, sep = "_") 
 
+GULDbehav_combined <- merge(GULDact.processed.working, GULDexpl.processed.working, by = "mergeID", all.x = TRUE)
+cor.test(GULDbehav_combined$dist, GULDbehav_combined$emergelat, method = "spearman")
+cor.test(GULDbehav_combined$dist, GULDbehav_combined$endpointlat, method = "spearman")
+
+cor.test(GULDbehav_combined$centrescore2, GULDbehav_combined$emergelat, method = "spearman")
+cor.test(GULDbehav_combined$centrescore2, GULDbehav_combined$endpointlat, method = "spearman")
 
 
 ## G.2.5. Building data frame for SIA correlation analysis ----
