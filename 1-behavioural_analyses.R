@@ -9,6 +9,7 @@ Sys.setenv(LANG = "en")
 #Loading required packages- 
 library(dplyr); library(ggplot2); library(ggpubr)
 library(lme4); library(lmerTest); library(car); library(rptR); library(performance)
+library(vegan)
 #General theme for ggplots-
 simpletheme <-   theme(axis.text.y = element_text(size = 10, colour = "black"), axis.text.x = element_text(size = 10, colour = "black"),  panel.background = element_rect(fill = "white"), axis.title.y  = element_text(size=12, vjust = 2), axis.title.x  = element_text(size=12, vjust = 0.1), panel.border = element_rect(colour = "black", fill=NA, size = 1))
 
@@ -451,9 +452,7 @@ write.csv(table2, "./outputs_visualisations/table2.csv")
 
 
 # 2.4. Correlations between behavioural variables ----
-labels(GULDact.processed.working)
-labels(GULDexpl.processed.working)
-
+#formatting database
 GULDexpl.processed.working <- select(GULDexpl.processed, -c("PITID", "Date","TL", "ConditionFactor", "CondManual", "Sex", "TrialType", "TankID",
                                                             "TL.C", "CondManual.C", "TrialDay.C"))
 GULDexpl.processed.working <- rename(GULDexpl.processed.working, EXPLTrialRound = TrialRound)
@@ -468,12 +467,88 @@ GULDact.processed.working  <- rename(GULDact.processed, ACTUniqueID = UniqueID)
 GULDact.processed.working$mergeID <- paste(GULDact.processed.working$FishID, GULDact.processed.working$TrialDay, sep = "_") 
 GULDexpl.processed.working$mergeID <- paste(GULDexpl.processed.working$FishID, GULDexpl.processed.working$TrialDay, sep = "_") 
 
+GULDexpl.processed.working <- select(GULDexpl.processed.working, -c("TrialDay", "FishID"))
 GULDbehav_combined <- merge(GULDact.processed.working, GULDexpl.processed.working, by = "mergeID", all.x = TRUE)
-cor.test(GULDbehav_combined$dist, GULDbehav_combined$emergelat, method = "spearman")
-cor.test(GULDbehav_combined$dist, GULDbehav_combined$endpointlat, method = "spearman")
 
-cor.test(GULDbehav_combined$centrescore2, GULDbehav_combined$emergelat, method = "spearman")
-cor.test(GULDbehav_combined$centrescore2, GULDbehav_combined$endpointlat, method = "spearman")
+#removing NAs and unused variables
+GULDbehav_combined.red <- subset(GULDbehav_combined, emergelat != "NA")
+GULDbehav_combined.red <- select(GULDbehav_combined.red, c("FishID","dist","avespeed_mob","timefrozen_tot","centrescore2","emergelat","endpointlat"))
+pairs(GULDbehav_combined.red[,-1],
+      lower.panel = NULL)
+
+#Running redundancy analysis to visualise relationships between variables
+#https://rpubs.com/brouwern/veganpca
+
+set.seed(253)
+GULDbehav_combined.red$dist <- scale(GULDbehav_combined.red$dist)
+GULDbehav_combined.red$avespeed_mob <- scale(GULDbehav_combined.red$avespeed_mob)
+GULDbehav_combined.red$timefrozen_tot <- scale(GULDbehav_combined.red$timefrozen_tot)
+GULDbehav_combined.red$centrescore2 <- scale(GULDbehav_combined.red$centrescore2)
+GULDbehav_combined.red$emergelat <- scale(GULDbehav_combined.red$emergelat)
+GULDbehav_combined.red$endpointlat <- scale(GULDbehav_combined.red$endpointlat)
+
+my.rda <- rda(GULDbehav_combined.red[,-1])
+summary(my.rda)
+biplot(my.rda,
+       display = c("sites", 
+                   "species"),
+       type = c("text",
+                "points"))
+
+#Porrelation tests
+corr1_1 <- cor.test(GULDbehav_combined$dist, GULDbehav_combined$avespeed_mob, method = "spearman")
+corr1_2 <- cor.test(GULDbehav_combined$dist, GULDbehav_combined$timefrozen_tot, method = "spearman")
+corr1_3 <- cor.test(GULDbehav_combined$dist, GULDbehav_combined$centrescore2, method = "spearman")
+corr1_4 <- cor.test(GULDbehav_combined$dist, GULDbehav_combined$emergelat, method = "spearman")
+corr1_5 <- cor.test(GULDbehav_combined$dist, GULDbehav_combined$endpointlat, method = "spearman")
+
+corr2_2 <- cor.test(GULDbehav_combined$avespeed_mob, GULDbehav_combined$timefrozen_tot, method = "spearman")
+corr2_3 <- cor.test(GULDbehav_combined$avespeed_mob, GULDbehav_combined$centrescore2, method = "spearman")
+corr2_4 <- cor.test(GULDbehav_combined$avespeed_mob, GULDbehav_combined$emergelat, method = "spearman")
+corr2_5 <- cor.test(GULDbehav_combined$avespeed_mob, GULDbehav_combined$endpointlat, method = "spearman")
+
+corr3_3 <- cor.test(GULDbehav_combined$timefrozen_tot, GULDbehav_combined$centrescore2, method = "spearman")
+corr3_4 <- cor.test(GULDbehav_combined$timefrozen_tot, GULDbehav_combined$emergelat, method = "spearman")
+corr3_5 <- cor.test(GULDbehav_combined$timefrozen_tot, GULDbehav_combined$endpointlat, method = "spearman")
+
+corr4_4 <- cor.test(GULDbehav_combined$centrescore2, GULDbehav_combined$emergelat, method = "spearman")
+corr4_5 <- cor.test(GULDbehav_combined$centrescore2, GULDbehav_combined$endpointlat, method = "spearman")
+
+corr5_5 <- cor.test(GULDbehav_combined$emergelat, GULDbehav_combined$endpointlat, method = "spearman")
+
+corre <- as.data.frame(c(corr1_1$estimate,corr1_2$estimate,corr2_2$estimate,corr1_3$estimate,corr2_3$estimate,
+                         corr3_3$estimate,corr1_4$estimate,corr2_4$estimate,corr3_4$estimate,corr4_4$estimate,
+                         corr1_5$estimate,corr2_5$estimate,corr3_5$estimate,corr4_5$estimate,corr5_5$estimate))
+colnames(corre) <- "a" 
+corre$a <- round(corre$a, digits = 3) 
+
+corrp <- as.data.frame(c(corr1_1$p.value,corr1_2$p.value,corr2_2$p.value,corr1_3$p.value,corr2_3$p.value,
+                          corr3_3$p.value,corr1_4$p.value,corr2_4$p.value,corr3_4$p.value,corr4_4$p.value,
+                          corr1_5$p.value,corr2_5$p.value,corr3_5$p.value,corr4_5$p.value,corr5_5$p.value))
+colnames(corrp) <- "a"
+corrp$rownames <- rownames(corr1p)
+
+corrp1 <- subset(corrp, a < 0.001)
+corrp2 <- subset(corrp, a >= 0.001)
+corrp1$a <- "(P < 0.001)"
+corrp2$a <- round(corrp2$a, digits = 3)
+corrp2$a <- paste("(P = ", corrp2$a, sep = "")
+corrp2$a <- paste(corrp2$a, ")", sep = "")
+corrp <- rbind(corrp1, corrp2)
+corrp$rownames <- as.numeric(corrp$rownames) 
+corrp <- corrp[order(corrp$rownames,decreasing=FALSE),]
+
+corre$a <- paste(corre$a, corrp$a, sep = " ")
+
+corr1 <- as.data.frame(c(corre[1,],"","","",""))
+corr2 <- as.data.frame(c(corre[2:3,],"","",""))
+corr3 <- as.data.frame(c(corre[4:6,],"",""))
+corr4 <- as.data.frame(c(corre[7:10,],""))
+corr5 <- as.data.frame(c(corre[11:15,]))
+
+table3 <- (cbind(corr1,corr2,corr3,corr4,corr5))
+colnames(table3) <- c(1,2,3,4,5)
+write.csv(table3, "./outputs_visualisations/table3.csv")
 
 
 ## G.2.5. Building data frame for SIA correlation analysis ----
