@@ -495,7 +495,7 @@ biplot(my.rda,
        type = c("text",
                 "points"))
 
-#Porrelation tests
+#Correlation tests
 corr1_1 <- cor.test(GULDbehav_combined$dist, GULDbehav_combined$avespeed_mob, method = "spearman")
 corr1_2 <- cor.test(GULDbehav_combined$dist, GULDbehav_combined$timefrozen_tot, method = "spearman")
 corr1_3 <- cor.test(GULDbehav_combined$dist, GULDbehav_combined$centrescore2, method = "spearman")
@@ -552,12 +552,12 @@ write.csv(table3, "./outputs_visualisations/table3.csv")
 
 
 ## G.2.5. Building data frame for SIA correlation analysis ----
-# - Behavioural predictor variations for SIA analysis
+# - Behavioural predictor variations
 #   1- Initial behavioural response (trial 1 response)
 #   2- Average behavioural response (trial 1-3 average, limited to individuals completing all 3 trails, due to treatment effects)
 #   3- Model coefficients estimates for each individual from reduced models (conditional mode for each individuals, reflects an adjusted average behaviour) 
 
-#Extracting the first trial and average behaviour accross trials
+#Extracting the first trial and average behaviour across trials
 # - First Trial used as a single phenotypic measure most closely reflect their behaviour in the field
 # - As there is a TrialDay effect in most variables, only individuals with scores for all three trials are used for averages. 
 #Activity
@@ -571,6 +571,7 @@ behavACTT1$dist.ACTT1 <- subset(GULDact.processed, TrialDay == 'trial 1')$dist
 behavACTT1$frozenevents.ACTT1 <- subset(GULDact.processed, TrialDay == 'trial 1')$frozenevents
 behavACTT1$timefrozen_tot.ACTT1 <- subset(GULDact.processed, TrialDay == 'trial 1')$timefrozen_tot
 behavACTT1$centrescore.ACTT1 <- subset(GULDact.processed, TrialDay == 'trial 1')$centrescore
+behavACTT1$centrescore2.ACTT1 <- subset(GULDact.processed, TrialDay == 'trial 1')$centrescore2
 behavACTT1$centretime50.ACTT1 <- subset(GULDact.processed, TrialDay == 'trial 1')$centretime50
 behavACTT1$centretime75.ACTT1 <- subset(GULDact.processed, TrialDay == 'trial 1')$centretime75
 behavACTT1$centretime100.ACTT1 <- subset(GULDact.processed, TrialDay == 'trial 1')$centretime100
@@ -586,6 +587,7 @@ behavACTT2$dist.ACTT2 <- subset(GULDact.processed, TrialDay == 'trial 2')$dist
 behavACTT2$frozenevents.ACTT2 <- subset(GULDact.processed, TrialDay == 'trial 2')$frozenevents
 behavACTT2$timefrozen_tot.ACTT2 <- subset(GULDact.processed, TrialDay == 'trial 2')$timefrozen_tot
 behavACTT2$centrescore.ACTT2 <- subset(GULDact.processed, TrialDay == 'trial 2')$centrescore
+behavACTT2$centrescore2.ACTT2 <- subset(GULDact.processed, TrialDay == 'trial 2')$centrescore2
 behavACTT2$centretime50.ACTT2 <- subset(GULDact.processed, TrialDay == 'trial 2')$centretime50
 behavACTT2$centretime75.ACTT2 <- subset(GULDact.processed, TrialDay == 'trial 2')$centretime75
 behavACTT2$centretime100.ACTT2 <- subset(GULDact.processed, TrialDay == 'trial 2')$centretime100
@@ -601,6 +603,7 @@ behavACTT3$dist.ACTT3 <- subset(GULDact.processed, TrialDay == 'trial 3')$dist
 behavACTT3$frozenevents.ACTT3 <- subset(GULDact.processed, TrialDay == 'trial 3')$frozenevents
 behavACTT3$timefrozen_tot.ACTT3 <- subset(GULDact.processed, TrialDay == 'trial 3')$timefrozen_tot
 behavACTT3$centrescore.ACTT3 <- subset(GULDact.processed, TrialDay == 'trial 3')$centrescore
+behavACTT3$centrescore2.ACTT3 <- subset(GULDact.processed, TrialDay == 'trial 3')$centrescore2
 behavACTT3$centretime50.ACTT3 <- subset(GULDact.processed, TrialDay == 'trial 3')$centretime50
 behavACTT3$centretime75.ACTT3 <- subset(GULDact.processed, TrialDay == 'trial 3')$centretime75
 behavACTT3$centretime100.ACTT3 <- subset(GULDact.processed, TrialDay == 'trial 3')$centretime100
@@ -620,6 +623,7 @@ behavMEAN$dist.MEAN <- (behavMEANWorking$dist.ACTT1+behavMEANWorking$dist.ACTT2+
 behavMEAN$frozenevents.MEAN <- (behavMEANWorking$frozenevents.ACTT1+behavMEANWorking$frozenevents.ACTT2+behavMEANWorking$frozenevents.ACTT3)/3
 behavMEAN$timefrozen_tot.MEAN <- (behavMEANWorking$timefrozen_tot.ACTT1+behavMEANWorking$timefrozen_tot.ACTT2+behavMEANWorking$timefrozen_tot.ACTT3)/3
 behavMEAN$centrescore.MEAN <- (behavMEANWorking$centrescore.ACTT1+behavMEANWorking$centrescore.ACTT2+behavMEANWorking$centrescore.ACTT3)/3
+behavMEAN$centrescore2.MEAN <- (behavMEANWorking$centrescore2.ACTT1+behavMEANWorking$centrescore2.ACTT2+behavMEANWorking$centrescore2.ACTT3)/3
 behavMEAN$centretime50.MEAN <- (behavMEANWorking$centretime50.ACTT1+behavMEANWorking$centretime50.ACTT2+behavMEANWorking$centretime50.ACTT3)/3
 behavMEAN$centretime75.MEAN <- (behavMEANWorking$centretime75.ACTT1+behavMEANWorking$centretime75.ACTT2+behavMEANWorking$centretime75.ACTT3)/3
 behavMEAN$centretime100.MEAN <- (behavMEANWorking$centretime100.ACTT1+behavMEANWorking$centretime100.ACTT2+behavMEANWorking$centretime100.ACTT3)/3
