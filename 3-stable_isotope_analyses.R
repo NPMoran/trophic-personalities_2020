@@ -52,25 +52,40 @@ nrow(GULD_SIAprod) #primary producers
 #Checking C:N ratios
 # ratios above 4 require lipid correction (Post et al. 2007). All values here below 4.
 GULD_SIAfins$CN_ratio <- (GULD_SIAfins$C_percentage/GULD_SIAfins$N_percentage)
-summary(GULD_SIAfins$CN_ratio) #All values here below 4
+summary(GULD_SIAfins$CN_ratio) #Mean- 3.337, Median- 3.370, Max 3.713
+
+cor.test(GULD_SIAfins$CN_ratio, GULD_SIAfins$d13C, method = 'spearman')
+plot(GULD_SIAfins$d13C, GULD_SIAfins$CN_ratio)
+
+# - some samples CN ratio exceeds 4, and there is a signfiicant correlation between C and CN, 
+# - so the correction has been applied to this dataset
+GULD_SIAfins$d13C_post <- (GULD_SIAfins$d13C - 3.32 + (0.99*GULD_SIAfins$CN_ratio))
+plot(GULD_SIAfins$d13C_post, GULD_SIAfins$CN_ratio)
+
+
+#Correction for Prey
+GULD_SIAprey$CN_ratio <- (GULD_SIAprey$C_percentage/GULD_SIAprey$N_percentage)
+summary(GULD_SIAprey$CN_ratio) #Mean- 3.783, Median- 3.370, Max 7.065
+GULD_SIAprey$d13C_post <- (GULD_SIAprey$d13C - 3.32 + (0.99*GULD_SIAprey$CN_ratio))
+
+summary(GULD_SIAprey$d13C)
+summary(GULD_SIAprey$d13C_post)
 
 
 # 3.3. Visualising round goby isotope distributions ----
 ggplot(GULD_SIAfins) + aes(x = d15N) + geom_histogram(color="black", fill="lightblue", binwidth = 0.3) + simpletheme 
 ggqqplot(GULD_SIAfins$d15N) #approximately normal, some potential outliers at the high end
 
-ggplot(GULD_SIAfins) + aes(x = d13C) + geom_histogram(color="black", fill="lightblue", binwidth = 0.5) + simpletheme 
+ggplot(GULD_SIAfins) + aes(x = d13C_post) + geom_histogram(color="black", fill="lightblue", binwidth = 0.5) + simpletheme 
 ggqqplot(GULD_SIAfins$d13C) #approximately normal, some potential outliers at the low end
 
-ggplot(GULD_SIAfins) + aes(x = N_percentage) + geom_histogram(color="black", fill="lightblue", binwidth = 0.008) + simpletheme 
-ggqqplot(GULD_SIAfins$N_percentage) #approximately normal
-
-ggplot(GULD_SIAfins) + aes(x = C_percentage) + geom_histogram(color="black", fill="lightblue", binwidth = 0.02) + simpletheme 
-ggqqplot(GULD_SIAfins$C_percentage) #approximately normal
 
 
 # 3.2. Variance components round goby  
-GULD_SIAfins.N.mod <- lmer(d15N ~ (1|FishID), data=GULD_SIAfins)
+#GULD_SIAfins.N.mod <- lmer(d15N ~ (1|FishID), data=GULD_SIAfins)
+#save(GULD_SIAfins.N.mod, file = "./outputs_visualisations/GULD_SIA1.N.mod.RData")
+load(file = "./outputs_visualisations/GULD_SIA1.N.mod.RData")
+
 summary(GULD_SIAfins.N.mod)
 x1 <- as.data.frame(VarCorr(GULD_SIAfins.N.mod))
 x2 <- as.data.frame(confint(GULD_SIAfins.N.mod,oldNames=FALSE))
@@ -83,7 +98,14 @@ colnames(x) <- c("var", "sd","sd_95LCI","sd_95UCI")
 x$var_95LCI <- (x$sd_95LCI)^2
 x$var_95UCI <- (x$sd_95UCI)^2
 
-GULD_SIAfins.C.mod <- lmer(d13C ~ (1|FishID), data=GULD_SIAfins)
+x$text <- paste(round(x$var, digits = 2), round(x$var_95LCI, digits = 2), sep = " [")
+x$text <- paste(x$text, round(x$var_95UCI, digits = 2), sep = ", ")
+x$text <- paste(x$text, "]", sep = "")
+
+#GULD_SIAfins.C.mod <- lmer(d13C_post ~ (1|FishID), data=GULD_SIAfins)
+#save(GULD_SIAfins.C.mod, file = "./outputs_visualisations/GULD_SIA1.C.mod.RData")
+load(file = "./outputs_visualisations/GULD_SIA1.C.mod.RData")
+
 summary(GULD_SIAfins.C.mod)
 y1 <- as.data.frame(VarCorr(GULD_SIAfins.C.mod))
 y2 <- as.data.frame(confint(GULD_SIAfins.C.mod,oldNames=FALSE))
@@ -96,26 +118,35 @@ colnames(y) <- c("var", "sd","sd_95LCI","sd_95UCI")
 y$var_95LCI <- (y$sd_95LCI)^2
 y$var_95UCI <- (y$sd_95UCI)^2
 
+y$teyt <- paste(round(y$var, digits = 2), round(y$var_95LCI, digits = 2), sep = " [")
+y$teyt <- paste(y$teyt, round(y$var_95UCI, digits = 2), sep = ", ")
+y$teyt <- paste(y$teyt, "]", sep = "")
+
 #Manual repeatability
 #0.53772813/(0.07487844 + 0.53772813) #0.8777708 for N
-#2.60606542/(0.06825129+2.60606542) #0.974479 for C
+#2.40734862/(0.08482087+2.40734862) #0.965965 for C
 
-GULD_SIAfins.N.rpt <- rpt(d15N ~ (1 | FishID), grname = "FishID", data = GULD_SIAfins, datatype = "Gaussian", 
-                          nboot = 100, npermut = 0)
+#GULD_SIAfins.N.rpt <- rpt(d15N ~ (1 | FishID), grname = "FishID", data = GULD_SIAfins, datatype = "Gaussian", 
+#                          nboot = 100, npermut = 0)
+#save(GULD_SIAfins.N.rpt, file = "./outputs_visualisations/GULD_SIA1.N.rpt.RData")
+load(file = "./outputs_visualisations/GULD_SIA1.N.rpt.RData")
 GULD_SIAfins.N.rpt #0.878 (matches manual est)
 
-GULD_SIAfins.C.rpt <- rpt(d13C ~ (1 | FishID), grname = "FishID", data = GULD_SIAfins, datatype = "Gaussian", 
-                          nboot = 100, npermut = 0)
-GULD_SIAfins.C.rpt #0.974 (matches manual est)
 
-save(GULD_SIAfins.N.mod, file = "./outputs_visualisations/GULD_SIA1.N.mod.RData")
-save(GULD_SIAfins.C.mod, file = "./outputs_visualisations/GULD_SIA1.C.mod.RData")
+#GULD_SIAfins.C.rpt <- rpt(d13C_post ~ (1 | FishID), grname = "FishID", data = GULD_SIAfins, datatype = "Gaussian", 
+#                          nboot = 100, npermut = 0)
+#save(GULD_SIAfins.C.rpt, file = "./outputs_visualisations/GULD_SIA1.C.rpt.RData")
+load(file = "./outputs_visualisations/GULD_SIA1.C.rpt.RData")
+GULD_SIAfins.C.rpt #0.966 (matches manual est)
 
-save(GULD_SIAfins.N.rpt, file = "./outputs_visualisations/GULD_SIA1.N.rpt.RData")
-save(GULD_SIAfins.C.rpt, file = "./outputs_visualisations/GULD_SIA1.C.rpt.RData")
 
-#Summary:
-#d15N:      _ repeatability 0.878 [0.815, 0.914]
-#d13C:      _ repeatability 0.974 [0.959, 0.983]
+#Range and mean estimates. 
+GULD_SIAfins_means <- setDT(GULD_SIAfins)[ , list(d15N_M = mean(d15N),
+                                                      d13C_post_M = mean(d13C_post)),
+                                                by = .(FishID)]
+summary(GULD_SIAfins_means)
 
-write.csv(GULD_SIAfins, "~/trophic-personalities_2020/Data_GuldborgsundSIA/GULD_processed.fins.csv")
+
+
+?cor.test
+cor.test(GULDbehav_combined$timefrozen_tot, GULDbehav_combined$emergelat, method = "spearman")
