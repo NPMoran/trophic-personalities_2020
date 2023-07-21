@@ -9,7 +9,7 @@ Sys.setenv(LANG = "en")
 #Loading required packages- 
 library(dplyr); library(lme4); library(lmerTest); library(rptR); library(data.table)
 library(ggplot2); library(ggpubr); library(RColorBrewer)
-library(MixSIAR); library(SIBER); library(tRophicPosition)
+
 
 
 #General theme for ggplots-
@@ -167,9 +167,9 @@ load(file = "./outputs_visualisations/GULD_SIA1.N.rpt.RData")
 GULD_SIAfins.N.rpt #0.878 (matches manual est)
 
 
-GULD_SIAfins.C.rpt <- rpt(d13C_kilj ~ (1 | FishID), grname = "FishID", data = GULD_SIAfins, datatype = "Gaussian", 
+#GULD_SIAfins.C.rpt <- rpt(d13C_kilj ~ (1 | FishID), grname = "FishID", data = GULD_SIAfins, datatype = "Gaussian", 
                           nboot = 100, npermut = 0)
-save(GULD_SIAfins.C.rpt, file = "./outputs_visualisations/GULD_SIA1.C.rpt.RData")
+#save(GULD_SIAfins.C.rpt, file = "./outputs_visualisations/GULD_SIA1.C.rpt.RData")
 load(file = "./outputs_visualisations/GULD_SIA1.C.rpt.RData")
 GULD_SIAfins.C.rpt #0.966 (matches manual est)
 
@@ -321,8 +321,22 @@ ggsave("./outputs_visualisations/Fig_3kilj.jpeg", width = 18, height = 12, units
 
 
 # 3.4. Diet reconstruction (mixSIAR)----
+#install.packages('rjags')
+#install.packages('simmr')
+#install.packages('MixSIAR')
+library(rjags) #need to install JAGS-4.x.y.exe (for any x >=0, y>=0) from http://www.sourceforge.net/projects/mcmc-jags/files
+library(simmr) #supposedly updated version of SIAR for running simple or lite versions of mixing models
+library(MixSIAR) #MixSIAR: A Bayesian stable isotope mixing model for characterizing intrapopulation niche variation
+
+#mixsiar.dir <- find.package("MixSIAR")
+#paste0(mixsiar.dir,"/example_scripts")
+labels(GULD_SIAfins)
+GULD_SIAfins_SIAR <-  select(GULD_SIAfins, -c(DryWeight, N_mg, N_., C_mg, C_.))
+
+
 
 #Discrimination options
+library(tRophicPosition)
 #Based on Post 2002, McCutchan et al 2003 ----
 TDF(author = "Post", element = "both")
 #  3.4 +- 0.98 sd
