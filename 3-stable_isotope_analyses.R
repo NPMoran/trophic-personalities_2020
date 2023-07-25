@@ -7,7 +7,7 @@
 #### 3. Stable isotope analysis ####
 Sys.setenv(LANG = "en")
 #Loading required packages- 
-library(dplyr); library(lme4); library(lmerTest); library(rptR); library(data.table)
+library(dplyr); library(lme4); library(lmerTest); library(rptR); library(data.table); library(operators)
 library(ggplot2); library(ggpubr); library(RColorBrewer)
 
 
@@ -44,10 +44,6 @@ nrow(GULD_SIAprey) #round goby potential prey items
 GULD_SIAprod <- subset(GULD_SIAfull, sortID == 'prod')
 nrow(GULD_SIAprod) #primary producers
 
-#GULD_SIAdisc <- subset(GULD_SIAfull, sortID == 'discrim')
-#nrow(GULD_SIAdisc) #additional samples to check discrimination factor (not currently in use)
-
-
 
 # - Lipid correction ----
 # - Checking C:N ratios
@@ -58,7 +54,7 @@ summary(GULD_SIAfins$CN_ratio) #Mean- 3.337, Median- 3.370, Max 3.713
 cor.test(GULD_SIAfins$CN_ratio, GULD_SIAfins$d13C, method = 'spearman')
 plot(GULD_SIAfins$d13C, GULD_SIAfins$CN_ratio)
 
-# - Some samples CN ratio exceeds 4, and there is a signfiicant correlation between C and CN, so the correction has been applied to this dataset
+# - Some samples CN ratio exceeds 4, and there is a significant correlation between C and CN, so the correction has been applied to this dataset
 GULD_SIAfins$d13C_post <- (GULD_SIAfins$d13C - 3.32 + (0.99*GULD_SIAfins$CN_ratio))
 plot(GULD_SIAfins$d13C_post, GULD_SIAfins$CN_ratio)
 
@@ -90,7 +86,7 @@ TaxaGroups$Diet.component <- TaxaGroups$taxaID
 
 TaxaGroups$Diet.component <- case_when(
   TaxaGroups$Diet.component %in% c("V01","V03","V04","V05","V07","V08","V09","V18") ~ "yes", #from van Duers 2022
-  TaxaGroups$Diet.component %in% c("V02","V12","V15","V16") ~ "yes", #from Puntila 2016
+  TaxaGroups$Diet.component %in% c("V02","V12","V15","V16") ~ "no", #from Puntila 2016
   TaxaGroups$Diet.component %in% c("V06","V10","V11","V13","V14","V17","V19","V20","V21","V22") ~ "no", #from van Duers 2022
   .default = TaxaGroups$Diet.component
 )
@@ -168,7 +164,7 @@ GULD_SIAfins.N.rpt #0.878 (matches manual est)
 
 
 #GULD_SIAfins.C.rpt <- rpt(d13C_kilj ~ (1 | FishID), grname = "FishID", data = GULD_SIAfins, datatype = "Gaussian", 
-                          nboot = 100, npermut = 0)
+#                          nboot = 100, npermut = 0)
 #save(GULD_SIAfins.C.rpt, file = "./outputs_visualisations/GULD_SIA1.C.rpt.RData")
 load(file = "./outputs_visualisations/GULD_SIA1.C.rpt.RData")
 GULD_SIAfins.C.rpt #0.966 (matches manual est)
@@ -309,7 +305,7 @@ GULD_SIA.fullplot <- ggplot(GULD_SIAfins_meansd, aes (x = d13C_M, y = d15N_M, co
   xlab(expression(paste(delta^{13}, "C (\u2030)")))
 GULD_SIA.fullplot
 
-ggsave("./outputs_visualisations/Fig_3kilj.jpeg", width = 18, height = 12, units = "cm", GULD_SIA.fullplot, dpi = 600)
+#ggsave("./outputs_visualisations/Fig_3kilj.jpeg", width = 18, height = 12, units = "cm", GULD_SIA.fullplot, dpi = 600)
 
 
 #Notes
@@ -328,31 +324,162 @@ library(rjags) #need to install JAGS-4.x.y.exe (for any x >=0, y>=0) from http:/
 library(simmr) #supposedly updated version of SIAR for running simple or lite versions of mixing models
 library(MixSIAR) #MixSIAR: A Bayesian stable isotope mixing model for characterizing intrapopulation niche variation
 
-#mixsiar.dir <- find.package("MixSIAR")
-#paste0(mixsiar.dir,"/example_scripts")
-labels(GULD_SIAfins)
-GULD_SIAfins_SIAR <-  select(GULD_SIAfins, -c(DryWeight, N_mg, N_., C_mg, C_.))
+#Discrimination factors -
+# - Based on Poslednik 2023
+TDF_Poslednik_N_mean <- 4.04
+TDF_Poslednik_N_sd <- 0.32 * sqrt(64)
+TDF_Poslednik_C_mean <- -0.41
+TDF_Poslednik_C_sd <- 0.32 * sqrt(64)
+
+#SD = SE*(sqrt(n))
+#N = 64
+
+# - Based on Post 2002 ----
+TDF_Post_N_mean <- 3.4
+TDF_Post_N_sd <- 0.98
+TDF_Post_C_mean <- 0.39
+TDF_Post_C_sd <- 1.3
 
 
 
-#Discrimination options
-library(tRophicPosition)
-#Based on Post 2002, McCutchan et al 2003 ----
-TDF(author = "Post", element = "both")
-#  3.4 +- 0.98 sd
-# 0.39 +- 1.3 sd
-TDF(author = "McCutchan", element = "both", type = "muscle")
-#tissue d15N: 15 values with mean 2.9 +- 0.32 se
-#Muscle tissue d13C: 18 values with mean 1.3 +- 0.3 se
-?TDF
+#Building data frames for analysis ----
+# - for consumers (i.e., round gobies)
+GULD_consumers <- NULL
+GULD_consumers$d15N <- GULD_SIAfins$d15N
+GULD_consumers$d13C <- GULD_SIAfins$d13C_kilj
+GULD_consumers$Individual <- GULD_SIAfins$FishID 
+GULD_consumers <- as.data.frame(GULD_consumers)
+write.csv(GULD_consumers, '~/trophic-personalities_2020/dat_stableisotope/GULD_consumers.csv', row.names = FALSE)
 
 
-#Based on Caut et al 2013 ----
-#Diet dependent TDFs for fish, all tissue
-diet_d13C <- #(fill in from data)
-  deltaC <- -0.213 * (diet_d13C) - 2.848
+# - for potential prey items (i.e., preferred prey items per Van Deurs 2021)
+GULD_sources <- NULL
+GULD_sources$source <- c("V01","V03","V04","V05","V07","V08","V09","V18")
+GULD_SIAprey_meansd_working <- subset(GULD_SIAprey_meansd, taxaID %in% GULD_sources$source)
+GULD_sources$Meand15N <- GULD_SIAprey_meansd_working$d15N_M 
+GULD_sources$SDd15N <- GULD_SIAprey_meansd_working$d15N_sd     
+GULD_sources$Meand13C <- GULD_SIAprey_meansd_working$d13C_M    
+GULD_sources$SDd13C <- GULD_SIAprey_meansd_working$d13C_sd           
+GULD_sources <- as.data.frame(GULD_sources)
+GULD_sources$n <- 3
+write.csv(GULD_sources, '~/trophic-personalities_2020/dat_stableisotope/GULD_sources.csv', row.names = FALSE)
 
-diet_d15N <- #(fill in from data) 
-  deltaN <- -0.261 * (diet_d15N) + 4.985
+
+# - for discrimination factors
+GULD_TDFs <- NULL
+working <- c(1,2,3,4,5,6,7,8)
+GULD_TDFs$rownumber <- working
+GULD_TDFs$source <- GULD_sources$source
+GULD_TDFs <- as.data.frame(GULD_TDFs)
+GULD_TDFs$Meand15N <- TDF_Poslednik_N_mean
+GULD_TDFs$SDd15N <- TDF_Poslednik_N_sd
+GULD_TDFs$Meand13C <- TDF_Poslednik_C_mean
+GULD_TDFs$SDd13C <- TDF_Poslednik_C_sd
+GULD_TDFs <- GULD_TDFs[,-1]
+write.csv(GULD_TDFs, '~/trophic-personalities_2020/dat_stableisotope/GULD_TDF1.csv', row.names = FALSE)
+GULD_TDFs <- NULL
+working <- c(1,2,3,4,5,6,7,8)
+GULD_TDFs$rownumber <- working
+GULD_TDFs$source <- GULD_sources$source
+GULD_TDFs <- as.data.frame(GULD_TDFs)
+GULD_TDFs$Meand15N <- TDF_Post_N_mean
+GULD_TDFs$SDd15N <- TDF_Post_N_sd
+GULD_TDFs$Meand13C <- TDF_Post_C_mean
+GULD_TDFs$SDd13C <- TDF_Post_C_sd
+GULD_TDFs <- GULD_TDFs[,-1]
+write.csv(GULD_TDFs, '~/trophic-personalities_2020/dat_stableisotope/GULD_TDF2.csv', row.names = FALSE)
+
+
+#####MixSiar Test ----
+#load consumer data
+mix <- load_mix_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_consumers.csv", 
+                     iso_names=c("d13C","d15N"), 
+                     factors="Individual", 
+                     fac_random=TRUE, 
+                     fac_nested=NULL,
+                     cont_effects=NULL)
+
+#load source data
+source <- load_source_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_sources.csv", 
+                           source_factors=NULL, 
+                           conc_dep=FALSE, 
+                           data_type="means", mix)
+
+#load discr data
+discr1 <- load_discr_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_TDF1.csv", mix)
+discr2 <- load_discr_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_TDF2.csv", mix)
+
+#SE <- SD/(sqrt(n))
+
+
+###Isospace plots
+plot_data(filename="isospace_plot", 
+          plot_save_pdf=TRUE,
+          plot_save_png=FALSE,
+          mix,source,discr1)
+
+plot_data(filename="isospace_plot", 
+          plot_save_pdf=TRUE,
+          plot_save_png=FALSE,
+          mix,source,discr2)
+
+
+###Writing jags models
+#Prior
+plot_prior(alpha.prior=1,source)
+
+#Defining model structure
+model_filename <- "MixSIAR_model.txt"
+resid_err <- TRUE
+process_err <- TRUE
+write_JAGS_model(model_filename, resid_err, process_err, mix, source)
+
+#running test
+jags.test <- run_model(run="test", mix, source, discr1, model_filename, 
+                       alpha.prior = 1, resid_err, process_err)
+
+GULD_jags.1 <- run_model(run="normal", mix, source, discr1, model_filename, 
+                    alpha.prior = 1, resid_err, process_err)
+save(GULD_jags.1, file = "./outputs_visualisations/GULD_jags.1.RData")
+
+GULD_jags.2 <- run_model(run="normal", mix, source, discr2, model_filename, 
+                         alpha.prior = 1, resid_err, process_err)
+save(GULD_jags.2, file = "./outputs_visualisations/GULD_jags.2.RData")
+
+#output options
+output_options <- list(summary_save = TRUE,                 
+                       summary_name = "summary_statistics", 
+                       sup_post = FALSE,                    
+                       plot_post_save_pdf = TRUE,           
+                       plot_post_name = "posterior_density",
+                       sup_pairs = FALSE,             
+                       plot_pairs_save_pdf = FALSE,    
+                       plot_pairs_name = "pairs_plot",
+                       sup_xy = TRUE,           
+                       plot_xy_save_pdf = FALSE,
+                       plot_xy_name = "xy_plot",
+                       gelman = TRUE,
+                       heidel = FALSE,  
+                       geweke = TRUE,   
+                       diag_save = TRUE,
+                       diag_name = "diagnostics",
+                       indiv_effect = FALSE,       
+                       plot_post_save_png = FALSE, 
+                       plot_pairs_save_png = FALSE,
+                       plot_xy_save_png = FALSE)
+
+#diagnostics, summary statistics, and posterior plots
+#output_JAGS(jags.1, mix, source, output_options)
+#summary(jags.1)
+
+
+
+
+
+
+
+
+
+
 
 
