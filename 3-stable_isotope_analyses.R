@@ -362,12 +362,38 @@ GULD_sources$Meand13C <- GULD_SIAprey_meansd_working$d13C_M
 GULD_sources$SDd13C <- GULD_SIAprey_meansd_working$d13C_sd           
 GULD_sources <- as.data.frame(GULD_sources)
 GULD_sources$n <- 3
+
+#Pooling by -
+#P01 = V01, V03, Bivalves (currently not including blue mussels V02)
+#P02 = V04, V05, Gastropods
+#P03 = V07, Malacostraca (decapods only, currently crangon V06 not included)
+#P04 = V08, V09, Malacostraca (isopods/amphipods)
+#P05 = V18; Actinopterygii (currently doesn't include V17)
+
+GULD_sources$source <- case_when(
+  GULD_sources$source %in% c("V01", "V03") ~ "P01",
+  GULD_sources$source %in% c("V04", "V05") ~ "P02",
+  GULD_sources$source %in% c("V07") ~ "P03",
+  GULD_sources$source %in% c("V08", "V09") ~ "P04",
+  GULD_sources$source %in% c("V18") ~ "P05",
+  .default = GULD_sources$source
+)
+
+GULD_sources <- setDT(GULD_sources)[ , list(Meand15N = mean(Meand15N),
+                                             SDd15N = (sqrt(sum(SDd15N^2)/2)),
+                                             Meand13C = mean(Meand13C),
+                                             SDd13C = (sqrt(sum(SDd13C^2)/2)),
+                                             n = sum(n)),
+                                      by = .(source)]
+GULD_sources2 <- GULD_sources 
+GULD_sources2$n <- 3
 write.csv(GULD_sources, '~/trophic-personalities_2020/dat_stableisotope/GULD_sources.csv', row.names = FALSE)
+write.csv(GULD_sources2, '~/trophic-personalities_2020/dat_stableisotope/GULD_sources2.csv', row.names = FALSE)
 
 
 # - for discrimination factors
 GULD_TDFs <- NULL
-working <- c(1,2,3,4,5,6,7,8)
+working <- c(1,2,3,4,5)
 GULD_TDFs$rownumber <- working
 GULD_TDFs$source <- GULD_sources$source
 GULD_TDFs <- as.data.frame(GULD_TDFs)
@@ -377,17 +403,20 @@ GULD_TDFs$Meand13C <- TDF_Poslednik_C_mean
 GULD_TDFs$SDd13C <- TDF_Poslednik_C_sd
 GULD_TDFs <- GULD_TDFs[,-1]
 write.csv(GULD_TDFs, '~/trophic-personalities_2020/dat_stableisotope/GULD_TDF1.csv', row.names = FALSE)
-GULD_TDFs <- NULL
-working <- c(1,2,3,4,5,6,7,8)
-GULD_TDFs$rownumber <- working
-GULD_TDFs$source <- GULD_sources$source
-GULD_TDFs <- as.data.frame(GULD_TDFs)
-GULD_TDFs$Meand15N <- TDF_Post_N_mean
-GULD_TDFs$SDd15N <- TDF_Post_N_sd
-GULD_TDFs$Meand13C <- TDF_Post_C_mean
-GULD_TDFs$SDd13C <- TDF_Post_C_sd
-GULD_TDFs <- GULD_TDFs[,-1]
-write.csv(GULD_TDFs, '~/trophic-personalities_2020/dat_stableisotope/GULD_TDF2.csv', row.names = FALSE)
+GULD_TDFs2 <- GULD_TDFs
+GULD_TDFs2$Meand15N <- TDF_Post_N_mean
+GULD_TDFs2$SDd15N <- TDF_Post_N_sd
+GULD_TDFs2$Meand13C <- TDF_Post_C_mean
+GULD_TDFs2$SDd13C <- TDF_Post_C_sd
+write.csv(GULD_TDFs2, '~/trophic-personalities_2020/dat_stableisotope/GULD_TDF2.csv', row.names = FALSE)
+
+#Combinations for analys
+# - Main model
+# mix (GULD_consumers), source (GULD_sources), discr1 (GULD_TDFs) 
+# - TDF Sensitivity model
+# mix (GULD_consumers), source (GULD_sources), discr1 (GULD_TDFs2)
+# - N Sensitivity model
+# mix (GULD_consumers), source (GULD_sources2), discr1 (GULD_TDFs)
 
 
 #####MixSiar Test ----
@@ -404,12 +433,14 @@ source <- load_source_data(filename="~/trophic-personalities_2020/dat_stableisot
                            source_factors=NULL, 
                            conc_dep=FALSE, 
                            data_type="means", mix)
+source2 <- load_source_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_sources2.csv", 
+                           source_factors=NULL, 
+                           conc_dep=FALSE, 
+                           data_type="means", mix)
 
 #load discr data
 discr1 <- load_discr_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_TDF1.csv", mix)
 discr2 <- load_discr_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_TDF2.csv", mix)
-
-#SE <- SD/(sqrt(n))
 
 
 ###Isospace plots
@@ -423,10 +454,15 @@ plot_data(filename="isospace_plot",
           plot_save_png=FALSE,
           mix,source,discr2)
 
+plot_data(filename="isospace_plot", 
+          plot_save_pdf=TRUE,
+          plot_save_png=FALSE,
+          mix,source2,discr1)
 
 ###Writing jags models
 #Prior
 plot_prior(alpha.prior=1,source)
+plot_prior(alpha.prior=1,source2)
 
 #Defining model structure
 model_filename <- "MixSIAR_model.txt"
@@ -434,17 +470,20 @@ resid_err <- TRUE
 process_err <- TRUE
 write_JAGS_model(model_filename, resid_err, process_err, mix, source)
 
-#running test
-jags.test <- run_model(run="test", mix, source, discr1, model_filename, 
-                       alpha.prior = 1, resid_err, process_err)
-
-GULD_jags.1 <- run_model(run="normal", mix, source, discr1, model_filename, 
-                    alpha.prior = 1, resid_err, process_err)
-save(GULD_jags.1, file = "./outputs_visualisations/GULD_jags.1.RData")
-
-GULD_jags.2 <- run_model(run="normal", mix, source, discr2, model_filename, 
+#Running test
+#GULD_jags_final <- run_model(run="normal", mix, source, discr1, model_filename, 
+#                    alpha.prior = 1, resid_err, process_err)
+#save(GULD_jags_final, file = "./outputs_visualisations/GULD_jags_final.RData")
+#
+#GULD_jags_TDFtest <- run_model(run="normal", mix, source, discr2, model_filename, 
+#                         alpha.prior = 1, resid_err, process_err)
+#save(GULD_jags_TDFtest, file = "./outputs_visualisations/GULD_jags_TDFtest.RData")
+#
+write_JAGS_model(model_filename, resid_err, process_err, mix, source2)
+GULD_jags_Ntest <- run_model(run="normal", mix, source2, discr1, model_filename, 
                          alpha.prior = 1, resid_err, process_err)
-save(GULD_jags.2, file = "./outputs_visualisations/GULD_jags.2.RData")
+save(GULD_jags_Ntest, file = "./outputs_visualisations/GULD_jags_Ntest.RData")
+
 
 #output options
 output_options <- list(summary_save = TRUE,                 
@@ -469,8 +508,7 @@ output_options <- list(summary_save = TRUE,
                        plot_xy_save_png = FALSE)
 
 #diagnostics, summary statistics, and posterior plots
-#output_JAGS(jags.1, mix, source, output_options)
-#summary(jags.1)
+output_JAGS(GULD_jags_Ntest, mix, source2, output_options)
 
 
 
