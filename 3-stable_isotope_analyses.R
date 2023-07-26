@@ -508,7 +508,7 @@ output_options <- list(summary_save = TRUE,
                        plot_xy_save_png = FALSE)
 
 #diagnostics, summary statistics, and posterior plots
-output_JAGS(GULD_jags_Ntest, mix, source2, output_options)
+#output_JAGS(GULD_jags_Ntest, mix, source2, output_options)
 
 
 
