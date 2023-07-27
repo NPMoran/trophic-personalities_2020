@@ -444,25 +444,30 @@ discr2 <- load_discr_data(filename="~/trophic-personalities_2020/dat_stableisoto
 
 
 ###Isospace plots
-plot_data(filename="isospace_plot", 
-          plot_save_pdf=TRUE,
-          plot_save_png=FALSE,
-          mix,source,discr1)
+isoplot1 <- plot_data(filename="isospace_plot", return_obj=TRUE,
+            plot_save_pdf=FALSE,
+            plot_save_png=FALSE,
+            mix,source,discr1)
+isoplot1 <- isoplot1 + theme(legend.position = 'right',
+                             legend.text = element_text(size=7),
+                             legend.spacing.x = unit(0.5, 'cm'))
 
-plot_data(filename="isospace_plot", 
-          plot_save_pdf=TRUE,
-          plot_save_png=FALSE,
-          mix,source,discr2)
+isoplot2 <- plot_data(filename="isospace_plot", return_obj=TRUE,
+            plot_save_pdf=FALSE,
+            plot_save_png=FALSE,
+            mix,source,discr2)
+isoplot2 <- isoplot2 + theme(legend.position = 'right',
+                             legend.text = element_text(size=7),
+                             legend.spacing.x = unit(0.5, 'cm'))
 
-plot_data(filename="isospace_plot", 
-          plot_save_pdf=TRUE,
-          plot_save_png=FALSE,
-          mix,source2,discr1)
+
+ggsave("./outputs_visualisations/Fig_isoplot1.jpeg", width = 20, height = 14, units = "cm", isoplot1, dpi = 600)
+ggsave("./outputs_visualisations/Fig_isoplot2.jpeg", width = 20, height = 14, units = "cm", isoplot2, dpi = 600)
+
 
 ###Writing jags models
 #Prior
-plot_prior(alpha.prior=1,source)
-plot_prior(alpha.prior=1,source2)
+#plot_prior(alpha.prior=1,source)
 
 #Defining model structure
 model_filename <- "MixSIAR_model.txt"
@@ -471,19 +476,21 @@ process_err <- TRUE
 write_JAGS_model(model_filename, resid_err, process_err, mix, source)
 
 #Running test
-#GULD_jags_final <- run_model(run="normal", mix, source, discr1, model_filename, 
+#GULD_jags_final <- run_model(run="long", mix, source, discr1, model_filename, 
 #                    alpha.prior = 1, resid_err, process_err)
 #save(GULD_jags_final, file = "./outputs_visualisations/GULD_jags_final.RData")
-#
-#GULD_jags_TDFtest <- run_model(run="normal", mix, source, discr2, model_filename, 
-#                         alpha.prior = 1, resid_err, process_err)
-#save(GULD_jags_TDFtest, file = "./outputs_visualisations/GULD_jags_TDFtest.RData")
-#
-write_JAGS_model(model_filename, resid_err, process_err, mix, source2)
-GULD_jags_Ntest <- run_model(run="normal", mix, source2, discr1, model_filename, 
-                         alpha.prior = 1, resid_err, process_err)
-save(GULD_jags_Ntest, file = "./outputs_visualisations/GULD_jags_Ntest.RData")
+#load("./outputs_visualisations/GULD_jags_final.RData")
 
+GULD_jags_TDFtest <- run_model(run="long", mix, source, discr2, model_filename, 
+                         alpha.prior = 1, resid_err, process_err)
+save(GULD_jags_TDFtest, file = "./outputs_visualisations/GULD_jags_TDFtest.RData")
+#load("./outputs_visualisations/GULD_jags_TDFtest.RData")
+
+#write_JAGS_model(model_filename, resid_err, process_err, mix, source2)
+#GULD_jags_Ntest <- run_model(run="normal", mix, source2, discr1, model_filename, 
+#                         alpha.prior = 1, resid_err, process_err)
+#save(GULD_jags_Ntest, file = "./outputs_visualisations/GULD_jags_Ntest.RData")
+#load("./outputs_visualisations/GULD_jags_Ntest.RData")
 
 #output options
 output_options <- list(summary_save = TRUE,                 
@@ -508,16 +515,7 @@ output_options <- list(summary_save = TRUE,
                        plot_xy_save_png = FALSE)
 
 #diagnostics, summary statistics, and posterior plots
-#output_JAGS(GULD_jags_Ntest, mix, source2, output_options)
-
-
-
-
-
-
-
-
-
+output_JAGS(GULD_jags_final, mix, source2, output_options)
 
 
 

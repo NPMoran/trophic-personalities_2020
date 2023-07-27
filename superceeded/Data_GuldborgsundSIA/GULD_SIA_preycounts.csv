@@ -1,0 +1,166 @@
+SourceID,SampleID,GroupingID,N,PrelimIdent,Notes,ID_Confirmed,taxaID,Class,Order,Family,Genus,Species,Taxa Notes
+HAPS,HAPS_D1,a,1,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,"1x live cockle too small to definitively id, assumed c. glaucum"
+HAPS,HAPS_D3,a,1,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,
+HAPS,HAPS_S1,a,1,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,
+HAPS,HAPS_S4,a,1,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,
+PUSH,PUSH_D1,a,37,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,
+PUSH,PUSH_D2,a,9,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,
+PUSH,PUSH_D3,a,13,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,
+PUSH,PUSH_D4,a,5,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,
+PUSH,PUSH_S1,a,21,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,
+PUSH,PUSH_S2,a,7,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,
+PUSH,PUSH_S3,a,11,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,
+PUSH,PUSH_S4,a,9,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,
+QUART,QUART_D1,a,1,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,
+QUART,QUART_D2,a,4,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,2x too small to definitively id
+QUART,QUART_D3,a,7,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,2x too small too definitively id
+QUART,QUART_D4,a,1,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,
+QUART,QUART_S1,a,1,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,
+QUART,QUART_S4,a,1,Cerastoderma glaucum,,yes,V01,Bivalvia,Cardiida,Cardiidae,Cerastoderma,Cerastoderma glaucum,
+PUSH,PUSH_D2,b,2,Mytilus spp.,,yes,V02,Bivalvia,Mytilida,Mytilidae,Mytilus ,Mytilus edulis,
+PUSH,PUSH_D3,b,1,Mytilus spp.,,yes,V02,Bivalvia,Mytilida,Mytilidae,Mytilus ,Mytilus edulis,
+PUSH,PUSH_D4,b,1,Mytilus spp.,,yes,V02,Bivalvia,Mytilida,Mytilidae,Mytilus ,Mytilus edulis,
+PUSH,PUSH_S3,b,1,Mytilus spp.,,yes,V02,Bivalvia,Mytilida,Mytilidae,Mytilus ,Mytilus edulis,
+QUART,QUART_D2,b,4,Mytilus spp.,,yes,V02,Bivalvia,Mytilida,Mytilidae,Mytilus ,Mytilus edulis,
+QUART,QUART_D3,b,1,Mytilus spp.,,yes,V02,Bivalvia,Mytilida,Mytilidae,Mytilus ,Mytilus edulis,
+QUART,QUART_S4,b,2,Mytilus spp.,,yes,V02,Bivalvia,Mytilida,Mytilidae,Mytilus ,Mytilus edulis,
+PUSH,PUSH_S1,c,1,bivalve (sand gaper?),,yes,V03,Bivalvia,Myida,Myidae,Mya,Mya arenaria,
+QUART,QUART_D1,b,4,bivalve (sand gaper?),,yes,V03,Bivalvia,Myida,Myidae,Mya,Mya arenaria,
+PUSH,PUSH_D2,d,2,Gastropod (non-spiral),,yes,V04,Gastropoda,Cycloneritida,Neritidae,Theodoxus,Theodoxus fluviatilis,
+PUSH,PUSH_D3,c,1,Gastropod (non-spiral),,yes,V04,Gastropoda,Cycloneritida,Neritidae,Theodoxus,Theodoxus fluviatilis,too small to extract biomass
+PUSH,PUSH_D4,d,1,Gastropod (non-spiral),,yes,V04,Gastropoda,Cycloneritida,Neritidae,Theodoxus,Theodoxus fluviatilis,
+QUART,QUART_D2,d,3,Gastropod (non-spiral),,yes,V04,Gastropoda,Cycloneritida,Neritidae,Theodoxus,Theodoxus fluviatilis,
+QUART,QUART_D3,d,13,Gastropod (non-spiral),,yes,V04,Gastropoda,Cycloneritida,Neritidae,Theodoxus,Theodoxus fluviatilis,
+HAPS,HAPS_S1,c,1,Gastropod (spiral),,yes (to order),V05,Gastropoda,Littorinimorpha,spp.,,,likely Hydrobia ventrosa
+PUSH,PUSH_D2,c,4,Gastropod (spiral),,yes (to order),V05,Gastropoda,Littorinimorpha,spp.,,,likely Hydrobia ventrosa
+PUSH,PUSH_D4,c,2,Gastropod (spiral),,yes (to order),V05,Gastropoda,Littorinimorpha,spp.,,,likely Hydrobia ventrosa
+QUART,QUART_D1,c,19,Gastropod (spiral),,yes (to order),V05,Gastropoda,Littorinimorpha,spp.,,,likely Hydrobia ventrosa
+QUART,QUART_D2,c,154,Gastropod (spiral),rounded by 10s,yes (to order),V05,Gastropoda,Littorinimorpha,spp.,,,likely Hydrobia ventrosa
+QUART,QUART_D3,c,57,Gastropod (spiral),,yes (to order),V05,Gastropoda,Littorinimorpha,spp.,,,likely Hydrobia ventrosa
+QUART,QUART_S4,c,1,Gastropod (spiral),,yes (to order),V05,Gastropoda,Littorinimorpha,spp.,,,"likely Hydrobia ventrosa, most dead"
+PUSH,PUSH_D1,b,1,Decapoda spp.,2 species,yes,V06,Malacostraca,Decapoda,Crangonidae,Crangon,Crangon crangon,
+PUSH,PUSH_D4,e,1,Decapoda spp.,,yes,V06,Malacostraca,Decapoda,Crangonidae,Crangon,Crangon crangon,
+PUSH,PUSH_S1,b,1,Decapoda spp.,,yes,V06,Malacostraca,Decapoda,Crangonidae,Crangon,Crangon crangon,
+PUSH,PUSH_S2,b,3,Decapoda spp.,,yes,V06,Malacostraca,Decapoda,Crangonidae,Crangon,Crangon crangon,
+PUSH,PUSH_S3,c,2,Decapoda spp.,,yes,V06,Malacostraca,Decapoda,Crangonidae,Crangon,Crangon crangon,
+PUSH,PUSH_S4,b,1,Decapoda spp. 1 (cragon?),,yes,V06,Malacostraca,Decapoda,Crangonidae,Crangon,Crangon crangon,
+TRAP,TRAP_D1,a,1,Decapoda spp. 1 (cragon?),,yes,V06,Malacostraca,Decapoda,Crangonidae,Crangon,Crangon crangon,
+TRAP,TRAP_S3,a,3,Decapoda spp. 1 (cragon?),,yes,V06,Malacostraca,Decapoda,Crangonidae,Crangon,Crangon crangon,
+PUSH,PUSH_D1,b,1,Decapoda spp.,2 species,yes (to genus),V07,Malacostraca,Decapoda,Palaemonidae,Palaemon,spp.,
+PUSH,PUSH_S4,c,1,Decapoda spp. 2 (palaemon?),,yes (to genus),V07,Malacostraca,Decapoda,Palaemonidae,Palaemon,spp.,
+TRAP,TRAP_D1,b,37,Decapoda spp. 2 (palaemon?),,yes (to genus),V07,Malacostraca,Decapoda,Palaemonidae,Palaemon,spp.,
+TRAP,TRAP_D2,a,6,Decapoda spp. 2 (palaemon?),,yes (to genus),V07,Malacostraca,Decapoda,Palaemonidae,Palaemon,spp.,
+TRAP,TRAP_D3,a,16,Decapoda spp. 2 (palaemon?),,yes (to genus),V07,Malacostraca,Decapoda,Palaemonidae,Palaemon,spp.,
+TRAP,TRAP_D4,a,32,Decapoda spp. 2 (palaemon?),,yes (to genus),V07,Malacostraca,Decapoda,Palaemonidae,Palaemon,spp.,
+TRAP,TRAP_S1,a,130,Decapoda spp. 2 (palaemon?),,yes (to genus),V07,Malacostraca,Decapoda,Palaemonidae,Palaemon,spp.,
+TRAP,TRAP_S2,a,240,Decapoda spp. 2 (palaemon?),,yes (to genus),V07,Malacostraca,Decapoda,Palaemonidae,Palaemon,spp.,
+TRAP,TRAP_S3,b,140,Decapoda spp. 2 (palaemon?),,yes (to genus),V07,Malacostraca,Decapoda,Palaemonidae,Palaemon,spp.,
+TRAP,TRAP_S4,a,53,Decapoda spp. 2 (palaemon?),,yes (to genus),V07,Malacostraca,Decapoda,Palaemonidae,Palaemon,spp.,
+HAPS,HAPS_D2,b,1,Amphipoda spp.,,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,appears to be Gammaridae
+HAPS,HAPS_D3,b,4,Amphipoda spp.,,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,"three appear to be Gammaridae family, one Melitidae"
+HAPS,HAPS_S3,g,1,Amphipoda spp.,,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,large Gammaridae
+QUART,QUART_D1,d,14,Amphipoda spp.,,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,"large individuals like Gammaridae family, small individuals indistingusable"
+QUART,QUART_D2,e,,Amphipoda spp.,rounded by 10s,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,
+QUART,QUART_D3,e,23,Amphipoda spp.,,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,"majority appear to be Gammaridae family, one Melitidae"
+QUART,QUART_D4,d,12,Amphipoda spp.,,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,"majority appear to be Gammaridae family, one Melitidae"
+QUART,QUART_S2,a,3,Amphipoda spp.,,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,"one  large Gammaridae family, two smaller indistinguishable"
+QUART,QUART_S3,b,4,Amphipoda spp.,,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,"two large Gammaridae family, two smaller indistinguishable"
+QUART,QUART_D1,g,34,insect larvae (mainly chironomidae),,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,very small amphipods separated out from insect larvae sample
+PUSH,PUSH_D1,c,6,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,very small amphipods separated out from insect larvae sample
+PUSH,PUSH_D2,e,1,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,very small amphipods separated out from insect larvae sample
+PUSH,PUSH_D3,d,2,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,very small amphipods separated out from insect larvae sample
+PUSH,PUSH_D4,g,6,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,very small amphipods separated out from insect larvae sample
+PUSH,PUSH_S1,d,25,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,very small amphipods separated out from insect larvae sample
+PUSH,PUSH_S3,d,1,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V08,Malacostraca,Amphipoda,spp.,,,very small amphipods separated out from insect larvae sample
+HAPS,HAPS_D3,c,1,Isopoda (larger),,yes (to family),V09,Malacostraca,Isopoda,Idoteidae,Idotea,spp.,maybe I. chelipes or balthica
+QUART,QUART_D2,f,13,Isopoda (larger),,yes (to family),V09,Malacostraca,Isopoda,Idoteidae,Idotea,spp.,all likely to be I. chelipes based on sized and location
+QUART,QUART_D3,f,8,Isopoda (larger),,yes (to family),V09,Malacostraca,Isopoda,Idoteidae,Idotea,spp.,"7 likely to be I. chelipes based on sized and location, 1x larger I. balthica"
+QUART,QUART_D4,e,2,Isopoda (larger),,yes (to family),V09,Malacostraca,Isopoda,Idoteidae,Idotea,spp.,all likely to be I. chelipes based on sized and location
+TRAP,TRAP_D3,c,1,Isopoda (larger),,yes (to family),V09,Malacostraca,Isopoda,Idoteidae,Idotea,spp.,"larger, so likely to be I. bathica"
+QUART,QUART_D2,g,7,Isopoda (small),,yes (to order),V10,Malacostraca,Isopoda,spp.,,,"non-idotea familiy, most likely Jaera albifrons"
+QUART,QUART_D3,g,4,Isopoda (small),,yes (to order),V10,Malacostraca,Isopoda,spp.,,,"non-idotea familiy, most likely Jaera albifrons"
+QUART,QUART_D3,k,3,insect larvae (mainly chironomidae),,yes (to order),V10,Malacostraca,Isopoda,spp.,,,"non-idotea family, appear to be Cyathura carinata"
+HAPS,HAPS_D1,c,50,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+HAPS,HAPS_D2,c,80,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+HAPS,HAPS_D3,d,44,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+HAPS,HAPS_D4,c,30,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+HAPS,HAPS_S1,b,22,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+HAPS,HAPS_S2,a,16,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+HAPS,HAPS_S3,d,90,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+HAPS,HAPS_S4,d,100,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+QUART,QUART_D1,e,13,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+QUART,QUART_D2,h,55,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+QUART,QUART_D3,h,27,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+QUART,QUART_D4,f,15,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+QUART,QUART_S1,b,6,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+QUART,QUART_S2,b,8,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+QUART,QUART_S3,c,11,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+QUART,QUART_S4,e,100,Ostracoda,,yes (to order),V11,Ostracoda,Podocopida,spp.,,,
+HAPS,HAPS_D1,h,3,insect larvae (including chironomidae),,yes (to order),V12,Insecta,Diptera,spp.,,,"larvae of either Chirononmidae/Ceratopogonidae, only 3 in sample (1 lost or miscount)"
+HAPS,HAPS_D2,f,2,insect larvae (including chironomidae),,yes (to order),V12,Insecta,Diptera,spp.,,,larvae of either Chirononmidae/Ceratopogonidae
+HAPS,HAPS_D4,f,2,insect larvae (including chironomidae),,yes (to order),V12,Insecta,Diptera,spp.,,,larvae of either Chirononmidae/Ceratopogonidae
+HAPS,HAPS_S2,c,3,insect larvae (including chironomidae),,yes (to order),V12,Insecta,Diptera,spp.,,,larvae of either Chirononmidae/Ceratopogonidae (1 non-insect arthropod separated out)
+HAPS,HAPS_S3,i,1,insect larvae (including chironomidae),,yes (to order),V12,Insecta,Diptera,spp.,,,larvae of either Chirononmidae/Ceratopogonidae
+QUART,QUART_S2,e,1,insect larvae (including chironomidae),,yes (to order),V12,Insecta,Diptera,spp.,,,larvae of either Chirononmidae/Ceratopogonidae (2 non-insect arthropod separated out)
+QUART,QUART_S3,f,7,insect larvae (including chironomidae),,yes (to order),V12,Insecta,Diptera,spp.,,,larvae of either Chirononmidae/Ceratopogonidae
+QUART,QUART_S4,g,11,insect larvae (including chironomidae),,yes (to order),V12,Insecta,Diptera,spp.,,,larvae of either Chirononmidae/Ceratopogonidae (1 non-insect arthropod separated out)
+QUART,QUART_D1,g,34,insect larvae (mainly chironomidae),,yes (to order),V12,Insecta,Diptera,spp.,,,"larvae of either Chirononmidae/Ceratopogonidae (3 small amphiods separated, 3 non-insect arthopods separated)"
+QUART,QUART_D2,k,11,insect larvae (mainly chironomidae),,yes (to order),V12,Insecta,Diptera,spp.,,,larvae of either Chirononmidae/Ceratopogonidae
+QUART,QUART_D3,k,3,insect larvae (mainly chironomidae),,yes (to order),V12,Insecta,Diptera,spp.,,,larvae of either Chirononmidae/Ceratopogonidae (2 small isopods separated)
+QUART,QUART_D4,h,6,insect larvae (mainly chironomidae),,yes (to order),V12,Insecta,Diptera,spp.,,,larvae of either Chirononmidae/Ceratopogonidae (2 small isopods separated)
+PUSH,PUSH_D1,c,2,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V12,Insecta,Diptera,spp.,,,"larvae of either Chirononmidae/Ceratopogonidae (6 small amphipods separated, 3 non-insect arthopods separated)"
+PUSH,PUSH_D2,e,1,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V12,Insecta,Diptera,spp.,,,"larvae of either Chirononmidae/Ceratopogonidae (11 small amphipods separated, worm segment not counted)"
+PUSH,PUSH_D3,d,2,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V12,Insecta,Diptera,spp.,,,"larvae of either Chirononmidae/Ceratopogonidae (2 small amphipods separated, 3 non-insect arthopods separated)"
+PUSH,PUSH_D4,g,2,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V12,Insecta,Diptera,spp.,,,"larvae of either Chirononmidae/Ceratopogonidae (6 small amphipods separated, 2 worm segments not counted)"
+PUSH,PUSH_S1,d,7,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V12,Insecta,Diptera,spp.,,,"larvae of either Chirononmidae/Ceratopogonidae (25 small amphipods separated, 2 non-insect arthopods separated)"
+PUSH,PUSH_S3,d,1,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V12,Insecta,Diptera,spp.,,,"larvae of either Chirononmidae/Ceratopogonidae (1 small amphipods separated, 1 body segment not counted)"
+PUSH,PUSH_S4,d,2,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V12,Insecta,Diptera,spp.,,,larvae of either Chirononmidae/Ceratopogonidae
+QUART,QUART_D3,l,2,insect larvae with casing (Trichoptera?),,yes (to order),V13,Insecta,Trichoptera,spp.,,,casing of one individual is missing from the sample
+HAPS,HAPS_S2,c,1,insect larvae (including chironomidae),,yes (to order),V14,Malacostraca,Tanaidacea,spp.,,,"small, with arthopod with carpace"
+QUART,QUART_S2,e,2,insect larvae (including chironomidae),,yes (to order),V14,Malacostraca,Tanaidacea,spp.,,,"small, arthopod with carpace and chelipeds"
+QUART,QUART_S4,g,1,insect larvae (including chironomidae),,yes (to order),V14,Malacostraca,Tanaidacea,spp.,,,"small, arthopod with carpace and chelipeds"
+QUART,QUART_D1,g,3,insect larvae (mainly chironomidae),,yes (to order),V14,Malacostraca,Tanaidacea,spp.,,,"small, arthopod with carpace and chelipeds"
+PUSH,PUSH_D1,c,3,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V14,Malacostraca,Tanaidacea,spp.,,,"small, arthopod with carpace and chelipeds"
+PUSH,PUSH_D3,d,3,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V14,Malacostraca,Tanaidacea,spp.,,,"small, arthopod with carpace and chelipeds"
+PUSH,PUSH_S1,d,2,insect larvae (various spp. incl. chironomidae),may include small isopod/amphipods,yes (to order),V14,Malacostraca,Tanaidacea,spp.,,,"small, arthopod with carpace and chelipeds"
+QUART,QUART_D4,g,,"Unknown worm (segmented, likely polychaete)",,yes (to order),V14,Malacostraca,Tanaidacea,spp.,,,"small, arthopod with carpace and chelipeds"
+HAPS,HAPS_D1,d,4,Arenicola marina,,yes,V15,Polychaeta,Capitellida,Arenicolidae,Arenicola,Arenicola marina,"guts full of inorganics, only clean segments used. "
+HAPS,HAPS_D2,d,1,Arenicola marina,,yes,V15,Polychaeta,Capitellida,Arenicolidae,Arenicola,Arenicola marina,
+HAPS,HAPS_S4,e,1,Arenicola marina,,yes,V15,Polychaeta,Capitellida,Arenicolidae,Arenicola,Arenicola marina,
+HAPS,HAPS_S3,e,6,Arenicola marina,,yes,V15,Polychaeta,Capitellida,Arenicolidae,Arenicola,Arenicola marina,"guts full of inorganics, only clean segments used. "
+HAPS,HAPS_D3,e,2,Arenicola marina,,yes,V15,Polychaeta,Capitellida,Arenicolidae,Arenicola,Arenicola marina,"guts full of inorganics, only clean segments used. "
+HAPS,HAPS_S2,b,1,Arenicola marina,,yes,V15,Polychaeta,Capitellida,Arenicolidae,Arenicola,Arenicola marina,
+HAPS,HAPS_S4,f,1,Polychaete worm??,,yes (to class),V16,Polychaeta,spp.,,,,"small (<1cm), translucent with distinct bristles"
+HAPS,HAPS_S3,f,1,Polychaete worm??,,yes (to class),V16,Polychaeta,spp.,,,,2 larger (>2cm) translucent with distinct bristles
+QUART,QUART_D2,j,2,Polychaete worm??,,yes (to class),V16,Polychaeta,spp.,,,,2 larger (>2cm) translucent with distinct bristles (one segment discarded)
+QUART,QUART_S2,d,1,Polychaete worm??,,yes (to class),V16,Polychaeta,spp.,,,,"1 small (<1cm), translucent with distinct bristles (1 only partial body part only, so not counted)"
+QUART,QUART_S3,e,3,Polychaete worm??,,yes (to class),V16,Polychaeta,spp.,,,,"small (<1cm), translucent with distinct bristles"
+QUART,QUART_S4,f,1,Polychaete worm??,,yes (to class),V16,Polychaeta,spp.,,,,"1 small (<1cm), translucent with distinct bristles (1 only partial body part only, one does not appwear to be an animal, so not counted)"
+HAPS,HAPS_D1,e,3,Polychaete worm??,,yes (to class),V16,Polychaeta,spp.,,,,"small (<1cm), translucent with distinct bristles"
+TRAP,TRAP_S1,b,1,Polychaete worm?? (Long),,yes (to class),V16,Polychaeta,spp.,,,,"much longer, but with distinct bristles that are similar to smaller polychaetes"
+TRAP,TRAP_S1,c,1,Gasterosteus aculeatus,,yes,V17,Actinopterygii,Gasterosteiformes,Gasterosteidae,Pungitius,Pungitius pungitius,
+TRAP,TRAP_S2,b,2,Gasterosteus aculeatus,,yes,V17,Actinopterygii,Gasterosteiformes,Gasterosteidae,Pungitius,Pungitius pungitius,
+TRAP,TRAP_S3,c,1,Pungitius pungitius,,yes,V17,Actinopterygii,Gasterosteiformes,Gasterosteidae,Pungitius,Pungitius pungitius,
+TRAP,TRAP_D4,c,2,Pungitius pungitius,,yes,V17,Actinopterygii,Gasterosteiformes,Gasterosteidae,Pungitius,Pungitius pungitius,
+TRAP,TRAP_D1,c,1,Gasterosteus aculeatus,,yes,V18,Actinopterygii,Gasterosteiformes,Gasterosteidae,Gasterosteus,Gasterosteus aculeatus,
+TRAP,TRAP_D4,b,1,Gasterosteus aculeatus,,yes,V18,Actinopterygii,Gasterosteiformes,Gasterosteidae,Gasterosteus,Gasterosteus aculeatus,
+TRAP,TRAP_D2,b,1,Syngnathidae spp.,,yes,V19,Actinopterygii,Syngnathiformes,Syngnathidae,,,
+TRAP,TRAP_D3,b,1,Syngnathidae spp.,,yes,V19,Actinopterygii,Syngnathiformes,Syngnathidae,,,
+HAPS,HAPS_D3,g,3,fish fry (species unknown),,no,V20,Actinopterygii,spp.,,,,"very small, not analysed further"
+PUSH,PUSH_S3,e,1,Goby spp. (non-round goby),,yes (to family),V21,Actinopterygii,Gobiiformes,Gobiidae,spp.,,"with striped 1st dorsal fin, appears non round goby"
+TRAP,TRAP_S2,c,3,Goby spp. (appears non-round),,yes (to family),V21,Actinopterygii,Gobiiformes,Gobiidae,spp.,,could not conclusively id
+TRAP,TRAP_S3,d,4,Goby spp. (appears to include round and other goby),,yes (to family),V21,Actinopterygii,Gobiiformes,Gobiidae,spp.,,"no dorsal spot, striped fins, ventral line on some"
+TRAP,TRAP_S1,d,3,Goby spp. (appears to include round and other goby),,yes (to family),V21,Actinopterygii,Gobiiformes,Gobiidae,spp.,,"no spot, striped dorsal"
+TRAP,TRAP_D1,d,4,Goby spp. (appears to include juvenile round goby),,yes (to family),V21,Actinopterygii,Gobiiformes,Gobiidae,spp.,,"no dorsal spot, striped fins, ventral line on some"
+TRAP,TRAP_D2,c,4,Goby spp. (appears to include juvenile round goby),,yes (to family),V21,Actinopterygii,Gobiiformes,Gobiidae,spp.,,could not conclusively id
+TRAP,TRAP_S4,b,4,Goby spp. (appears to include round and other goby),,yes (to family),V21,Actinopterygii,Gobiiformes,Gobiidae,spp.,,"no spot, striped dorsal"
+TRAP,TRAP_D3,d,4,Goby spp. (appears to include juvenile round goby),,yes (to family),V21,Actinopterygii,Gobiiformes,Gobiidae,spp.,,"no spot, striped dorsal"
+TRAP,TRAP_D4,d,2,Goby spp. (appears to include juvenile round goby),,yes (to family),V21,Actinopterygii,Gobiiformes,Gobiidae,spp.,,"no spot, striped dorsal, ventral line"
+PUSH,PUSH_D4,f,1,Goby spp. (appears non-round),,yes,V22,Actinopterygii,Gobiiformes,Gobiidae,Neogobius,Neogobius melanostomus,juvenile round goby
+TRAP,TRAP_S2,c,3,Goby spp. (appears non-round),,yes,V22,Actinopterygii,Gobiiformes,Gobiidae,Neogobius,Neogobius melanostomus,juvenile round goby
+TRAP,TRAP_D1,d,2,Goby spp. (appears to include juvenile round goby),,yes,V22,Actinopterygii,Gobiiformes,Gobiidae,Neogobius,Neogobius melanostomus,juvenile round goby
+TRAP,TRAP_D3,d,4,Goby spp. (appears to include juvenile round goby),,yes,V22,Actinopterygii,Gobiiformes,Gobiidae,Neogobius,Neogobius melanostomus,juvenile round goby
+TRAP,TRAP_D4,d,2,Goby spp. (appears to include juvenile round goby),,yes,V22,Actinopterygii,Gobiiformes,Gobiidae,Neogobius,Neogobius melanostomus,juvenile round goby
+TRAP,TRAP_S1,d,3,Goby spp. (appears to include round and other goby),,yes,V22,Actinopterygii,Gobiiformes,Gobiidae,Neogobius,Neogobius melanostomus,juvenile round goby
+TRAP,TRAP_S3,d,4,Goby spp. (appears to include round and other goby),,yes,V22,Actinopterygii,Gobiiformes,Gobiidae,Neogobius,Neogobius melanostomus,juvenile round goby
+TRAP,TRAP_S4,b,2,Goby spp. (appears to include round and other goby),,yes,V22,Actinopterygii,Gobiiformes,Gobiidae,Neogobius,Neogobius melanostomus,juvenile round goby
