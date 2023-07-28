@@ -385,10 +385,48 @@ GULD_sources <- setDT(GULD_sources)[ , list(Meand15N = mean(Meand15N),
                                              SDd13C = (sqrt(sum(SDd13C^2)/2)),
                                              n = sum(n)),
                                       by = .(source)]
-GULD_sources2 <- GULD_sources 
-GULD_sources2$n <- 3
+
 write.csv(GULD_sources, '~/trophic-personalities_2020/dat_stableisotope/GULD_sources.csv', row.names = FALSE)
-write.csv(GULD_sources2, '~/trophic-personalities_2020/dat_stableisotope/GULD_sources2.csv', row.names = FALSE)
+
+# - for potential prey items (i.e., using an expanded group of prey items per Van Deurs, Puntila 2016, Kornis 2015 and Oesterwind et al., 2017)
+GULD_sources <- NULL
+GULD_sources$source <- c("V01","V03","V04","V05","V07","V08","V09","V18")
+GULD_SIAprey_meansd_working <- subset(GULD_SIAprey_meansd, taxaID %in% GULD_sources$source)
+GULD_sources$Meand15N <- GULD_SIAprey_meansd_working$d15N_M 
+GULD_sources$SDd15N <- GULD_SIAprey_meansd_working$d15N_sd     
+GULD_sources$Meand13C <- GULD_SIAprey_meansd_working$d13C_M    
+GULD_sources$SDd13C <- GULD_SIAprey_meansd_working$d13C_sd           
+GULD_sources <- as.data.frame(GULD_sources)
+GULD_sources$n <- 3
+
+#Pooling by -
+#P01 = V01, V02, V03, Bivalves
+#P02 = V04, V05, Gastropods
+#P03 = V06. V07, Malacostraca (decapods)
+#P04 = V08, V09, Malacostraca (isopods/amphipods)
+#P05 = V11, Ostracods
+#P06 = V12, Insects
+#P07 = V15, V16 Polychaetes
+#P08 = V17, V18; Actinopterygii (currently doesn't include V17)
+
+#Excluded: V19 (Syngnathidae spp); V21 (Gobiidae spp.); V22 (N. melanostomus)
+
+
+GULD_sources$source <- case_when(
+  GULD_sources$source %in% c("V01", "V03") ~ "P01",
+  GULD_sources$source %in% c("V04", "V05") ~ "P02",
+  GULD_sources$source %in% c("V07") ~ "P03",
+  GULD_sources$source %in% c("V08", "V09") ~ "P04",
+  GULD_sources$source %in% c("V18") ~ "P05",
+  .default = GULD_sources$source
+)
+
+GULD_sources <- setDT(GULD_sources)[ , list(Meand15N = mean(Meand15N),
+                                            SDd15N = (sqrt(sum(SDd15N^2)/2)),
+                                            Meand13C = mean(Meand13C),
+                                            SDd13C = (sqrt(sum(SDd13C^2)/2)),
+                                            n = sum(n)),
+                                     by = .(source)]
 
 
 # - for discrimination factors
@@ -444,25 +482,25 @@ discr2 <- load_discr_data(filename="~/trophic-personalities_2020/dat_stableisoto
 
 
 ###Isospace plots
-isoplot1 <- plot_data(filename="isospace_plot", return_obj=TRUE,
-            plot_save_pdf=FALSE,
-            plot_save_png=FALSE,
-            mix,source,discr1)
-isoplot1 <- isoplot1 + theme(legend.position = 'right',
-                             legend.text = element_text(size=7),
-                             legend.spacing.x = unit(0.5, 'cm'))
-
-isoplot2 <- plot_data(filename="isospace_plot", return_obj=TRUE,
-            plot_save_pdf=FALSE,
-            plot_save_png=FALSE,
-            mix,source,discr2)
-isoplot2 <- isoplot2 + theme(legend.position = 'right',
-                             legend.text = element_text(size=7),
-                             legend.spacing.x = unit(0.5, 'cm'))
-
-
-ggsave("./outputs_visualisations/Fig_isoplot1.jpeg", width = 20, height = 14, units = "cm", isoplot1, dpi = 600)
-ggsave("./outputs_visualisations/Fig_isoplot2.jpeg", width = 20, height = 14, units = "cm", isoplot2, dpi = 600)
+#isoplot1 <- plot_data(filename="isospace_plot", return_obj=TRUE,
+#            plot_save_pdf=FALSE,
+#            plot_save_png=FALSE,
+#            mix,source,discr1)
+#isoplot1 <- isoplot1 + theme(legend.position = 'right',
+#                             legend.text = element_text(size=7),
+#                             legend.spacing.x = unit(0.5, 'cm'))
+#
+#isoplot2 <- plot_data(filename="isospace_plot", return_obj=TRUE,
+#            plot_save_pdf=FALSE,
+#            plot_save_png=FALSE,
+#            mix,source,discr2)
+#isoplot2 <- isoplot2 + theme(legend.position = 'right',
+#                             legend.text = element_text(size=7),
+#                             legend.spacing.x = unit(0.5, 'cm'))
+#
+#
+#ggsave("./outputs_visualisations/Fig_isoplot1.jpeg", width = 20, height = 14, units = "cm", isoplot1, dpi = 600)
+#ggsave("./outputs_visualisations/Fig_isoplot2.jpeg", width = 20, height = 14, units = "cm", isoplot2, dpi = 600)
 
 
 ###Writing jags models
@@ -481,9 +519,9 @@ write_JAGS_model(model_filename, resid_err, process_err, mix, source)
 #save(GULD_jags_final, file = "./outputs_visualisations/GULD_jags_final.RData")
 #load("./outputs_visualisations/GULD_jags_final.RData")
 
-GULD_jags_TDFtest <- run_model(run="long", mix, source, discr2, model_filename, 
-                         alpha.prior = 1, resid_err, process_err)
-save(GULD_jags_TDFtest, file = "./outputs_visualisations/GULD_jags_TDFtest.RData")
+#GULD_jags_TDFtest <- run_model(run="long", mix, source, discr2, model_filename, 
+#                         alpha.prior = 1, resid_err, process_err)
+#save(GULD_jags_TDFtest, file = "./outputs_visualisations/GULD_jags_TDFtest.RData")
 #load("./outputs_visualisations/GULD_jags_TDFtest.RData")
 
 #write_JAGS_model(model_filename, resid_err, process_err, mix, source2)
@@ -512,10 +550,9 @@ output_options <- list(summary_save = TRUE,
                        indiv_effect = FALSE,       
                        plot_post_save_png = FALSE, 
                        plot_pairs_save_png = FALSE,
-                       plot_xy_save_png = FALSE)
+                       plot_xy_save_png = FALSE,
+                       return_obj = TRUE)
 
 #diagnostics, summary statistics, and posterior plots
 output_JAGS(GULD_jags_final, mix, source2, output_options)
-
-
-
+p.fac1
