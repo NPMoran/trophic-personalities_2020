@@ -612,6 +612,13 @@ Fig_global
 
 ggsave("./outputs_visualisations/Fig_global.jpeg", width = 18, height = 8, units = "cm", Fig_global, dpi = 600)
 
+df.stats.df <- as.data.frame(df.stats)
+df.stats.df$text <- paste(round((df.stats.df$Mean*100), digits = 2), round((df.stats.df$`2.5%`*100), digits = 2), sep = '% [')
+df.stats.df$text <- paste(df.stats.df$text, round((df.stats.df$`97.5%`*100), digits = 2), sep = '%, ')
+df.stats.df$text <- paste(df.stats.df$text, '%]', sep = '')
+write.csv(df.stats.df, '~/trophic-personalities_2020/outputs_visualisations/GULD_jags_main.df.stats.df.csv', row.names = TRUE)
+
+
 # - TDF post model
 output_JAGS(GULD_jags_TDFpost, mix, source, output_options)
 diag <- output_diagnostics(GULD_jags_TDFpost, mix, source, output_options)
@@ -646,6 +653,12 @@ Fig_global2 <- g.post$global + simpletheme +
 Fig_global2
 
 ggsave("./outputs_visualisations/Fig_global_TDFpost.jpeg", width = 18, height = 8, units = "cm", Fig_global2, dpi = 600)
+
+df.stats.df <- as.data.frame(df.stats)
+df.stats.df$text <- paste(round((df.stats.df$Mean*100), digits = 2), round((df.stats.df$`2.5%`*100), digits = 2), sep = '% [')
+df.stats.df$text <- paste(df.stats.df$text, round((df.stats.df$`97.5%`*100), digits = 2), sep = '%, ')
+df.stats.df$text <- paste(df.stats.df$text, '%]', sep = '')
+write.csv(df.stats.df, '~/trophic-personalities_2020/outputs_visualisations/GULD_jags_TDFpost.df.stats.df.csv', row.names = TRUE)
 
 # - Expanded model (fails to converge)
 #output_JAGS(GULD_jags_expanded, mix, source2, output_options)
