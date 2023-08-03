@@ -10,6 +10,14 @@ Sys.setenv(LANG = "en")
 library(dplyr); library(lme4); library(lmerTest); library(rptR); library(data.table); library(operators)
 library(ggplot2); library(ggpubr); library(RColorBrewer)
 
+#install.packages("devtools")
+#remotes::install_github("brianstock/MixSIAR", dependencies=T)
+#install.packages('rjags')
+#install.packages('simmr')
+#install.packages('MixSIAR')
+library(rjags) #need to install JAGS-4.x.y.exe (for any x >=0, y>=0) from http://www.sourceforge.net/projects/mcmc-jags/files
+library(simmr) #supposedly updated version of SIAR for running simple or lite versions of mixing models
+library(MixSIAR) #MixSIAR: A Bayesian stable isotope mixing model for characterizing intrapopulation niche variation
 
 
 #General theme for ggplots-
@@ -55,12 +63,14 @@ cor.test(GULD_SIAfins$CN_ratio, GULD_SIAfins$d13C, method = 'spearman')
 plot(GULD_SIAfins$d13C, GULD_SIAfins$CN_ratio)
 
 # - Some samples CN ratio exceeds 4, and there is a significant correlation between C and CN, so the correction has been applied to this dataset
-GULD_SIAfins$d13C_post <- (GULD_SIAfins$d13C - 3.32 + (0.99*GULD_SIAfins$CN_ratio))
-plot(GULD_SIAfins$d13C_post, GULD_SIAfins$CN_ratio)
+#GULD_SIAfins$d13C_post <- (GULD_SIAfins$d13C - 3.32 + (0.99*GULD_SIAfins$CN_ratio))
+#plot(GULD_SIAfins$d13C_post, GULD_SIAfins$CN_ratio)
 
-#alternate mothod, which is more relevant to the Baltic Sea.
+#alternate method, which is more relevant to the Baltic Sea.
 GULD_SIAfins$L_kilj <- 93 / (1 + ((0.246*GULD_SIAfins$CN_ratio)-0.775)^(-1)) 
 GULD_SIAfins$d13C_kilj <- GULD_SIAfins$d13C + 7.018 * (0.048 + (3.90/(1+287/GULD_SIAfins$L_kilj)))
+#cor.test(GULD_SIAfins$CN_ratio, GULD_SIAfins$d13C_kilj, method = 'spearman') #no sig. correlation with CN ratio
+#plot(GULD_SIAfins$d13C_kilj, GULD_SIAfins$CN_ratio)
 
 
 #summary(GULD_SIAfins$d13C)
@@ -185,7 +195,7 @@ summary(GULD_SIAfins_meansd)
 ggplot(GULD_SIAfins) + aes(x = d15N) + geom_histogram(color="black", fill="lightblue", binwidth = 0.3) + simpletheme 
 ggqqplot(GULD_SIAfins$d15N) #approximately normal, some potential outliers at the high end
 
-ggplot(GULD_SIAfins) + aes(x = d13C_post) + geom_histogram(color="black", fill="lightblue", binwidth = 0.5) + simpletheme 
+ggplot(GULD_SIAfins) + aes(x = d13C_kilj) + geom_histogram(color="black", fill="lightblue", binwidth = 0.8) + simpletheme 
 ggqqplot(GULD_SIAfins$d13C) #approximately normal, some potential outliers at the low end
 
 
@@ -305,7 +315,7 @@ GULD_SIA.fullplot <- ggplot(GULD_SIAfins_meansd, aes (x = d13C_M, y = d15N_M, co
   xlab(expression(paste(delta^{13}, "C (\u2030)")))
 GULD_SIA.fullplot
 
-#ggsave("./outputs_visualisations/Fig_3kilj.jpeg", width = 18, height = 12, units = "cm", GULD_SIA.fullplot, dpi = 600)
+#ggsave("./outputs_visualisations/Fig_kilj.jpeg", width = 18, height = 12, units = "cm", GULD_SIA.fullplot, dpi = 600)
 
 
 #Notes
@@ -317,14 +327,8 @@ GULD_SIA.fullplot
 
 
 # 3.4. Diet reconstruction (mixSIAR)----
-#install.packages('rjags')
-#install.packages('simmr')
-#install.packages('MixSIAR')
-library(rjags) #need to install JAGS-4.x.y.exe (for any x >=0, y>=0) from http://www.sourceforge.net/projects/mcmc-jags/files
-library(simmr) #supposedly updated version of SIAR for running simple or lite versions of mixing models
-library(MixSIAR) #MixSIAR: A Bayesian stable isotope mixing model for characterizing intrapopulation niche variation
 
-#Discrimination factors -
+# - Discrimination factors ----
 # - Based on Poslednik 2023
 TDF_Poslednik_N_mean <- 4.04
 TDF_Poslednik_N_sd <- 0.32 * sqrt(64)
@@ -334,35 +338,25 @@ TDF_Poslednik_C_sd <- 0.32 * sqrt(64)
 #SD = SE*(sqrt(n))
 #N = 64
 
-# - Based on Post 2002 ----
+# - Based on Post 2002
 TDF_Post_N_mean <- 3.4
 TDF_Post_N_sd <- 0.98
 TDF_Post_C_mean <- 0.39
 TDF_Post_C_sd <- 1.3
 
 
-
-#Building data frames for analysis ----
-# - for consumers (i.e., round gobies)
+# - Building data frames for analysis ----
+#for consumers (i.e., round gobies)
 GULD_consumers <- NULL
 GULD_consumers$d15N <- GULD_SIAfins$d15N
 GULD_consumers$d13C <- GULD_SIAfins$d13C_kilj
 GULD_consumers$Individual <- GULD_SIAfins$FishID 
 GULD_consumers <- as.data.frame(GULD_consumers)
-write.csv(GULD_consumers, '~/trophic-personalities_2020/dat_stableisotope/GULD_consumers.csv', row.names = FALSE)
+
+#write.csv(GULD_consumers, '~/trophic-personalities_2020/dat_stableisotope/GULD_consumers.csv', row.names = FALSE)
 
 
-# - for potential prey items (i.e., preferred prey items per Van Deurs 2021)
-GULD_sources <- NULL
-GULD_sources$source <- c("V01","V03","V04","V05","V07","V08","V09","V18")
-GULD_SIAprey_meansd_working <- subset(GULD_SIAprey_meansd, taxaID %in% GULD_sources$source)
-GULD_sources$Meand15N <- GULD_SIAprey_meansd_working$d15N_M 
-GULD_sources$SDd15N <- GULD_SIAprey_meansd_working$d15N_sd     
-GULD_sources$Meand13C <- GULD_SIAprey_meansd_working$d13C_M    
-GULD_sources$SDd13C <- GULD_SIAprey_meansd_working$d13C_sd           
-GULD_sources <- as.data.frame(GULD_sources)
-GULD_sources$n <- 3
-
+#for potential prey items (i.e., preferred prey items per Van Deurs 2021)
 #Pooling by -
 #P01 = V01, V03, Bivalves (currently not including blue mussels V02)
 #P02 = V04, V05, Gastropods
@@ -370,35 +364,32 @@ GULD_sources$n <- 3
 #P04 = V08, V09, Malacostraca (isopods/amphipods)
 #P05 = V18; Actinopterygii (currently doesn't include V17)
 
-GULD_sources$source <- case_when(
-  GULD_sources$source %in% c("V01", "V03") ~ "P01",
-  GULD_sources$source %in% c("V04", "V05") ~ "P02",
-  GULD_sources$source %in% c("V07") ~ "P03",
-  GULD_sources$source %in% c("V08", "V09") ~ "P04",
-  GULD_sources$source %in% c("V18") ~ "P05",
-  .default = GULD_sources$source
-)
-
-GULD_sources <- setDT(GULD_sources)[ , list(Meand15N = mean(Meand15N),
-                                             SDd15N = (sqrt(sum(SDd15N^2)/2)),
-                                             Meand13C = mean(Meand13C),
-                                             SDd13C = (sqrt(sum(SDd13C^2)/2)),
-                                             n = sum(n)),
-                                      by = .(source)]
-
-write.csv(GULD_sources, '~/trophic-personalities_2020/dat_stableisotope/GULD_sources.csv', row.names = FALSE)
-
-# - for potential prey items (i.e., using an expanded group of prey items per Van Deurs, Puntila 2016, Kornis 2015 and Oesterwind et al., 2017)
 GULD_sources <- NULL
 GULD_sources$source <- c("V01","V03","V04","V05","V07","V08","V09","V18")
-GULD_SIAprey_meansd_working <- subset(GULD_SIAprey_meansd, taxaID %in% GULD_sources$source)
-GULD_sources$Meand15N <- GULD_SIAprey_meansd_working$d15N_M 
-GULD_sources$SDd15N <- GULD_SIAprey_meansd_working$d15N_sd     
-GULD_sources$Meand13C <- GULD_SIAprey_meansd_working$d13C_M    
-GULD_sources$SDd13C <- GULD_SIAprey_meansd_working$d13C_sd           
-GULD_sources <- as.data.frame(GULD_sources)
-GULD_sources$n <- 3
+GULD_SIAprey_working <- subset(GULD_SIAprey, taxaID %in% GULD_sources$source)
+GULD_SIAprey_working$taxaID <- case_when(
+  GULD_SIAprey_working$taxaID %in% c("V01", "V03") ~ "P01",
+  GULD_SIAprey_working$taxaID %in% c("V04", "V05") ~ "P02",
+  GULD_SIAprey_working$taxaID %in% c("V07") ~ "P03",
+  GULD_SIAprey_working$taxaID %in% c("V08", "V09") ~ "P04",
+  GULD_SIAprey_working$taxaID %in% c("V18") ~ "P05",
+  .default = GULD_SIAprey_working$taxaID
+)
+GULD_SIAprey_working$source <- GULD_SIAprey_working$taxaID
+GULD_SIAprey_working$n <- 1
 
+
+GULD_sources <- setDT(GULD_SIAprey_working)[ , list(Meand15N = mean(d15N),
+                                            SDd15N = sd(d15N),
+                                            Meand13C = mean(d13C),
+                                            SDd13C = sd(d13C),
+                                            n = sum(n)),
+                                     by = .(source)]
+GULD_sources <- as.data.frame(GULD_sources)
+
+#write.csv(GULD_sources, '~/trophic-personalities_2020/dat_stableisotope/GULD_sources.csv', row.names = FALSE)
+
+# - for potential prey items (i.e., using an expanded group of prey items per Van Deurs, Puntila 2016, Kornis 2015 and Oesterwind et al., 2017)
 #Pooling by -
 #P01 = V01, V02, V03, Bivalves
 #P02 = V04, V05, Gastropods
@@ -407,30 +398,40 @@ GULD_sources$n <- 3
 #P05 = V11, Ostracods
 #P06 = V12, Insects
 #P07 = V15, V16 Polychaetes
-#P08 = V17, V18; Actinopterygii (currently doesn't include V17)
-
+#P08 = V17, V18, Actinopterygii 
 #Excluded: V19 (Syngnathidae spp); V21 (Gobiidae spp.); V22 (N. melanostomus)
 
-
-GULD_sources$source <- case_when(
-  GULD_sources$source %in% c("V01", "V03") ~ "P01",
-  GULD_sources$source %in% c("V04", "V05") ~ "P02",
-  GULD_sources$source %in% c("V07") ~ "P03",
-  GULD_sources$source %in% c("V08", "V09") ~ "P04",
-  GULD_sources$source %in% c("V18") ~ "P05",
-  .default = GULD_sources$source
+GULD_sources2 <- NULL
+GULD_sources2$source <- c("V01","V02","V03","V04","V05","V06","V07","V08","V09","V11","V12","V15","V16","V17","V18")
+GULD_SIAprey_working2 <- subset(GULD_SIAprey, taxaID %in% GULD_sources2$source)
+GULD_SIAprey_working2$taxaID <- case_when(
+  GULD_SIAprey_working2$taxaID %in% c("V01", "V02", "V03") ~ "P01",
+  GULD_SIAprey_working2$taxaID %in% c("V04", "V05") ~ "P02",
+  GULD_SIAprey_working2$taxaID %in% c("V06", "V07") ~ "P03",
+  GULD_SIAprey_working2$taxaID %in% c("V08", "V09") ~ "P04",
+  GULD_SIAprey_working2$taxaID %in% c("V11") ~ "P05",
+  GULD_SIAprey_working2$taxaID %in% c("V12") ~ "P06",
+  GULD_SIAprey_working2$taxaID %in% c("V15", "V16") ~ "P07",
+  GULD_SIAprey_working2$taxaID %in% c("V17", "V18") ~ "P08",
+  .default = GULD_SIAprey_working2$taxaID
 )
+GULD_SIAprey_working2$source <- GULD_SIAprey_working2$taxaID
+GULD_SIAprey_working2$n <- 1
 
-GULD_sources <- setDT(GULD_sources)[ , list(Meand15N = mean(Meand15N),
-                                            SDd15N = (sqrt(sum(SDd15N^2)/2)),
-                                            Meand13C = mean(Meand13C),
-                                            SDd13C = (sqrt(sum(SDd13C^2)/2)),
-                                            n = sum(n)),
-                                     by = .(source)]
+
+GULD_sources2 <- setDT(GULD_SIAprey_working2)[ , list(Meand15N = mean(d15N),
+                                                    SDd15N = sd(d15N),
+                                                    Meand13C = mean(d13C),
+                                                    SDd13C = sd(d13C),
+                                                    n = sum(n)),
+                                             by = .(source)]
+GULD_sources2 <- as.data.frame(GULD_sources2)
+
+#write.csv(GULD_sources2, '~/trophic-personalities_2020/dat_stableisotope/GULD_sources2.csv', row.names = FALSE)
 
 
 # - for discrimination factors
-GULD_TDFs <- NULL
+GULD_TDFs <- NULL #for main analysis
 working <- c(1,2,3,4,5)
 GULD_TDFs$rownumber <- working
 GULD_TDFs$source <- GULD_sources$source
@@ -440,24 +441,35 @@ GULD_TDFs$SDd15N <- TDF_Poslednik_N_sd
 GULD_TDFs$Meand13C <- TDF_Poslednik_C_mean
 GULD_TDFs$SDd13C <- TDF_Poslednik_C_sd
 GULD_TDFs <- GULD_TDFs[,-1]
-write.csv(GULD_TDFs, '~/trophic-personalities_2020/dat_stableisotope/GULD_TDF1.csv', row.names = FALSE)
-GULD_TDFs2 <- GULD_TDFs
+#write.csv(GULD_TDFs, '~/trophic-personalities_2020/dat_stableisotope/GULD_TDF1.csv', row.names = FALSE)
+GULD_TDFs2 <- GULD_TDFs #for TDF sensitvity analysis
 GULD_TDFs2$Meand15N <- TDF_Post_N_mean
 GULD_TDFs2$SDd15N <- TDF_Post_N_sd
 GULD_TDFs2$Meand13C <- TDF_Post_C_mean
 GULD_TDFs2$SDd13C <- TDF_Post_C_sd
-write.csv(GULD_TDFs2, '~/trophic-personalities_2020/dat_stableisotope/GULD_TDF2.csv', row.names = FALSE)
+#write.csv(GULD_TDFs2, '~/trophic-personalities_2020/dat_stableisotope/GULD_TDF2.csv', row.names = FALSE)
+GULD_TDFs3 <- NULL #for expaned prey analysis.
+working <- c(1,2,3,4,5,6,7,8)
+GULD_TDFs3$rownumber <- working
+GULD_TDFs3$source <- GULD_sources2$source
+GULD_TDFs3 <- as.data.frame(GULD_TDFs3)
+GULD_TDFs3$Meand15N <- TDF_Poslednik_N_mean
+GULD_TDFs3$SDd15N <- TDF_Poslednik_N_sd
+GULD_TDFs3$Meand13C <- TDF_Poslednik_C_mean
+GULD_TDFs3$SDd13C <- TDF_Poslednik_C_sd
+GULD_TDFs3 <- GULD_TDFs3[,-1]
+#write.csv(GULD_TDFs3, '~/trophic-personalities_2020/dat_stableisotope/GULD_TDF3.csv', row.names = FALSE)
 
-#Combinations for analys
+#Combinations for analysis
 # - Main model
 # mix (GULD_consumers), source (GULD_sources), discr1 (GULD_TDFs) 
 # - TDF Sensitivity model
 # mix (GULD_consumers), source (GULD_sources), discr1 (GULD_TDFs2)
-# - N Sensitivity model
-# mix (GULD_consumers), source (GULD_sources2), discr1 (GULD_TDFs)
+# - Expanded prey groups model
+# mix (GULD_consumers), source (GULD_sources2), discr1 (GULD_TDFs3)
 
 
-#####MixSiar Test ----
+#MixSiar Test ----
 #load consumer data
 mix <- load_mix_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_consumers.csv", 
                      iso_names=c("d13C","d15N"), 
@@ -479,28 +491,38 @@ source2 <- load_source_data(filename="~/trophic-personalities_2020/dat_stableiso
 #load discr data
 discr1 <- load_discr_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_TDF1.csv", mix)
 discr2 <- load_discr_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_TDF2.csv", mix)
+discr3 <- load_discr_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_TDF3.csv", mix)
 
 
 ###Isospace plots
-#isoplot1 <- plot_data(filename="isospace_plot", return_obj=TRUE,
-#            plot_save_pdf=FALSE,
-#            plot_save_png=FALSE,
-#            mix,source,discr1)
-#isoplot1 <- isoplot1 + theme(legend.position = 'right',
-#                             legend.text = element_text(size=7),
-#                             legend.spacing.x = unit(0.5, 'cm'))
-#
-#isoplot2 <- plot_data(filename="isospace_plot", return_obj=TRUE,
-#            plot_save_pdf=FALSE,
-#            plot_save_png=FALSE,
-#            mix,source,discr2)
-#isoplot2 <- isoplot2 + theme(legend.position = 'right',
-#                             legend.text = element_text(size=7),
-#                             legend.spacing.x = unit(0.5, 'cm'))
-#
-#
-#ggsave("./outputs_visualisations/Fig_isoplot1.jpeg", width = 20, height = 14, units = "cm", isoplot1, dpi = 600)
-#ggsave("./outputs_visualisations/Fig_isoplot2.jpeg", width = 20, height = 14, units = "cm", isoplot2, dpi = 600)
+isoplot1 <- plot_data(filename="isospace_plot", return_obj=TRUE,
+            plot_save_pdf=FALSE,
+            plot_save_png=FALSE,
+            mix,source,discr1)
+isoplot1 <- isoplot1 + theme(legend.position = 'right',
+                             legend.text = element_text(size=7),
+                             legend.spacing.x = unit(0.5, 'cm'))
+
+isoplot2 <- plot_data(filename="isospace_plot", return_obj=TRUE,
+            plot_save_pdf=FALSE,
+            plot_save_png=FALSE,
+            mix,source,discr2)
+isoplot2 <- isoplot2 + theme(legend.position = 'right',
+                             legend.text = element_text(size=7),
+                             legend.spacing.x = unit(0.5, 'cm'))
+
+isoplot3 <- plot_data(filename="isospace_plot", return_obj=TRUE,
+                      plot_save_pdf=FALSE,
+                      plot_save_png=FALSE,
+                      mix,source2,discr3)
+isoplot3 <- isoplot3 + theme(legend.position = 'right',
+                             legend.text = element_text(size=7),
+                             legend.spacing.x = unit(0.5, 'cm'))
+
+
+ggsave("./outputs_visualisations/Fig_isoplot1.jpeg", width = 20, height = 14, units = "cm", isoplot1, dpi = 600)
+ggsave("./outputs_visualisations/Fig_isoplot2.jpeg", width = 20, height = 14, units = "cm", isoplot2, dpi = 600)
+ggsave("./outputs_visualisations/Fig_isoplot3.jpeg", width = 20, height = 14, units = "cm", isoplot3, dpi = 600)
 
 
 ###Writing jags models
@@ -514,33 +536,33 @@ process_err <- TRUE
 write_JAGS_model(model_filename, resid_err, process_err, mix, source)
 
 #Running test
-#GULD_jags_final <- run_model(run="long", mix, source, discr1, model_filename, 
-#                    alpha.prior = 1, resid_err, process_err)
-#save(GULD_jags_final, file = "./outputs_visualisations/GULD_jags_final.RData")
-#load("./outputs_visualisations/GULD_jags_final.RData")
-
-#GULD_jags_TDFtest <- run_model(run="long", mix, source, discr2, model_filename, 
+GULD_jags_main <- run_model(run="very long", mix, source, discr1, model_filename, 
+                    alpha.prior = 1, resid_err, process_err)
+save(GULD_jags_main, file = "./outputs_visualisations/GULD_jags_main.RData")
+load("./outputs_visualisations/GULD_jags_main.RData")
+#
+#GULD_jags_TDFpost <- run_model(run="long", mix, source, discr2, model_filename, 
 #                         alpha.prior = 1, resid_err, process_err)
-#save(GULD_jags_TDFtest, file = "./outputs_visualisations/GULD_jags_TDFtest.RData")
-#load("./outputs_visualisations/GULD_jags_TDFtest.RData")
-
+#save(GULD_jags_TDFpost, file = "./outputs_visualisations/GULD_jags_TDFpost.RData")
+load("./outputs_visualisations/GULD_jags_TDFpost.RData")
+#
 #write_JAGS_model(model_filename, resid_err, process_err, mix, source2)
-#GULD_jags_Ntest <- run_model(run="normal", mix, source2, discr1, model_filename, 
+#GULD_jags_expanded <- run_model(run="long", mix, source2, discr3, model_filename, 
 #                         alpha.prior = 1, resid_err, process_err)
-#save(GULD_jags_Ntest, file = "./outputs_visualisations/GULD_jags_Ntest.RData")
-#load("./outputs_visualisations/GULD_jags_Ntest.RData")
+#save(GULD_jags_expanded, file = "./outputs_visualisations/GULD_jags_expanded.RData")
+#load("./outputs_visualisations/GULD_jags_expanded.RData")
 
 #output options
 output_options <- list(summary_save = TRUE,                 
                        summary_name = "summary_statistics", 
-                       sup_post = FALSE,                    
-                       plot_post_save_pdf = TRUE,           
+                       sup_post = TRUE,                    
+                       plot_post_save_pdf = FALSE,           
                        plot_post_name = "posterior_density",
-                       sup_pairs = FALSE,             
-                       plot_pairs_save_pdf = FALSE,    
+                       sup_pairs = TRUE,             
+                       plot_pairs_save_pdf = TRUE,    
                        plot_pairs_name = "pairs_plot",
                        sup_xy = TRUE,           
-                       plot_xy_save_pdf = FALSE,
+                       plot_xy_save_pdf = TRUE,
                        plot_xy_name = "xy_plot",
                        gelman = TRUE,
                        heidel = FALSE,  
@@ -551,8 +573,85 @@ output_options <- list(summary_save = TRUE,
                        plot_post_save_png = FALSE, 
                        plot_pairs_save_png = FALSE,
                        plot_xy_save_png = FALSE,
+                       diag_save_ggmcmc = FALSE,
                        return_obj = TRUE)
 
 #diagnostics, summary statistics, and posterior plots
-output_JAGS(GULD_jags_final, mix, source2, output_options)
-p.fac1
+# - main model
+output_JAGS(GULD_jags_main, mix, source, output_options)
+diag <- output_diagnostics(GULD_jags_main, mix, source, output_options)
+df.stats <- output_stats(GULD_jags_main, mix, source, output_options)
+g.post <- output_posteriors(GULD_jags_main, mix, source, output_options)
+
+Fig_global <- g.post$global + simpletheme + 
+  scale_x_continuous(limits = c(0,1), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0,1.05), expand = c(0, 0)) +
+  scale_fill_manual(values=c("dodgerblue2", 
+                           "plum3",
+                           "chartreuse2",
+                           "chartreuse3",
+                           "lightblue3"), 
+                    labels=c('Bivalvia', 'Gastropoda', 'Malacostraca (Decapoda)', 'Malacostraca (Other)', 'Actinopterygii')) +
+  scale_color_manual(values=c("dodgerblue2", 
+                           "plum3",
+                           "chartreuse2",
+                           "chartreuse3",
+                           "lightblue3"),
+                     labels=c('Bivalvia', 'Gastropoda', 'Malacostraca (Decapoda)', 'Malacostraca (Other)', 'Actinopterygii')) +
+  theme(axis.text.y = element_text(size = 8, colour = "black"), 
+        axis.text.x = element_text(size = 8, colour = "black"),  
+        panel.background = element_rect(fill = "white"), 
+        axis.title.y  = element_text(size=10, vjust = 2), 
+        axis.title.x  = element_text(size=10, vjust = 0.1), 
+        panel.border = element_rect(colour = "black", fill=NA, linewidth = 1),
+        title = element_blank(),
+        legend.background = element_blank()) +
+ ylab("Scaled posterior density") +
+ xlab("Diet proportion")
+Fig_global
+
+ggsave("./outputs_visualisations/Fig_global.jpeg", width = 18, height = 8, units = "cm", Fig_global, dpi = 600)
+
+# - TDF post model
+output_JAGS(GULD_jags_TDFpost, mix, source, output_options)
+diag <- output_diagnostics(GULD_jags_TDFpost, mix, source, output_options)
+df.stats <- output_stats(GULD_jags_TDFpost, mix, source, output_options)
+g.post <- output_posteriors(GULD_jags_TDFpost, mix, source, output_options)
+
+Fig_global2 <- g.post$global + simpletheme + 
+  scale_x_continuous(limits = c(0,1), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0,1.05), expand = c(0, 0)) +
+  scale_fill_manual(values=c("dodgerblue2", 
+                             "plum3",
+                             "chartreuse2",
+                             "chartreuse3",
+                             "lightblue3"), 
+                    labels=c('Bivalvia', 'Gastropoda', 'Malacostraca (Decapoda)', 'Malacostraca (Other)', 'Actinopterygii')) +
+  scale_color_manual(values=c("dodgerblue2", 
+                              "plum3",
+                              "chartreuse2",
+                              "chartreuse3",
+                              "lightblue3"),
+                     labels=c('Bivalvia', 'Gastropoda', 'Malacostraca (Decapoda)', 'Malacostraca (Other)', 'Actinopterygii')) +
+  theme(axis.text.y = element_text(size = 8, colour = "black"), 
+        axis.text.x = element_text(size = 8, colour = "black"),  
+        panel.background = element_rect(fill = "white"), 
+        axis.title.y  = element_text(size=10, vjust = 2), 
+        axis.title.x  = element_text(size=10, vjust = 0.1), 
+        panel.border = element_rect(colour = "black", fill=NA, linewidth = 1),
+        title = element_blank(),
+        legend.background = element_blank()) +
+  ylab("Scaled posterior density") +
+  xlab("Diet proportion")
+Fig_global2
+
+ggsave("./outputs_visualisations/Fig_global_TDFpost.jpeg", width = 18, height = 8, units = "cm", Fig_global2, dpi = 600)
+
+# - Expanded model (fails to converge)
+#output_JAGS(GULD_jags_expanded, mix, source2, output_options)
+#diag <- output_diagnostics(GULD_jags_expanded, mix, source2, output_options)
+#df.stats <- output_stats(GULD_jags_expanded, mix, source2, output_options)
+#g.post <- output_posteriors(GULD_jags_expanded, mix, source2, output_options)
+
+
+
