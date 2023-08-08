@@ -180,6 +180,41 @@ load(file = "./outputs_visualisations/GULD_SIA1.C.rpt.RData")
 GULD_SIAfins.C.rpt #0.966 (matches manual est)
 
 
+#State effects on goby behaviour. 
+GULD_physdat <- read.csv("~/trophic-personalities_2020/dat_fish/GULD_physdat_processed.csv")
+GULD_SIAfins_merge <- merge(GULD_SIAfins, GULD_physdat, by = "FishID", all.x = TRUE) 
+
+#  note, G43, G37, G33, G15, G01 died before physical measurements.
+
+#  scaling continuous variables
+GULD_SIAfins_merge$TL.C <- scale(GULD_SIAfins_merge$TL)
+GULD_SIAfins_merge$CondManual.C <- scale(GULD_SIAfins_merge$CondManual)
+
+#  running models
+GULD_SIAfins.N.modstate <- lmer(d15N ~ TL.C + CondManual.C + Sex + (1|FishID), data=GULD_SIAfins_merge)
+#save(GULD_SIAfins.N.modstate, file = "./outputs_visualisations/GULD_SIAfins.N.modstate.RData")
+load(file = "./outputs_visualisations/GULD_SIAfins.N.modstate.RData")
+summary(GULD_SIAfins.N.modstate)
+confint(GULD_SIAfins.N.modstate)
+fix_text <- as.data.frame(summary(GULD_SIAfins.N.modstate)$coefficients)
+ci_text <- as.data.frame(confint(GULD_SIAfins.N.modstate))
+ci_text <- ci_text[-1:-2,]
+fix_text$text <- paste(round(fix_text$Estimate, digits = 2), round(ci_text$`2.5 %`, digits = 2), sep = " [")
+fix_text$text <- paste(fix_text$text, round(ci_text$`97.5 %`, digits = 2), sep = ", ")
+fix_text$text <- paste(fix_text$text, "]", sep = "")
+
+GULD_SIAfins.C.modstate <- lmer(d13C_kilj ~ TL.C + CondManual.C + Sex + (1|FishID), data=GULD_SIAfins_merge)
+#save(GULD_SIAfins.C.mod, file = "./outputs_visualisations/GULD_SIAfins.C.modstate.RData")
+load(file = "./outputs_visualisations/GULD_SIAfins.C.modstate.RData")
+summary(GULD_SIAfins.C.modstate)
+confint(GULD_SIAfins.C.modstate)
+fix_text <- as.data.frame(summary(GULD_SIAfins.C.modstate)$coefficients)
+ci_text <- as.data.frame(confint(GULD_SIAfins.N.modstate))
+ci_text <- ci_text[-1:-2,]
+fix_text$text <- paste(round(fix_text$Estimate, digits = 2), round(ci_text$`2.5 %`, digits = 2), sep = " [")
+fix_text$text <- paste(fix_text$text, round(ci_text$`97.5 %`, digits = 2), sep = ", ")
+fix_text$text <- paste(fix_text$text, "]", sep = "")
+
 #Range and mean estimates. 
 GULD_SIAfins_meansd <- setDT(GULD_SIAfins)[ , list(d15N_M = mean(d15N),
                                                    d15N_sd = sd(d15N),
@@ -188,7 +223,6 @@ GULD_SIAfins_meansd <- setDT(GULD_SIAfins)[ , list(d15N_M = mean(d15N),
                                                 by = .(FishID)]
 summary(GULD_SIAfins_meansd)
 #note 1x fish has only onle replicate due to particuarly low biomass.
-
 
 
 # 3.3. Visualising round goby isotope distributions ----
@@ -536,9 +570,9 @@ process_err <- TRUE
 write_JAGS_model(model_filename, resid_err, process_err, mix, source)
 
 #Running test
-GULD_jags_main <- run_model(run="very long", mix, source, discr1, model_filename, 
-                    alpha.prior = 1, resid_err, process_err)
-save(GULD_jags_main, file = "./outputs_visualisations/GULD_jags_main.RData")
+#GULD_jags_main <- run_model(run="very long", mix, source, discr1, model_filename, 
+#                    alpha.prior = 1, resid_err, process_err)
+#save(GULD_jags_main, file = "./outputs_visualisations/GULD_jags_main.RData")
 load("./outputs_visualisations/GULD_jags_main.RData")
 #
 #GULD_jags_TDFpost <- run_model(run="long", mix, source, discr2, model_filename, 
@@ -610,13 +644,13 @@ Fig_global <- g.post$global + simpletheme +
  xlab("Diet proportion")
 Fig_global
 
-ggsave("./outputs_visualisations/Fig_global.jpeg", width = 18, height = 8, units = "cm", Fig_global, dpi = 600)
+#ggsave("./outputs_visualisations/Fig_global.jpeg", width = 18, height = 8, units = "cm", Fig_global, dpi = 600)
 
 df.stats.df <- as.data.frame(df.stats)
 df.stats.df$text <- paste(round((df.stats.df$Mean*100), digits = 2), round((df.stats.df$`2.5%`*100), digits = 2), sep = '% [')
 df.stats.df$text <- paste(df.stats.df$text, round((df.stats.df$`97.5%`*100), digits = 2), sep = '%, ')
 df.stats.df$text <- paste(df.stats.df$text, '%]', sep = '')
-write.csv(df.stats.df, '~/trophic-personalities_2020/outputs_visualisations/GULD_jags_main.df.stats.df.csv', row.names = TRUE)
+#write.csv(df.stats.df, '~/trophic-personalities_2020/outputs_visualisations/GULD_jags_main.df.stats.df.csv', row.names = TRUE)
 
 
 # - TDF post model
