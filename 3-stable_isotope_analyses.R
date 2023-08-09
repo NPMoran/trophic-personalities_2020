@@ -19,12 +19,8 @@ library(rjags) #need to install JAGS-4.x.y.exe (for any x >=0, y>=0) from http:/
 library(simmr) #supposedly updated version of SIAR for running simple or lite versions of mixing models
 library(MixSIAR) #MixSIAR: A Bayesian stable isotope mixing model for characterizing intrapopulation niche variation
 
-
 #General theme for ggplots-
 simpletheme <-   theme(axis.text.y = element_text(size = 10, colour = "black"), axis.text.x = element_text(size = 10, colour = "black"),  panel.background = element_rect(fill = "white"), axis.title.y  = element_text(size=12, vjust = 2), axis.title.x  = element_text(size=12, vjust = 0.1), panel.border = element_rect(colour = "black", fill=NA, linewidth = 1))
-
-#References: 
-#https://cdnsciencepub.com/doi/full/10.1139/cjz-2014-0127
 
 
 # 3.1. Importing and processing datasets ----
@@ -53,34 +49,35 @@ GULD_SIAprod <- subset(GULD_SIAfull, sortID == 'prod')
 nrow(GULD_SIAprod) #primary producers
 
 
-# - Lipid correction ----
-# - Checking C:N ratios
-#   ratios above 4 require lipid correction (Post et al. 2007). All values here below 4.
+# _ Lipid correction ----
+#Checking C:N ratios
+# - Ratios above 4 require lipid correction (Post et al. 2007). All values here below 4.
 GULD_SIAfins$CN_ratio <- (GULD_SIAfins$C_percentage/GULD_SIAfins$N_percentage)
 summary(GULD_SIAfins$CN_ratio) #Mean- 3.337, Median- 3.370, Max 3.713
 
 cor.test(GULD_SIAfins$CN_ratio, GULD_SIAfins$d13C, method = 'spearman')
 plot(GULD_SIAfins$d13C, GULD_SIAfins$CN_ratio)
+#Some samples CN ratio exceeds 4, and there is a significant correlation between C and CN, so the correction has been applied to this dataset
 
-# - Some samples CN ratio exceeds 4, and there is a significant correlation between C and CN, so the correction has been applied to this dataset
+
+# - Post (2002) method.
+
 #GULD_SIAfins$d13C_post <- (GULD_SIAfins$d13C - 3.32 + (0.99*GULD_SIAfins$CN_ratio))
 #plot(GULD_SIAfins$d13C_post, GULD_SIAfins$CN_ratio)
 
-#alternate method, which is more relevant to the Baltic Sea.
+# - Kiljunen et al., (2006) method, which is more relevant to the Baltic Sea.
+
 GULD_SIAfins$L_kilj <- 93 / (1 + ((0.246*GULD_SIAfins$CN_ratio)-0.775)^(-1)) 
 GULD_SIAfins$d13C_kilj <- GULD_SIAfins$d13C + 7.018 * (0.048 + (3.90/(1+287/GULD_SIAfins$L_kilj)))
 #cor.test(GULD_SIAfins$CN_ratio, GULD_SIAfins$d13C_kilj, method = 'spearman') #no sig. correlation with CN ratio
 #plot(GULD_SIAfins$d13C_kilj, GULD_SIAfins$CN_ratio)
 
 
-#summary(GULD_SIAfins$d13C)
-#summary(GULD_SIAfins$d13C_post)
-summary(GULD_SIAfins$d13C_kilj)
 
 
+# _ Prey processing ----
 
-# - Prey Processing ----
-# - building supps table with taxa groups and preferred diet components. 
+#Building supps table with taxa groups and preferred diet components. 
 TaxaGroups <- read.csv("~/trophic-personalities_2020/dat_stableisotope/GULD_taxagroups.csv")
 labels(TaxaGroups)
 TaxaGroups$Classification <- paste("Phylum: ", TaxaGroups$Phylum, sep = "")
@@ -121,7 +118,8 @@ nrow(GULD_SIAprey)
 #write.csv(GULD_SIAprey, "./dat_stableisotope/GULD_prey_processed.csv")
 
 
-# 3.2. Variance components round goby ----
+# 3.2. Round goby variance analysis ----
+# _ Variance component models ---- 
 #GULD_SIAfins.N.mod <- lmer(d15N ~ (1|FishID), data=GULD_SIAfins)
 #save(GULD_SIAfins.N.mod, file = "./outputs_visualisations/GULD_SIA1.N.mod.RData")
 load(file = "./outputs_visualisations/GULD_SIA1.N.mod.RData")
@@ -141,6 +139,7 @@ x$var_95UCI <- (x$sd_95UCI)^2
 x$text <- paste(round(x$var, digits = 2), round(x$var_95LCI, digits = 2), sep = " [")
 x$text <- paste(x$text, round(x$var_95UCI, digits = 2), sep = ", ")
 x$text <- paste(x$text, "]", sep = "")
+
 
 #GULD_SIAfins.C.mod <- lmer(d13C_kilj ~ (1|FishID), data=GULD_SIAfins)
 #save(GULD_SIAfins.C.mod, file = "./outputs_visualisations/GULD_SIA1.C.mod.RData")
@@ -162,6 +161,9 @@ y$teyt <- paste(round(y$var, digits = 2), round(y$var_95LCI, digits = 2), sep = 
 y$teyt <- paste(y$teyt, round(y$var_95UCI, digits = 2), sep = ", ")
 y$teyt <- paste(y$teyt, "]", sep = "")
 
+
+
+# _ Repeatability ---- 
 #Manual repeatability
 #0.53772813/(0.07487844 + 0.53772813) #0.8777708 for N
 #2.2304194/(0.1315285+2.2304194) #0.9443135 for C
@@ -180,7 +182,7 @@ load(file = "./outputs_visualisations/GULD_SIA1.C.rpt.RData")
 GULD_SIAfins.C.rpt #0.966 (matches manual est)
 
 
-#State effects on goby behaviour. 
+# _ State effects ---- 
 GULD_physdat <- read.csv("~/trophic-personalities_2020/dat_fish/GULD_physdat_processed.csv")
 GULD_SIAfins_merge <- merge(GULD_SIAfins, GULD_physdat, by = "FishID", all.x = TRUE) 
 
@@ -215,23 +217,27 @@ fix_text$text <- paste(round(fix_text$Estimate, digits = 2), round(ci_text$`2.5 
 fix_text$text <- paste(fix_text$text, round(ci_text$`97.5 %`, digits = 2), sep = ", ")
 fix_text$text <- paste(fix_text$text, "]", sep = "")
 
-#Range and mean estimates. 
-GULD_SIAfins_meansd <- setDT(GULD_SIAfins)[ , list(d15N_M = mean(d15N),
-                                                   d15N_sd = sd(d15N),
-                                                   d13C_M = mean(d13C_kilj),
-                                                   d13C_sd = sd(d13C_kilj)),
-                                                by = .(FishID)]
-summary(GULD_SIAfins_meansd)
-#note 1x fish has only onle replicate due to particuarly low biomass.
+
 
 
 # 3.3. Visualising round goby isotope distributions ----
+# _ Data formatting ----
+#note 1x fish has only only replicate due to particularly low biomass.
 ggplot(GULD_SIAfins) + aes(x = d15N) + geom_histogram(color="black", fill="lightblue", binwidth = 0.3) + simpletheme 
 ggqqplot(GULD_SIAfins$d15N) #approximately normal, some potential outliers at the high end
 
 ggplot(GULD_SIAfins) + aes(x = d13C_kilj) + geom_histogram(color="black", fill="lightblue", binwidth = 0.8) + simpletheme 
 ggqqplot(GULD_SIAfins$d13C) #approximately normal, some potential outliers at the low end
 
+
+#Preparing round goby data
+GULD_SIAfins_meansd <- setDT(GULD_SIAfins)[ , list(d15N_M = mean(d15N),
+                                                   d15N_sd = sd(d15N),
+                                                   d13C_M = mean(d13C_kilj),
+                                                   d13C_sd = sd(d13C_kilj)),
+                                            by = .(FishID)]
+#Range and means
+summary(GULD_SIAfins_meansd)
 
 
 #Preparing prey data
@@ -301,6 +307,7 @@ GULD_SIAprod_text <- GULD_SIAprod_meansd
 GULD_SIAprod_text$d15N_M <- GULD_SIAprod_text$ylower + 0.1
 GULD_SIAprod_text$d13C_M <- GULD_SIAprod_text$xlower + 0.05
 
+# _ The Plot ----
 #General theme for SIA plots
 SIAtheme <-   theme(axis.text.y = element_text(size = 8, colour = "black"), 
                     axis.text.x = element_text(size = 8, colour = "black"), 
@@ -353,16 +360,26 @@ GULD_SIA.fullplot
 
 
 #Notes
-# - G34 is an extreme outlier, which may suggest that it is a recent immigrant and should not be included in diet analysis. 
+# - G34 is an extreme outlier, which may suggest that it is a recent immigrant and may not be included in diet analysis. 
 # - note that there was insufficient biomass for replicates for one individual (G48), so error bars were not printed)
 
 
 #write.csv(GULD_SIAfins, "./dat_stableisotope/GULD_goby_processed.csv")
 
 
-# 3.4. Diet reconstruction (mixSIAR)----
+# 3.4. Trophic x behavioural correlations ----
+# _ Data frame ----
+Behav_working <- read.csv('~/trophic-personalities_2020/dat_behaviour/GULDbehav_phenotypes.csv')
+SIA_working <- GULD_SIAfins_meansd[,c(1:5)]
 
-# - Discrimination factors ----
+GULD_correlations <- merge(Behav_working,SIA_working, by = "FishID", all.x = TRUE)
+GULD_correlations
+
+# _ Correlation tests ----
+
+# 3.5. Diet reconstruction (mixSIAR)----
+
+# _ Discrimination factors ----
 # - Based on Poslednik 2023
 TDF_Poslednik_N_mean <- 4.04
 TDF_Poslednik_N_sd <- 0.32 * sqrt(64)
@@ -379,7 +396,7 @@ TDF_Post_C_mean <- 0.39
 TDF_Post_C_sd <- 1.3
 
 
-# - Building data frames for analysis ----
+# _ Building data frames for analysis ----
 #for consumers (i.e., round gobies)
 GULD_consumers <- NULL
 GULD_consumers$d15N <- GULD_SIAfins$d15N
@@ -503,7 +520,7 @@ GULD_TDFs3 <- GULD_TDFs3[,-1]
 # mix (GULD_consumers), source (GULD_sources2), discr1 (GULD_TDFs3)
 
 
-#MixSiar Test ----
+# _ MixSIAR mods ----
 #load consumer data
 mix <- load_mix_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_consumers.csv", 
                      iso_names=c("d13C","d15N"), 
@@ -702,3 +719,7 @@ write.csv(df.stats.df, '~/trophic-personalities_2020/outputs_visualisations/GULD
 
 
 
+
+
+
+#### ... #### 

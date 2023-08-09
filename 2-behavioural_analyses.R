@@ -28,8 +28,9 @@ GULDact.processed$TrialDay.C <- scale(GULDact.processed$TrialDay)
 GULDact.processed$TrialRound <- paste(GULDact.processed$TrialDay, GULDact.processed$TrialRound, sep = "_")
 
 
-#    - Total distance moved accross the trial (mm, 'dist') ----
-# - Assessing distributions
+# _ Total distance moved accross the trial (mm, 'dist') ----
+
+#Assessing distributions
 #ggplot(GULDact.processed) + aes(x = dist) + geom_histogram(color="black", fill="lightblue", binwidth = 4800) + simpletheme 
 #ggqqplot(GULDact.processed$dist)
 #
@@ -64,7 +65,7 @@ load(file = "./outputs_visualisations/GULD_dist.mod.rpt1.RData")
 load(file = "./outputs_visualisations/GULD_dist.mod.rpt2.RData")
 
 
-#    - Average speed (mm/m, 'avespeed_mob') ----
+# _ Average speed (mm/m, 'avespeed_mob') ----
 #ggplot(GULDact.processed) + aes(x = avespeed_mob) + geom_histogram(color="black", fill="lightblue", binwidth = 5) + simpletheme 
 #ggqqplot(GULDact.processed$avespeed_mob) #minor issue with 4-5 outliers at the very low end
 #
@@ -97,7 +98,7 @@ load(file = "./outputs_visualisations/GULD_avespeed_mob.mod.rpt1.RData")
 load(file = "./outputs_visualisations/GULD_avespeed_mob.mod.rpt2.RData")
 
 
-#    - Time frozen (s, 'timefrozen_tot') ----
+# _Time frozen (s, 'timefrozen_tot') ----
 #ggplot(GULDact.processed) + aes(x = timefrozen_tot) + geom_histogram(color="black", fill="lightblue", binwidth = 85) + simpletheme 
 #ggqqplot(GULDact.processed$timefrozen_tot)
 #ggplot(GULDact.processed) + aes(x = log(timefrozen_tot)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.3) + simpletheme 
@@ -132,7 +133,7 @@ load(file = "./outputs_visualisations/GULD_timefrozen_tot.mod.rpt1.RData")
 load(file = "./outputs_visualisations/GULD_timefrozen_tot.mod.rpt2.RData")
 
 
-#    - Edge use, (mm, 'centrescore') ---- 
+# _ Edge use, (mm, 'centrescore') ---- 
 #ggplot(GULDact.processed) + aes(x = centrescore2) + geom_histogram(color="black", fill="lightblue", binwidth = 0.5) + simpletheme 
 #ggqqplot(GULDact.processed$centrescore2) #potential minimal positive skew
 #
@@ -179,7 +180,7 @@ GULDexpl.processed$TrialDay.C <- scale(GULDexpl.processed$TrialDay)
 # - Making TrialRound a unique variable for each round
 GULDexpl.processed$TrialRound <- paste(GULDexpl.processed$TrialDay, GULDexpl.processed$TrialRound, sep = "_")
 
-#    - Latency to emerge from the refuge (binary, 'emergelat.bin') ----
+# _ Latency to emerge from the refuge (binary, 'emergelat.bin') ----
 #GULD_emergelat.bin.mod <- glmer(emergelat.bin ~ 
 #                                  Sex + TL.C + CondManual.C + TrialDay.C + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), family = binomial, data=GULDexpl.processed)
 #summary(GULD_emergelat.bin.mod) #TrialRound, ArenaID and TrialDay resolve extremely low variance
@@ -210,7 +211,7 @@ load(file = "./outputs_visualisations/GULD_emergelat.bin.mod.rpt2.RData")
 
 
 
-#    - Latency to explore to the endpoint of the arena (binary, 'emergelat.bin') ----
+# _ Latency to explore to the endpoint of the arena (binary, 'emergelat.bin') ----
 #GULD_endpointlat.bin.mod <- glmer(endpointlat.bin ~ 
 #                                  Sex + TL.C + CondManual.C + TrialDay.C + (1|TankID) + (1|TrialRound) + (1|ArenaID) + (1|FishID), family = binomial, data=GULDexpl.processed)
 #summary(GULD_endpointlat.bin.mod) #TrialRound, ArenaID and TrialDay resolve extremely low variance
@@ -242,7 +243,7 @@ load(file = "./outputs_visualisations/GULD_endpointlat.bin.mod.rpt2.RData")
 
 
 # 2.3. Extracting data for tables ----
-#    - Table 1 ----
+# _ Table 1 ----
 
 name <- as.data.frame(c("GULD_dist.mod.rpt",
                         "GULD_avespeed_mob.mod.rpt",
@@ -313,11 +314,11 @@ table1$text2 <- paste((round(table1$r2, digits = 2)), (round(table1$lci2, digits
 table1$text2 <- paste(table1$text2, (round(table1$uci2, digits = 2)), sep = ", ")
 table1$text2 <- paste(table1$text2, "P < 0.001)", sep = "] (")
 
-write.csv(table1, "./outputs_visualisations/table1.csv")
+#write.csv(table1, "./outputs_visualisations/table1.csv")
 
 
 
-#    - Table 2 ----
+# _ Table 2 ----
 #GULD_dist.mod.red
 fix2a <- as.data.frame(summary(GULD_dist.mod.red)$coefficients)
 cin2a <- as.data.frame(confint(GULD_dist.mod.red))
@@ -474,7 +475,7 @@ table2 <- rbind(table2a,
                 table2e,
                 table2f)
 
-write.csv(table2, "./outputs_visualisations/table2.csv")
+#write.csv(table2, "./outputs_visualisations/table2.csv")
 
 
 # 2.4. Correlations between behavioural variables ----
@@ -574,7 +575,7 @@ corr5 <- as.data.frame(c(corre[11:15,]))
 
 table3 <- (cbind(corr1,corr2,corr3,corr4,corr5))
 colnames(table3) <- c(1,2,3,4,5)
-write.csv(table3, "./outputs_visualisations/table3.csv")
+#write.csv(table3, "./outputs_visualisations/table3.csv")
 
 
 # 2.5. Building data frame for SIA correlation analysis ----
@@ -618,7 +619,7 @@ GULDbehav_phenotypes <- merge(GULDbehav_phenotypes1, GULDbehav_phenotypes2C, by 
 GULDbehav_phenotypes <- merge(GULDbehav_phenotypes, GULDbehav_phenotypes2F, by = "FishID", all.x = TRUE)
 
 
-write.csv(GULDbehav_phenotypes, '~/trophic-personalities_2020/dat_behaviour/GULDbehav_phenotypes.csv')
+#write.csv(GULDbehav_phenotypes, '~/trophic-personalities_2020/dat_behaviour/GULDbehav_phenotypes.csv', row.names =  FALSE)
 
 
 #### ... #### 
