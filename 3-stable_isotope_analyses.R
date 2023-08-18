@@ -373,12 +373,46 @@ Behav_working <- read.csv('~/trophic-personalities_2020/dat_behaviour/GULDbehav_
 SIA_working <- GULD_SIAfins_meansd[,c(1:5)]
 
 GULD_correlations <- merge(Behav_working,SIA_working, by = "FishID", all.x = TRUE)
-GULD_correlations
 
-d13C_sd <- 
+#If we plan to rerun the 
+GULD_correlations_g34 <- subset(GULD_correlations, FishID != "G34")
 
 
 # _ Correlation tests ----
+corr_C1_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$dist, method = "spearman")
+corr_C2_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$avespeed_mob, method = "spearman")
+corr_C3_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$timefrozen_tot, method = "spearman")
+corr_C4_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$centrescore2, method = "spearman")
+corr_C5_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$emergelat, method = "spearman")
+corr_C5_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$endpointlat, method = "spearman")
+
+corr_C1_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$dist_M, method = "spearman")
+corr_C2_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$avespeed_mob_M, method = "spearman")
+corr_C3_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$timefrozen_tot_M, method = "spearman")
+corr_C4_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$centrescore2_M, method = "spearman")
+corr_C5_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$emergelat_M, method = "spearman")
+corr_C5_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$endpointlat_M, method = "spearman")
+
+corr_N1_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$dist, method = "spearman")
+corr_N2_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$avespeed_mob, method = "spearman")
+corr_N3_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$timefrozen_tot, method = "spearman")
+corr_N4_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$centrescore2, method = "spearman")
+corr_N5_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$emergelat, method = "spearman")
+corr_N5_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$endpointlat, method = "spearman")
+
+corr_N1_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$dist_M, method = "spearman")
+corr_N2_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$avespeed_mob_M, method = "spearman")
+corr_N3_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$timefrozen_tot_M, method = "spearman")
+corr_N4_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$centrescore2_M, method = "spearman")
+corr_N5_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$emergelat_M, method = "spearman")
+corr_N5_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$endpointlat_M, method = "spearman")
+
+
+
+
+
+
+
 
 # 3.5. Diet reconstruction (mixSIAR)----
 
