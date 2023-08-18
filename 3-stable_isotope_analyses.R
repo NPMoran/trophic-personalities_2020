@@ -375,6 +375,9 @@ SIA_working <- GULD_SIAfins_meansd[,c(1:5)]
 GULD_correlations <- merge(Behav_working,SIA_working, by = "FishID", all.x = TRUE)
 GULD_correlations
 
+d13C_sd <- 
+
+
 # _ Correlation tests ----
 
 # 3.5. Diet reconstruction (mixSIAR)----
