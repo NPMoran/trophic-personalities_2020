@@ -118,109 +118,7 @@ nrow(GULD_SIAprey)
 #write.csv(GULD_SIAprey, "./dat_stableisotope/GULD_prey_processed.csv")
 
 
-# 3.2. Round goby variance analysis ----
-# _ Variance component models ---- 
-#GULD_SIAfins.N.mod <- lmer(d15N ~ (1|FishID), data=GULD_SIAfins)
-#save(GULD_SIAfins.N.mod, file = "./outputs_visualisations/GULD_SIA1.N.mod.RData")
-load(file = "./outputs_visualisations/GULD_SIA1.N.mod.RData")
-
-summary(GULD_SIAfins.N.mod)
-x1 <- as.data.frame(VarCorr(GULD_SIAfins.N.mod))
-x2 <- as.data.frame(confint(GULD_SIAfins.N.mod,oldNames=FALSE))
-x2 <- x2[-3,]
-x1 <- x1[,c(-1,-2,-3)]
-rownames(x1) <- c("fish_N", "res_N")
-rownames(x2) <- c("fish_N", "res_N")
-x <- cbind(x1,x2)
-colnames(x) <- c("var", "sd","sd_95LCI","sd_95UCI")
-x$var_95LCI <- (x$sd_95LCI)^2
-x$var_95UCI <- (x$sd_95UCI)^2
-
-x$text <- paste(round(x$var, digits = 2), round(x$var_95LCI, digits = 2), sep = " [")
-x$text <- paste(x$text, round(x$var_95UCI, digits = 2), sep = ", ")
-x$text <- paste(x$text, "]", sep = "")
-
-
-#GULD_SIAfins.C.mod <- lmer(d13C_kilj ~ (1|FishID), data=GULD_SIAfins)
-#save(GULD_SIAfins.C.mod, file = "./outputs_visualisations/GULD_SIA1.C.mod.RData")
-load(file = "./outputs_visualisations/GULD_SIA1.C.mod.RData")
-
-summary(GULD_SIAfins.C.mod)
-y1 <- as.data.frame(VarCorr(GULD_SIAfins.C.mod))
-y2 <- as.data.frame(confint(GULD_SIAfins.C.mod,oldNames=FALSE))
-y2 <- y2[-3,]
-y1 <- y1[,c(-1,-2,-3)]
-rownames(y1) <- c("fish_C", "res_C")
-rownames(y2) <- c("fish_C", "res_C")
-y <- cbind(y1,y2)
-colnames(y) <- c("var", "sd","sd_95LCI","sd_95UCI")
-y$var_95LCI <- (y$sd_95LCI)^2
-y$var_95UCI <- (y$sd_95UCI)^2
-
-y$teyt <- paste(round(y$var, digits = 2), round(y$var_95LCI, digits = 2), sep = " [")
-y$teyt <- paste(y$teyt, round(y$var_95UCI, digits = 2), sep = ", ")
-y$teyt <- paste(y$teyt, "]", sep = "")
-
-
-
-# _ Repeatability ---- 
-#Manual repeatability
-#0.53772813/(0.07487844 + 0.53772813) #0.8777708 for N
-#2.2304194/(0.1315285+2.2304194) #0.9443135 for C
-
-#GULD_SIAfins.N.rpt <- rpt(d15N ~ (1 | FishID), grname = "FishID", data = GULD_SIAfins, datatype = "Gaussian", 
-#                          nboot = 100, npermut = 0)
-#save(GULD_SIAfins.N.rpt, file = "./outputs_visualisations/GULD_SIA1.N.rpt.RData")
-load(file = "./outputs_visualisations/GULD_SIA1.N.rpt.RData")
-GULD_SIAfins.N.rpt #0.878 (matches manual est)
-
-
-#GULD_SIAfins.C.rpt <- rpt(d13C_kilj ~ (1 | FishID), grname = "FishID", data = GULD_SIAfins, datatype = "Gaussian", 
-#                          nboot = 100, npermut = 0)
-#save(GULD_SIAfins.C.rpt, file = "./outputs_visualisations/GULD_SIA1.C.rpt.RData")
-load(file = "./outputs_visualisations/GULD_SIA1.C.rpt.RData")
-GULD_SIAfins.C.rpt #0.966 (matches manual est)
-
-
-# _ State effects ---- 
-GULD_physdat <- read.csv("~/trophic-personalities_2020/dat_fish/GULD_physdat_processed.csv")
-GULD_SIAfins_merge <- merge(GULD_SIAfins, GULD_physdat, by = "FishID", all.x = TRUE) 
-
-#  note, G43, G37, G33, G15, G01 died before physical measurements.
-
-#  scaling continuous variables
-GULD_SIAfins_merge$TL.C <- scale(GULD_SIAfins_merge$TL)
-GULD_SIAfins_merge$CondManual.C <- scale(GULD_SIAfins_merge$CondManual)
-
-#  running models
-GULD_SIAfins.N.modstate <- lmer(d15N ~ TL.C + CondManual.C + Sex + (1|FishID), data=GULD_SIAfins_merge)
-#save(GULD_SIAfins.N.modstate, file = "./outputs_visualisations/GULD_SIAfins.N.modstate.RData")
-load(file = "./outputs_visualisations/GULD_SIAfins.N.modstate.RData")
-summary(GULD_SIAfins.N.modstate)
-confint(GULD_SIAfins.N.modstate)
-fix_text <- as.data.frame(summary(GULD_SIAfins.N.modstate)$coefficients)
-ci_text <- as.data.frame(confint(GULD_SIAfins.N.modstate))
-ci_text <- ci_text[-1:-2,]
-fix_text$text <- paste(round(fix_text$Estimate, digits = 2), round(ci_text$`2.5 %`, digits = 2), sep = " [")
-fix_text$text <- paste(fix_text$text, round(ci_text$`97.5 %`, digits = 2), sep = ", ")
-fix_text$text <- paste(fix_text$text, "]", sep = "")
-
-GULD_SIAfins.C.modstate <- lmer(d13C_kilj ~ TL.C + CondManual.C + Sex + (1|FishID), data=GULD_SIAfins_merge)
-#save(GULD_SIAfins.C.mod, file = "./outputs_visualisations/GULD_SIAfins.C.modstate.RData")
-load(file = "./outputs_visualisations/GULD_SIAfins.C.modstate.RData")
-summary(GULD_SIAfins.C.modstate)
-confint(GULD_SIAfins.C.modstate)
-fix_text <- as.data.frame(summary(GULD_SIAfins.C.modstate)$coefficients)
-ci_text <- as.data.frame(confint(GULD_SIAfins.N.modstate))
-ci_text <- ci_text[-1:-2,]
-fix_text$text <- paste(round(fix_text$Estimate, digits = 2), round(ci_text$`2.5 %`, digits = 2), sep = " [")
-fix_text$text <- paste(fix_text$text, round(ci_text$`97.5 %`, digits = 2), sep = ", ")
-fix_text$text <- paste(fix_text$text, "]", sep = "")
-
-
-
-
-# 3.3. Visualising round goby isotope distributions ----
+# 3.2. Visualising round goby isotope distributions ----
 # _ Data formatting ----
 #note 1x fish has only only replicate due to particularly low biomass.
 ggplot(GULD_SIAfins) + aes(x = d15N) + geom_histogram(color="black", fill="lightblue", binwidth = 0.3) + simpletheme 
@@ -236,9 +134,6 @@ GULD_SIAfins_meansd <- setDT(GULD_SIAfins)[ , list(d15N_M = mean(d15N),
                                                    d13C_M = mean(d13C_kilj),
                                                    d13C_sd = sd(d13C_kilj)),
                                             by = .(FishID)]
-#Range and means
-summary(GULD_SIAfins_meansd)
-
 
 #Preparing prey data
 GULD_SIAprey_meansd <- setDT(GULD_SIAprey)[ , list(d15N_M = mean(d15N),
@@ -360,11 +255,124 @@ GULD_SIA.fullplot
 
 
 #Notes
-# - G34 is an extreme outlier, which may suggest that it is a recent immigrant and may not be included in diet analysis. 
 # - note that there was insufficient biomass for replicates for one individual (G48), so error bars were not printed)
+# - G34 is an extreme outlier, which may suggest that it is a recent immigrant and may not be included in diet analysis. 
 
+# _ Fish G34 ----
+
+#GULD_correlations$d13C_M.C <- scale(GULD_correlations$d13C_M) 
+#GULD_correlations$d15N_M.C <- scale(GULD_correlations$d15N_M) 
+# - Z-score for mean is >3 for both mean C and N
 
 #write.csv(GULD_SIAfins, "./dat_stableisotope/GULD_goby_processed.csv")
+
+
+# 3.3. Round goby variance analysis ----
+# _ Variance component models ---- 
+
+#Importing data and removing outlier,
+GULD_SIAfins <- read.csv("./dat_stableisotope/GULD_goby_processed.csv")
+GULD_SIAfins <- subset(GULD_SIAfins, FishID != "G34")
+
+
+#GULD_SIAfins.N.mod <- lmer(d15N ~ (1|FishID), data=GULD_SIAfins)
+#save(GULD_SIAfins.N.mod, file = "./outputs_visualisations/GULD_SIA1.N.mod.RData")
+load(file = "./outputs_visualisations/GULD_SIA1.N.mod.RData")
+
+summary(GULD_SIAfins.N.mod)
+x1 <- as.data.frame(VarCorr(GULD_SIAfins.N.mod))
+x2 <- as.data.frame(confint(GULD_SIAfins.N.mod,oldNames=FALSE))
+x2 <- x2[-3,]
+x1 <- x1[,c(-1,-2,-3)]
+rownames(x1) <- c("fish_N", "res_N")
+rownames(x2) <- c("fish_N", "res_N")
+x <- cbind(x1,x2)
+colnames(x) <- c("var", "sd","sd_95LCI","sd_95UCI")
+x$var_95LCI <- (x$sd_95LCI)^2
+x$var_95UCI <- (x$sd_95UCI)^2
+
+x$text <- paste(round(x$var, digits = 2), round(x$var_95LCI, digits = 2), sep = " [")
+x$text <- paste(x$text, round(x$var_95UCI, digits = 2), sep = ", ")
+x$text <- paste(x$text, "]", sep = "")
+
+
+#GULD_SIAfins.C.mod <- lmer(d13C_kilj ~ (1|FishID), data=GULD_SIAfins)
+#save(GULD_SIAfins.C.mod, file = "./outputs_visualisations/GULD_SIA1.C.mod.RData")
+load(file = "./outputs_visualisations/GULD_SIA1.C.mod.RData")
+
+summary(GULD_SIAfins.C.mod)
+y1 <- as.data.frame(VarCorr(GULD_SIAfins.C.mod))
+y2 <- as.data.frame(confint(GULD_SIAfins.C.mod,oldNames=FALSE))
+y2 <- y2[-3,]
+y1 <- y1[,c(-1,-2,-3)]
+rownames(y1) <- c("fish_C", "res_C")
+rownames(y2) <- c("fish_C", "res_C")
+y <- cbind(y1,y2)
+colnames(y) <- c("var", "sd","sd_95LCI","sd_95UCI")
+y$var_95LCI <- (y$sd_95LCI)^2
+y$var_95UCI <- (y$sd_95UCI)^2
+
+y$teyt <- paste(round(y$var, digits = 2), round(y$var_95LCI, digits = 2), sep = " [")
+y$teyt <- paste(y$teyt, round(y$var_95UCI, digits = 2), sep = ", ")
+y$teyt <- paste(y$teyt, "]", sep = "")
+
+
+
+# _ Repeatability ---- 
+
+#GULD_SIAfins.N.rpt <- rpt(d15N ~ (1 | FishID), grname = "FishID", data = GULD_SIAfins, datatype = "Gaussian", 
+#                          nboot = 100, npermut = 0)
+#save(GULD_SIAfins.N.rpt, file = "./outputs_visualisations/GULD_SIA1.N.rpt.RData")
+load(file = "./outputs_visualisations/GULD_SIA1.N.rpt.RData")
+GULD_SIAfins.N.rpt #0.848
+
+
+#GULD_SIAfins.C.rpt <- rpt(d13C_kilj ~ (1 | FishID), grname = "FishID", data = GULD_SIAfins, datatype = "Gaussian", 
+#                          nboot = 100, npermut = 0)
+#save(GULD_SIAfins.C.rpt, file = "./outputs_visualisations/GULD_SIA1.C.rpt.RData")
+load(file = "./outputs_visualisations/GULD_SIA1.C.rpt.RData")
+GULD_SIAfins.C.rpt #0.925
+
+
+# _ State effects ---- 
+GULD_physdat <- read.csv("~/trophic-personalities_2020/dat_fish/GULD_physdat_processed.csv")
+GULD_SIAfins_merge <- merge(GULD_SIAfins, GULD_physdat, by = "FishID", all.x = TRUE) 
+
+#  note, G43, G37, G33, G15, G01 died before physical measurements.
+
+#  scaling continuous variables
+GULD_SIAfins_merge$TL.C <- scale(GULD_SIAfins_merge$TL)
+GULD_SIAfins_merge$CondManual.C <- scale(GULD_SIAfins_merge$CondManual)
+
+#  running models
+#GULD_SIAfins.N.modstate <- lmer(d15N ~ TL.C + CondManual.C + Sex + (1|FishID), data=GULD_SIAfins_merge)
+#save(GULD_SIAfins.N.modstate, file = "./outputs_visualisations/GULD_SIAfins.N.modstate.RData")
+load(file = "./outputs_visualisations/GULD_SIAfins.N.modstate.RData")
+summary(GULD_SIAfins.N.modstate)
+confint(GULD_SIAfins.N.modstate)
+fix_text <- as.data.frame(summary(GULD_SIAfins.N.modstate)$coefficients)
+ci_text <- as.data.frame(confint(GULD_SIAfins.N.modstate))
+ci_text <- ci_text[-1:-2,]
+fix_text$text <- paste(round(fix_text$Estimate, digits = 2), round(ci_text$`2.5 %`, digits = 2), sep = " [")
+fix_text$text <- paste(fix_text$text, round(ci_text$`97.5 %`, digits = 2), sep = ", ")
+fix_text$text <- paste(fix_text$text, "]", sep = "")
+
+#GULD_SIAfins.C.modstate <- lmer(d13C_kilj ~ TL.C + CondManual.C + Sex + (1|FishID), data=GULD_SIAfins_merge)
+#save(GULD_SIAfins.C.mod, file = "./outputs_visualisations/GULD_SIAfins.C.modstate.RData")
+load(file = "./outputs_visualisations/GULD_SIAfins.C.modstate.RData")
+summary(GULD_SIAfins.C.modstate)
+confint(GULD_SIAfins.C.modstate)
+fix_text <- as.data.frame(summary(GULD_SIAfins.C.modstate)$coefficients)
+ci_text <- as.data.frame(confint(GULD_SIAfins.N.modstate))
+ci_text <- ci_text[-1:-2,]
+fix_text$text <- paste(round(fix_text$Estimate, digits = 2), round(ci_text$`2.5 %`, digits = 2), sep = " [")
+fix_text$text <- paste(fix_text$text, round(ci_text$`97.5 %`, digits = 2), sep = ", ")
+fix_text$text <- paste(fix_text$text, "]", sep = "")
+
+
+#Range and means
+#summary(GULD_SIAfins_meansd)
+summary(subset(GULD_SIAfins_meansd, FishID != 'G34'))
 
 
 # 3.4. Trophic x behavioural correlations ----
@@ -374,8 +382,7 @@ SIA_working <- GULD_SIAfins_meansd[,c(1:5)]
 
 GULD_correlations <- merge(Behav_working,SIA_working, by = "FishID", all.x = TRUE)
 
-#If we plan to rerun the 
-GULD_correlations_g34 <- subset(GULD_correlations, FishID != "G34")
+GULD_correlations <- subset(GULD_correlations, FishID != "G34")
 
 
 # _ Correlation tests ----
@@ -384,34 +391,58 @@ corr_C2_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$avespeed_mob, 
 corr_C3_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$timefrozen_tot, method = "spearman")
 corr_C4_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$centrescore2, method = "spearman")
 corr_C5_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$emergelat, method = "spearman")
-corr_C5_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$endpointlat, method = "spearman")
+corr_C6_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$endpointlat, method = "spearman")
 
-corr_C1_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$dist_M, method = "spearman")
-corr_C2_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$avespeed_mob_M, method = "spearman")
-corr_C3_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$timefrozen_tot_M, method = "spearman")
-corr_C4_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$centrescore2_M, method = "spearman")
-corr_C5_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$emergelat_M, method = "spearman")
-corr_C5_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$endpointlat_M, method = "spearman")
+corr_C1_M <- cor.test(GULD_correlations$d13C_M, GULD_correlations$dist_M, method = "spearman")
+corr_C2_M <- cor.test(GULD_correlations$d13C_M, GULD_correlations$avespeed_mob_M, method = "spearman")
+corr_C3_M <- cor.test(GULD_correlations$d13C_M, GULD_correlations$timefrozen_tot_M, method = "spearman")
+corr_C4_M <- cor.test(GULD_correlations$d13C_M, GULD_correlations$centrescore2_M, method = "spearman")
+corr_C5_M <- cor.test(GULD_correlations$d13C_M, GULD_correlations$emergelat_M, method = "spearman")
+corr_C6_M <- cor.test(GULD_correlations$d13C_M, GULD_correlations$endpointlat_M, method = "spearman")
 
-corr_N1_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$dist, method = "spearman")
-corr_N2_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$avespeed_mob, method = "spearman")
-corr_N3_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$timefrozen_tot, method = "spearman")
-corr_N4_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$centrescore2, method = "spearman")
-corr_N5_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$emergelat, method = "spearman")
-corr_N5_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$endpointlat, method = "spearman")
+corr_N1_F <- cor.test(GULD_correlations$d15N_M, GULD_correlations$dist, method = "spearman")
+corr_N2_F <- cor.test(GULD_correlations$d15N_M, GULD_correlations$avespeed_mob, method = "spearman")
+corr_N3_F <- cor.test(GULD_correlations$d15N_M, GULD_correlations$timefrozen_tot, method = "spearman")
+corr_N4_F <- cor.test(GULD_correlations$d15N_M, GULD_correlations$centrescore2, method = "spearman")
+corr_N5_F <- cor.test(GULD_correlations$d15N_M, GULD_correlations$emergelat, method = "spearman")
+corr_N6_F <- cor.test(GULD_correlations$d15N_M, GULD_correlations$endpointlat, method = "spearman")
 
 corr_N1_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$dist_M, method = "spearman")
 corr_N2_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$avespeed_mob_M, method = "spearman")
 corr_N3_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$timefrozen_tot_M, method = "spearman")
 corr_N4_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$centrescore2_M, method = "spearman")
 corr_N5_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$emergelat_M, method = "spearman")
-corr_N5_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$endpointlat_M, method = "spearman")
+corr_N6_M <- cor.test(GULD_correlations$d15N_M, GULD_correlations$endpointlat_M, method = "spearman")
 
 
+corre <- as.data.frame(c(corr_C1_F$estimate,corr_C2_F$estimate,corr_C3_F$estimate,corr_C4_F$estimate,
+                         corr_C5_F$estimate,corr_C6_F$estimate,corr_C1_M$estimate,corr_C2_M$estimate,
+                         corr_C3_M$estimate,corr_C4_M$estimate,corr_C5_M$estimate,corr_C6_M$estimate,
+                         corr_N1_F$estimate,corr_N2_F$estimate,corr_N3_F$estimate,corr_N4_F$estimate,
+                         corr_N5_F$estimate,corr_N6_F$estimate,corr_N1_M$estimate,corr_N2_M$estimate,
+                         corr_N3_M$estimate,corr_N4_M$estimate,corr_N5_M$estimate,corr_N6_M$estimate))
+colnames(corre) <- "a" 
+corre$a <- round(corre$a, digits = 3) 
 
+corrp <- as.data.frame(c(corr_C1_F$p.value,corr_C2_F$p.value,corr_C3_F$p.value,corr_C4_F$p.value,
+                         corr_C5_F$p.value,corr_C6_F$p.value,corr_C1_M$p.value,corr_C2_M$p.value,
+                         corr_C3_M$p.value,corr_C4_M$p.value,corr_C5_M$p.value,corr_C6_M$p.value,
+                         corr_N1_F$p.value,corr_N2_F$p.value,corr_N3_F$p.value,corr_N4_F$p.value,
+                         corr_N5_F$p.value,corr_N6_F$p.value,corr_N1_M$p.value,corr_N2_M$p.value,
+                         corr_N3_M$p.value,corr_N4_M$p.value,corr_N5_M$p.value,corr_N6_M$p.value))
+colnames(corrp) <- "a"
+corrp$rownames <- rownames(corrp)
+corrp$a <- round(corrp$a, digits = 3)
+corrp$a <- paste("(P = ", corrp$a, sep = "")
+corrp$a <- paste(corrp$a, ")", sep = "")
+corrp$rownames <- as.numeric(corrp$rownames) 
+corrp <- corrp[order(corrp$rownames,decreasing=FALSE),]
 
+corre$a <- paste(corre$a, corrp$a, sep = " ")
 
+table4 <- cbind(corre[1:6,],corre[7:12,],corre[13:18,],corre[19:24,])
 
+write.csv(table4, "./outputs_visualisations/table4.csv")
 
 
 # 3.5. Diet reconstruction (mixSIAR)----
@@ -434,7 +465,7 @@ TDF_Post_C_sd <- 1.3
 
 
 # _ Building data frames for analysis ----
-#for consumers (i.e., round gobies)
+#A- for consumers (i.e., round gobies)
 GULD_consumers <- NULL
 GULD_consumers$d15N <- GULD_SIAfins$d15N
 GULD_consumers$d13C <- GULD_SIAfins$d13C_kilj
@@ -444,7 +475,7 @@ GULD_consumers <- as.data.frame(GULD_consumers)
 #write.csv(GULD_consumers, '~/trophic-personalities_2020/dat_stableisotope/GULD_consumers.csv', row.names = FALSE)
 
 
-#for potential prey items (i.e., preferred prey items per Van Deurs 2021)
+#B- for potential prey items (i.e., preferred prey items per Van Deurs 2021)
 #Pooling by -
 #P01 = V01, V03, Bivalves (currently not including blue mussels V02)
 #P02 = V04, V05, Gastropods
@@ -477,7 +508,8 @@ GULD_sources <- as.data.frame(GULD_sources)
 
 #write.csv(GULD_sources, '~/trophic-personalities_2020/dat_stableisotope/GULD_sources.csv', row.names = FALSE)
 
-# - for potential prey items (i.e., using an expanded group of prey items per Van Deurs, Puntila 2016, Kornis 2015 and Oesterwind et al., 2017)
+
+#B.2 - for potential prey items (i.e., using an expanded group of prey items per Van Deurs, Puntila 2016, Kornis 2015 and Oesterwind et al., 2017)
 #Pooling by -
 #P01 = V01, V02, V03, Bivalves
 #P02 = V04, V05, Gastropods
@@ -518,7 +550,7 @@ GULD_sources2 <- as.data.frame(GULD_sources2)
 #write.csv(GULD_sources2, '~/trophic-personalities_2020/dat_stableisotope/GULD_sources2.csv', row.names = FALSE)
 
 
-# - for discrimination factors
+#C - for discrimination factors
 GULD_TDFs <- NULL #for main analysis
 working <- c(1,2,3,4,5)
 GULD_TDFs$rownumber <- working
@@ -624,20 +656,20 @@ process_err <- TRUE
 write_JAGS_model(model_filename, resid_err, process_err, mix, source)
 
 #Running test
-#GULD_jags_main <- run_model(run="very long", mix, source, discr1, model_filename, 
-#                    alpha.prior = 1, resid_err, process_err)
-#save(GULD_jags_main, file = "./outputs_visualisations/GULD_jags_main.RData")
-load("./outputs_visualisations/GULD_jags_main.RData")
+GULD_jags_main <- run_model(run="long", mix, source, discr1, model_filename, 
+                    alpha.prior = 1, resid_err, process_err)
+save(GULD_jags_main, file = "./outputs_visualisations/GULD_jags_main.RData")
+#load("./outputs_visualisations/GULD_jags_main.RData")
 #
-#GULD_jags_TDFpost <- run_model(run="long", mix, source, discr2, model_filename, 
-#                         alpha.prior = 1, resid_err, process_err)
-#save(GULD_jags_TDFpost, file = "./outputs_visualisations/GULD_jags_TDFpost.RData")
-load("./outputs_visualisations/GULD_jags_TDFpost.RData")
+GULD_jags_TDFpost <- run_model(run="long", mix, source, discr2, model_filename, 
+                         alpha.prior = 1, resid_err, process_err)
+save(GULD_jags_TDFpost, file = "./outputs_visualisations/GULD_jags_TDFpost.RData")
+#load("./outputs_visualisations/GULD_jags_TDFpost.RData")
 #
-#write_JAGS_model(model_filename, resid_err, process_err, mix, source2)
-#GULD_jags_expanded <- run_model(run="long", mix, source2, discr3, model_filename, 
-#                         alpha.prior = 1, resid_err, process_err)
-#save(GULD_jags_expanded, file = "./outputs_visualisations/GULD_jags_expanded.RData")
+write_JAGS_model(model_filename, resid_err, process_err, mix, source2)
+GULD_jags_expanded <- run_model(run="long", mix, source2, discr3, model_filename, 
+                         alpha.prior = 1, resid_err, process_err)
+save(GULD_jags_expanded, file = "./outputs_visualisations/GULD_jags_expanded.RData")
 #load("./outputs_visualisations/GULD_jags_expanded.RData")
 
 #output options
