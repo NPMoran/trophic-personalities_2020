@@ -442,10 +442,16 @@ corre$a <- paste(corre$a, corrp$a, sep = " ")
 
 table4 <- cbind(corre[1:6,],corre[7:12,],corre[13:18,],corre[19:24,])
 
-write.csv(table4, "./outputs_visualisations/table4.csv")
+#plot(GULD_correlations$centrescore2_M, GULD_correlations$d13C_M)
+
+#write.csv(table4, "./outputs_visualisations/table4.csv")
 
 
 # 3.5. Diet reconstruction (mixSIAR)----
+
+#Importing data and removing outlier,
+GULD_SIAfins <- read.csv("./dat_stableisotope/GULD_goby_processed.csv")
+GULD_SIAfins <- subset(GULD_SIAfins, FishID != "G34")
 
 # _ Discrimination factors ----
 # - Based on Poslednik 2023
@@ -736,7 +742,7 @@ df.stats.df <- as.data.frame(df.stats)
 df.stats.df$text <- paste(round((df.stats.df$Mean*100), digits = 2), round((df.stats.df$`2.5%`*100), digits = 2), sep = '% [')
 df.stats.df$text <- paste(df.stats.df$text, round((df.stats.df$`97.5%`*100), digits = 2), sep = '%, ')
 df.stats.df$text <- paste(df.stats.df$text, '%]', sep = '')
-#write.csv(df.stats.df, '~/trophic-personalities_2020/outputs_visualisations/GULD_jags_main.df.stats.df.csv', row.names = TRUE)
+#write.csv(df.stats.df, '~/trophic-personalities_2020/outputs_visualisations/GULD_jags_main/GULD_jags_main.df.csv', row.names = TRUE)
 
 
 # - TDF post model
