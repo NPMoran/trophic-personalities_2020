@@ -646,9 +646,9 @@ isoplot3 <- isoplot3 + theme(legend.position = 'right',
                              legend.spacing.x = unit(0.5, 'cm'))
 
 
-ggsave("./outputs_visualisations/Fig_isoplot1.jpeg", width = 20, height = 14, units = "cm", isoplot1, dpi = 600)
-ggsave("./outputs_visualisations/Fig_isoplot2.jpeg", width = 20, height = 14, units = "cm", isoplot2, dpi = 600)
-ggsave("./outputs_visualisations/Fig_isoplot3.jpeg", width = 20, height = 14, units = "cm", isoplot3, dpi = 600)
+#ggsave("./outputs_visualisations/Fig_isoplot1.jpeg", width = 20, height = 14, units = "cm", isoplot1, dpi = 600)
+#ggsave("./outputs_visualisations/Fig_isoplot2.jpeg", width = 20, height = 14, units = "cm", isoplot2, dpi = 600)
+#ggsave("./outputs_visualisations/Fig_isoplot3.jpeg", width = 20, height = 14, units = "cm", isoplot3, dpi = 600)
 
 
 ###Writing jags models
