@@ -370,9 +370,56 @@ fix_text$text <- paste(fix_text$text, round(ci_text$`97.5 %`, digits = 2), sep =
 fix_text$text <- paste(fix_text$text, "]", sep = "")
 
 
-#Range and means
+#Range and means - 
 #summary(GULD_SIAfins_meansd)
-summary(subset(GULD_SIAfins_meansd, FishID != 'G34'))
+#summary(subset(GULD_SIAfins_meansd, FishID != 'G34'))
+
+
+
+# _ Supplementary analysis: mortality bias ----
+
+#Combining phenotypic and isotopic data
+Pheno_working <- read.csv('~/trophic-personalities_2020/dat_fish/GULD_physdat_processed.csv')
+GULD_mortalitychecks <- merge(GULD_SIAfins_meansd,Pheno_working, by = "FishID", all.x = TRUE)
+
+#Creating variable for survivors versus non-survivors. 
+Behav_means <- read.csv('~/trophic-personalities_2020/dat_behaviour/GULDbehav_phenotypes.csv')
+Behav_means <- subset(Behav_means, dist_M != 'NA')
+nrow(Behav_means) #as only those who survived the whole experiment have mean values for this variable
+n_distinct(Behav_means$FishID)
+Behav_means <- Behav_means[,1:2]
+Behav_means$Status <- "1"
+Behav_means <- Behav_means[,-2]
+
+GULD_mortalitychecks <- merge(GULD_mortalitychecks, Behav_means, by = "FishID", all.x = TRUE)
+
+#Creating categorical variable
+GULD_mortalitychecks$Status <- case_when(
+  GULD_mortalitychecks$Status %in% c(NA) ~ '0',
+  .default = GULD_mortalitychecks$Status
+)
+
+#Creating binary sex variable
+GULD_mortalitychecks$Sex_bin <- NA
+GULD_mortalitychecks$Sex_bin <- case_when(
+  GULD_mortalitychecks$Sex %in% c(NA, 'j') ~ 'NA',
+  GULD_mortalitychecks$Sex %in% c('m') ~ 'm',
+  GULD_mortalitychecks$Sex %in% c('f') ~ 'f',
+  .default = GULD_mortalitychecks$Sex_bin
+)
+#GULD_mortalitychecks_sex <- subset(GULD_mortalitychecks, Sex_bin != 'NA')
+#GULD_mortalitychecks_sex$Sex_bin <- as.numeric(GULD_mortalitychecks_sex$Sex_bin)
+
+GULD_mortalitychecks$Status <- as.numeric(GULD_mortalitychecks$Status)
+
+summary(glm(Status ~ CondManual, family = binomial, GULD_mortalitychecks))
+summary(glm(Status ~ TL, family = binomial, GULD_mortalitychecks))
+summary(glm(Status ~ Sex_bin, family = binomial, GULD_mortalitychecks))
+summary(glm(Status ~ d15N_M, family = binomial, GULD_mortalitychecks))
+summary(glm(Status ~ d13C_M, family = binomial, GULD_mortalitychecks))
+
+
+
 
 
 # 3.4. Trophic x behavioural correlations ----
@@ -383,7 +430,6 @@ SIA_working <- GULD_SIAfins_meansd[,c(1:5)]
 GULD_correlations <- merge(Behav_working,SIA_working, by = "FishID", all.x = TRUE)
 
 GULD_correlations <- subset(GULD_correlations, FishID != "G34")
-
 
 # _ Correlation tests ----
 corr_C1_F <- cor.test(GULD_correlations$d13C_M, GULD_correlations$dist, method = "spearman")
@@ -586,6 +632,7 @@ GULD_TDFs3$SDd13C <- TDF_Poslednik_C_sd
 GULD_TDFs3 <- GULD_TDFs3[,-1]
 #write.csv(GULD_TDFs3, '~/trophic-personalities_2020/dat_stableisotope/GULD_TDF3.csv', row.names = FALSE)
 
+
 #Combinations for analysis
 # - Main model
 # mix (GULD_consumers), source (GULD_sources), discr1 (GULD_TDFs) 
@@ -662,20 +709,20 @@ process_err <- TRUE
 write_JAGS_model(model_filename, resid_err, process_err, mix, source)
 
 #Running test
-GULD_jags_main <- run_model(run="long", mix, source, discr1, model_filename, 
+#GULD_jags_main <- run_model(run="long", mix, source, discr1, model_filename, 
                     alpha.prior = 1, resid_err, process_err)
-save(GULD_jags_main, file = "./outputs_visualisations/GULD_jags_main.RData")
-#load("./outputs_visualisations/GULD_jags_main.RData")
-#
-GULD_jags_TDFpost <- run_model(run="long", mix, source, discr2, model_filename, 
-                         alpha.prior = 1, resid_err, process_err)
-save(GULD_jags_TDFpost, file = "./outputs_visualisations/GULD_jags_TDFpost.RData")
-#load("./outputs_visualisations/GULD_jags_TDFpost.RData")
-#
-write_JAGS_model(model_filename, resid_err, process_err, mix, source2)
-GULD_jags_expanded <- run_model(run="long", mix, source2, discr3, model_filename, 
-                         alpha.prior = 1, resid_err, process_err)
-save(GULD_jags_expanded, file = "./outputs_visualisations/GULD_jags_expanded.RData")
+#save(GULD_jags_main, file = "./outputs_visualisations/GULD_jags_main.RData")
+load("./outputs_visualisations/GULD_jags_main.RData")
+
+#GULD_jags_TDFpost <- run_model(run="long", mix, source, discr2, model_filename, 
+#                         alpha.prior = 1, resid_err, process_err)
+#save(GULD_jags_TDFpost, file = "./outputs_visualisations/GULD_jags_TDFpost.RData")
+load("./outputs_visualisations/GULD_jags_TDFpost.RData")
+
+#write_JAGS_model(model_filename, resid_err, process_err, mix, source2)
+#GULD_jags_expanded <- run_model(run="long", mix, source2, discr3, model_filename, 
+#                         alpha.prior = 1, resid_err, process_err)
+#save(GULD_jags_expanded, file = "./outputs_visualisations/GULD_jags_expanded.RData")
 #load("./outputs_visualisations/GULD_jags_expanded.RData")
 
 #output options
@@ -784,9 +831,10 @@ df.stats.df <- as.data.frame(df.stats)
 df.stats.df$text <- paste(round((df.stats.df$Mean*100), digits = 2), round((df.stats.df$`2.5%`*100), digits = 2), sep = '% [')
 df.stats.df$text <- paste(df.stats.df$text, round((df.stats.df$`97.5%`*100), digits = 2), sep = '%, ')
 df.stats.df$text <- paste(df.stats.df$text, '%]', sep = '')
-write.csv(df.stats.df, '~/trophic-personalities_2020/outputs_visualisations/GULD_jags_TDFpost.df.stats.df.csv', row.names = TRUE)
+#write.csv(df.stats.df, '~/trophic-personalities_2020/outputs_visualisations/GULD_jags_TDFpost.df.stats.df.csv', row.names = TRUE)
 
-# - Expanded model (fails to converge)
+
+# - Expanded model (convergence issues)
 #output_JAGS(GULD_jags_expanded, mix, source2, output_options)
 #diag <- output_diagnostics(GULD_jags_expanded, mix, source2, output_options)
 #df.stats <- output_stats(GULD_jags_expanded, mix, source2, output_options)
