@@ -13,8 +13,8 @@ library(ggplot2); library(ggpubr); library(RColorBrewer)
 #install.packages("devtools")
 #remotes::install_github("brianstock/MixSIAR", dependencies=T)
 #install.packages('rjags')
-#install.packages('simmr')
-#install.packages('MixSIAR')
+install.packages('simmr')
+install.packages('MixSIAR')
 library(rjags) #need to install JAGS-4.x.y.exe (for any x >=0, y>=0) from http://www.sourceforge.net/projects/mcmc-jags/files
 library(simmr) #supposedly updated version of SIAR for running simple or lite versions of mixing models
 library(MixSIAR) #MixSIAR: A Bayesian stable isotope mixing model for characterizing intrapopulation niche variation
@@ -376,116 +376,6 @@ fix_text$text <- paste(fix_text$text, "]", sep = "")
 
 
 
-# _ Supplementary analysis: mortality bias ----
-
-#Combining phenotypic and isotopic data
-Pheno_working <- read.csv('~/trophic-personalities_2020/dat_fish/GULD_physdat_processed.csv')
-GULD_mortalitychecks <- merge(GULD_SIAfins_meansd,Pheno_working, by = "FishID", all.x = TRUE)
-
-#Creating variable for survivors versus non-survivors. 
-Behav_means <- read.csv('~/trophic-personalities_2020/dat_behaviour/GULDbehav_phenotypes.csv')
-Behav_means <- subset(Behav_means, dist_M != 'NA')
-nrow(Behav_means) #as only those who survived the whole experiment have mean values for this variable
-n_distinct(Behav_means$FishID)
-Behav_means <- Behav_means[,1:2]
-Behav_means$Status <- "1"
-Behav_means <- Behav_means[,-2]
-
-GULD_mortalitychecks <- merge(GULD_mortalitychecks, Behav_means, by = "FishID", all.x = TRUE)
-
-#Creating categorical variable
-GULD_mortalitychecks$Status <- case_when(
-  GULD_mortalitychecks$Status %in% c(NA) ~ '0',
-  .default = GULD_mortalitychecks$Status
-)
-
-#Modifying sex variable
-GULD_mortalitychecks$Sex <- case_when(
-  GULD_mortalitychecks$Sex %in% c('NA', 'j') ~ NA,
-  .default = GULD_mortalitychecks$Sex
-)
-
-#GULD_mortalitychecks_sex <- subset(GULD_mortalitychecks, Sex_bin != 'NA')
-#GULD_mortalitychecks_sex$Sex_bin <- as.numeric(GULD_mortalitychecks_sex$Sex_bin)
-GULD_mortalitychecks$Status <- as.numeric(GULD_mortalitychecks$Status)
-
-S2_cond <- glm(Status ~ CondManual, family = binomial, GULD_mortalitychecks)
-S2_size <- glm(Status ~ TL, family = binomial, GULD_mortalitychecks)
-S2_sexm <- glm(Status ~ Sex, family = binomial, GULD_mortalitychecks)
-S2_d15n <- glm(Status ~ d15N_M, family = binomial, GULD_mortalitychecks)
-S2_d13c <- glm(Status ~ d13C_M, family = binomial, GULD_mortalitychecks)
-
-S2_1a <- summary(S2_cond)$coefficients
-S2_1b <- confint(S2_cond)
-S2_1 <- cbind(S2_1a, S2_1b)
-
-S2_2a <- summary(S2_size)$coefficients
-S2_2b <- confint(S2_size)
-S2_2 <- cbind(S2_2a, S2_2b)
-
-S2_3a <- summary(S2_sexm)$coefficients
-S2_3b <- confint(S2_sexm)
-S2_3 <- cbind(S2_3a, S2_3b)
-
-S2_4a <- summary(S2_d15n)$coefficients
-S2_4b <- confint(S2_d15n)
-S2_4 <- cbind(S2_4a, S2_4b)
-
-S2_5a <- summary(S2_d13c)$coefficients
-S2_5b <- confint(S2_d13c)
-S2_5 <- cbind(S2_5a, S2_5b)
-
-S2_table <- rbind(S2_1, S2_2, S2_3, S2_4, S2_5)
-S2_table <- as.data.frame(S2_table)
-S2_table$A <- paste(round(S2_table$Estimate, digits = 2), round(S2_table$`2.5 %`, digits = 2), sep = ' [')
-S2_table$A <- paste(S2_table$A, round(S2_table$`97.5 %`, digits = 2), sep = ', ')
-S2_table$A <- paste(S2_table$A, "]", sep = '')
-
-S2_table <- S2_table[,c(7,2,3,4)]
-S2_table$`Std. Error` <- round(S2_table$`Std. Error`, digits = 2)
-S2_table$`z value` <- round(S2_table$`z value`, digits = 2)
-S2_table$`Pr(>|z|)` <- round(S2_table$`Pr(>|z|)`, digits = 3)
-
-#write.csv(S2_table, "./outputs_visualisations/tableS1.csv")
-
-GULD_mortalitychecks$Status_text <- as.factor(GULD_mortalitychecks$Status)
-
-#Creating categorical variable
-GULD_mortalitychecks$Status_text <- case_when(
-  GULD_mortalitychecks$Status_text %in% c("0") ~ 'Non-survivor',
-  GULD_mortalitychecks$Status_text %in% c("1") ~ 'Survivor',
-  .default = GULD_mortalitychecks$Status_text
-)
-
-#Invert plot
-GULD_SIA.suppplot <- ggplot(GULD_mortalitychecks, aes (x = d13C_M, y = d15N_M, color = Status_text)) + 
-  theme(axis.text.y = element_text(size = 8, colour = "black"), 
-                      axis.text.x = element_text(size = 8, colour = "black"), 
-                      panel.background = element_rect(fill = "white"),
-                      panel.grid.major = element_line(colour = "white", linewidth = 0.5, linetype = "dashed" ),
-                      axis.title.y  = element_text(size=10, vjust = 0.1),
-                      axis.title.x  = element_text(size=10, vjust = 0.1),
-                      panel.border = element_rect(colour = "black", fill=NA, size = 1),
-                      legend.text = element_text(size=8),
-                      legend.box.spacing = unit(0.5, 'cm'),
-                      legend.title = element_blank(),
-                      legend.position= c(0.01,0.01),
-                      legend.justification=c(0,0),
-                      legend.key.size = unit(0.3, 'cm')) +
-  geom_point(data = GULD_mortalitychecks, aes(fill = Status_text), shape = 19, size = 3.5, alpha = 0.8) + 
-  scale_x_continuous(limits = c(-25, -10), expand = c(0, 0)) +
-  scale_y_continuous(limits = c(7.5,15), expand = c(0, 0)) +
-  geom_text(data = GULD_mortalitychecks, label = GULD_mortalitychecks$FishID, size = 2, hjust = -0.35, vjust = 1.1, color = 'black') +
-  scale_color_manual(values = c("Non-survivor" = "red2",
-                                "Survivor"="black")) +
-  ylab(expression(paste(delta^{15}, "N (\u2030)"))) +
-  xlab(expression(paste(delta^{13}, "C (\u2030)")))
-GULD_SIA.suppplot
-
-ggsave("./outputs_visualisations/Fig_S3.jpeg", width = 16, height = 8, units = "cm", GULD_SIA.suppplot, dpi = 600)
-
-
-
 
 # 3.4. Trophic x behavioural correlations ----
 # _ Data frame ----
@@ -775,7 +665,7 @@ write_JAGS_model(model_filename, resid_err, process_err, mix, source)
 
 #Running test
 #GULD_jags_main <- run_model(run="long", mix, source, discr1, model_filename, 
-                    alpha.prior = 1, resid_err, process_err)
+#                    alpha.prior = 1, resid_err, process_err)
 #save(GULD_jags_main, file = "./outputs_visualisations/GULD_jags_main.RData")
 load("./outputs_visualisations/GULD_jags_main.RData")
 
@@ -907,6 +797,181 @@ df.stats.df$text <- paste(df.stats.df$text, '%]', sep = '')
 
 
 
+
+
+#Supplementary analysis: mortality bias ----
+
+#_State and isotope effects ----
+
+#Combining phenotypic and isotopic data
+Pheno_working <- read.csv('~/trophic-personalities_2020/dat_fish/GULD_physdat_processed.csv')
+GULD_mortalitychecks <- merge(GULD_SIAfins_meansd,Pheno_working, by = "FishID", all.x = TRUE)
+
+#Creating variable for survivors versus non-survivors. 
+Behav_means <- read.csv('~/trophic-personalities_2020/dat_behaviour/GULDbehav_phenotypes.csv')
+Behav_means <- subset(Behav_means, dist_M != 'NA')
+nrow(Behav_means) #as only those who survived the whole experiment have mean values for this variable
+n_distinct(Behav_means$FishID)
+Behav_means <- Behav_means[,1:2]
+Behav_means$Status <- "1"
+Behav_means <- Behav_means[,-2]
+
+GULD_mortalitychecks <- merge(GULD_mortalitychecks, Behav_means, by = "FishID", all.x = TRUE)
+
+#Creating categorical variable
+GULD_mortalitychecks$Status <- case_when(
+  GULD_mortalitychecks$Status %in% c(NA) ~ '0',
+  .default = GULD_mortalitychecks$Status
+)
+
+#Modifying sex variable
+GULD_mortalitychecks$Sex <- case_when(
+  GULD_mortalitychecks$Sex %in% c('NA', 'j') ~ NA,
+  .default = GULD_mortalitychecks$Sex
+)
+
+#GULD_mortalitychecks_sex <- subset(GULD_mortalitychecks, Sex_bin != 'NA')
+#GULD_mortalitychecks_sex$Sex_bin <- as.numeric(GULD_mortalitychecks_sex$Sex_bin)
+GULD_mortalitychecks$Status <- as.numeric(GULD_mortalitychecks$Status)
+
+S2_cond <- glm(Status ~ CondManual, family = binomial, GULD_mortalitychecks)
+S2_size <- glm(Status ~ TL, family = binomial, GULD_mortalitychecks)
+S2_sexm <- glm(Status ~ Sex, family = binomial, GULD_mortalitychecks)
+S2_d15n <- glm(Status ~ d15N_M, family = binomial, GULD_mortalitychecks)
+S2_d13c <- glm(Status ~ d13C_M, family = binomial, GULD_mortalitychecks)
+
+S2_1a <- summary(S2_cond)$coefficients
+S2_1b <- confint(S2_cond)
+S2_1 <- cbind(S2_1a, S2_1b)
+
+S2_2a <- summary(S2_size)$coefficients
+S2_2b <- confint(S2_size)
+S2_2 <- cbind(S2_2a, S2_2b)
+
+S2_3a <- summary(S2_sexm)$coefficients
+S2_3b <- confint(S2_sexm)
+S2_3 <- cbind(S2_3a, S2_3b)
+
+S2_4a <- summary(S2_d15n)$coefficients
+S2_4b <- confint(S2_d15n)
+S2_4 <- cbind(S2_4a, S2_4b)
+
+S2_5a <- summary(S2_d13c)$coefficients
+S2_5b <- confint(S2_d13c)
+S2_5 <- cbind(S2_5a, S2_5b)
+
+S2_table <- rbind(S2_1, S2_2, S2_3, S2_4, S2_5)
+S2_table <- as.data.frame(S2_table)
+S2_table$A <- paste(round(S2_table$Estimate, digits = 2), round(S2_table$`2.5 %`, digits = 2), sep = ' [')
+S2_table$A <- paste(S2_table$A, round(S2_table$`97.5 %`, digits = 2), sep = ', ')
+S2_table$A <- paste(S2_table$A, "]", sep = '')
+
+S2_table <- S2_table[,c(7,2,3,4)]
+S2_table$`Std. Error` <- round(S2_table$`Std. Error`, digits = 2)
+S2_table$`z value` <- round(S2_table$`z value`, digits = 2)
+S2_table$`Pr(>|z|)` <- round(S2_table$`Pr(>|z|)`, digits = 3)
+
+#write.csv(S2_table, "./outputs_visualisations/tableS1.csv")
+
+GULD_mortalitychecks$Status_text <- as.factor(GULD_mortalitychecks$Status)
+
+#Creating categorical variable
+GULD_mortalitychecks$Status_text <- case_when(
+  GULD_mortalitychecks$Status_text %in% c("0") ~ 'Non-survivor',
+  GULD_mortalitychecks$Status_text %in% c("1") ~ 'Survivor',
+  .default = GULD_mortalitychecks$Status_text
+)
+
+#Invert plot
+GULD_SIA.suppplot <- ggplot(GULD_mortalitychecks, aes (x = d13C_M, y = d15N_M, color = Status_text)) + 
+  theme(axis.text.y = element_text(size = 8, colour = "black"), 
+        axis.text.x = element_text(size = 8, colour = "black"), 
+        panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "white", linewidth = 0.5, linetype = "dashed" ),
+        axis.title.y  = element_text(size=10, vjust = 0.1),
+        axis.title.x  = element_text(size=10, vjust = 0.1),
+        panel.border = element_rect(colour = "black", fill=NA, size = 1),
+        legend.text = element_text(size=8),
+        legend.box.spacing = unit(0.5, 'cm'),
+        legend.title = element_blank(),
+        legend.position= c(0.01,0.01),
+        legend.justification=c(0,0),
+        legend.key.size = unit(0.3, 'cm')) +
+  geom_point(data = GULD_mortalitychecks, aes(fill = Status_text), shape = 19, size = 3.5, alpha = 0.8) + 
+  scale_x_continuous(limits = c(-25, -10), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(7.5,15), expand = c(0, 0)) +
+  geom_text(data = GULD_mortalitychecks, label = GULD_mortalitychecks$FishID, size = 2, hjust = -0.35, vjust = 1.1, color = 'black') +
+  scale_color_manual(values = c("Non-survivor" = "red2",
+                                "Survivor"="black")) +
+  ylab(expression(paste(delta^{15}, "N (\u2030)"))) +
+  xlab(expression(paste(delta^{13}, "C (\u2030)")))
+GULD_SIA.suppplot
+
+#ggsave("./outputs_visualisations/Fig_S3.jpeg", width = 16, height = 8, units = "cm", GULD_SIA.suppplot, dpi = 600)
+
+
+#_Supplementary experiment_Karrebaek ----
+library(survival); library(survminer)
+#Fish monitored for survival over 10 weeks, from 10-11-2020 to 19-01-2020
+#   - When fish were found dead, time to death was set as the midpoint between the date found and the previous check date
+#   - when fish euthanised (e.g. due to severe lethargy or wounds), time to death was set at the time of euthanisation
+
+#Loading required datasets-
+KARR_surv <- read.csv('~/trophic-personalities_2020/dat_supp/KARR_survival.csv')
+
+KARR_surv$Treatment[KARR_surv$Treatment == 'cont'] <- "Control"
+KARR_surv$Treatment[KARR_surv$Treatment == 'finclip'] <- "Fin-clipped"
+KARR_surv$Treatment[KARR_surv$Treatment == 'pit'] <- "Tagged"
+KARR_surv$Treatment <- ordered(KARR_surv$Treatment, levels = c("Control","Tagged","Fin-clipped"))
+
+# Creating survfit object, using the Kaplan-Meier method (non-parametric approach, to create step function)
+Surv(KARR_surv$SurvivalTime, KARR_surv$Status)[1:48]
+Karr_surv_fn <- survfit(Surv(SurvivalTime, Status) ~ Treatment, data = KARR_surv)
+names(Karr_surv_fn)
+save(Karr_surv_fn, file = "~/trophic-personalities_2020/dat_supp/Karr_surv_fn.RData")
+
+
+# Plotting survival (appears that CIs are not possible, likely due to <50% death, so no median is calculated)
+Karr_surv_plot <- ggsurvplot(Karr_surv_fn, conf.int = FALSE, 
+                             legend = "right",
+                             palette = c("black","seashell3","red"),
+                             xlab = "Days", 
+                             ylab = "Overall survival probability")
+Karr_surv_plot <- Karr_surv_plot$plot + geom_vline(xintercept = 70, linetype = "longdash") 
+Karr_surv_plot <- Karr_surv_plot + theme(legend.title = element_blank(),
+                                         legend.text = element_text(size=10),
+                                         axis.title.y  = element_text(size=12, vjust = 0.1),
+                                         axis.title.x  = element_text(size=12, vjust = 0.1),
+                                         axis.text.y = element_text(size = 10, colour = "black"), 
+                                         axis.text.x = element_text(size = 10, colour = "black"))
+Karr_surv_plot
+
+#ggsave("./outputs_visualisations/Fig_S4.jpeg", width = 16, height = 9, units = "cm", Karr_surv_plot, dpi = 600)
+
+
+# Testing for treatment effects
+Karr_surv_treteff <- survdiff(Surv(SurvivalTime, Status) ~ Treatment, data = KARR_surv)
+Karr_surv_treteff #No significant effect of treatment
+1 - pchisq(Karr_surv_treteff$chisq, length(Karr_surv_treteff$n) - 1) 
+# chisq = 1.8
+# df = 2
+# p= 0.413935
+
+save(Karr_surv_treteff, file = "~/trophic-personalities_2020/dat_supp/Karr_surv_treteff.RData")
+
+
+#Testing for growth rate effects
+KARR_growth <- read.csv('~/trophic-personalities_2020/dat_supp/KARR_growth.csv')
+
+#Using TankID as a random effect, Sex + Treatment as fixed effects
+KARR_treat.dTL <- lmer(dTL ~ Sex + Treatment + (1|TankID.combo), data=KARR_growth)
+summary(KARR_treat.dTL) 
+confint(KARR_treat.dTL) 
+
+#Using TankID as a random effect, Sex + Treatment as fixed effects
+KARR_treat.dWeight <- lmer(dWeight ~ Sex + Treatment + (1|TankID.combo), data=KARR_growth)
+summary(KARR_treat.dWeight) 
+confint(KARR_treat.dWeight) 
 
 
 

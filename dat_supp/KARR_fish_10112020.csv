@@ -1,0 +1,49 @@
+FishID,Treatment,TankID,TrialID,PITID,TL,SL,Weight,Sex,InfectionScore,Notes
+K01,cont,D_1,ACT4_1,NA,13.9,11.2,43,M,2,
+K02,finclip,D_1,ACT4_1,1476,15.8,13.4,53,M,2,some fin and scale loss
+K03,pit,D_1,ACT4_1,1340,13.6,11.5,41,M,1,
+K04,pit,D_1,ACT4_1,1262,13.5,11.3,37,F,3,
+K05,finclip,D_1,ACT4_1,1370,13.9,11.8,42,M,1,
+K06,cont,D_1,ACT4_1,NA,12.8,10.7,35,F,2,
+K07,pit,D_2,ACT4_1,1351,12.6,11,29,M,1,some scale damage
+K08,pit,D_2,ACT4_1,1439,12.9,11.1,36,M,1,some scale damage
+K09,finclip,D_2,ACT4_2,1422,17.2,14.7,84,M,2,some scale damage
+K10,finclip,D_2,ACT4_2,1376,13.9,11.9,44,M,2,
+K11,cont,D_2,ACT4_2,NA,15,12.8,60,M,1,
+K12,cont,D_2,ACT4_2,NA,15,12.9,48,M,2,darker
+K13,finclip,D_3,ACT4_2,1264,13.8,11.5,40,F,3,
+K14,finclip,D_3,ACT4_2,1265,17.1,14.9,72,M,1,
+K15,pit,D_3,ACT4_2,1375,13.6,11.3,39,M,1,minor scale damage
+K16,cont,D_3,ACT4_2,NA,12.9,10.8,30,M,1,
+K17,cont,D_3,ACT4_3,NA,16.8,14.1,71,M,1,
+K18,pit,D_3,ACT4_3,1380,13.3,11.2,38,M,2,small wound
+K19,pit,D_4,ACT4_3,1256,12.1,10.7,21,M,1,
+K20,cont,D_4,ACT4_3,NA,11.5,9.9,30,M,2,
+K21,pit,D_4,ACT4_3,1434,10.1,8.7,14,F,1,
+K22,finclip,D_4,ACT4_3,1332,13.4,11.5,39,M,3,some scale loss and some bleeding with PIT
+K23,cont,D_4,ACT4_3,NA,13.5,11.2,32,M,3,reproductive; changed treatment group for cont fish could be differentiated
+K24,finclip,D_4,ACT4_3,1317,12.7,10.8,32,F,3,significant scale loss; changed treatment group for cont fish could be differentiated
+K25,pit,E_1,ACT4_4,1381,11.8,10,28,M,2,some scale loss
+K26,cont,E_1,ACT4_4,NA,12.2,10.4,24,F,1,significant scale loss
+K27,pit,E_1,ACT4_4,1263,15.5,13.3,60,M,1,
+K28,finclip,E_1,ACT4_4,1321,14.7,12.3,58,F,2,minor scale loss
+K29,finclip,E_1,ACT4_4,1496,14.4,12.1,49,F,2,minor scale loss
+K30,cont,E_1,ACT4_4,NA,14.1,12,48,M,2,
+K31,finclip,E_2,ACT4_4,1371,13.9,11.8,41,F,3,
+K32,pit,E_2,ACT4_4,1421,14.4,12.2,57,M,2,
+K33,cont,E_2,ACT4_5,NA,15,13,63,M,1,
+K34,cont,E_2,ACT4_5,NA,13.2,11.3,31,F,2,
+K35,finclip,E_2,ACT4_5,1442,14.6,12.4,55,F,2,
+K36,pit,E_2,ACT4_5,1419,12.5,10.6,31,F,2,
+K37,pit,E_3,ACT4_5,1322,13.7,11.8,45,M,2,
+K38,finclip,E_3,ACT4_5,1270,18.6,15.7,86,F,2,
+K39,cont,E_3,ACT4_5,NA,14.3,12.2,49,F,2,
+K40,cont,E_3,ACT4_5,NA,13.7,11.6,41,M,2,
+K41,pit,E_3,ACT4_6,1308,16.6,14.2,64,M,1,
+K42,finclip,E_3,ACT4_6,1272,14.5,12.4,53,F,3,
+K43,pit,E_4,ACT4_6,1285,14.5,12.3,51,M,2,
+K44,finclip,E_4,ACT4_6,1298,15.4,13,60,M,2,
+K45,cont,E_4,ACT4_6,NA,14.4,12.4,45,M,2,v small wound
+K46,pit,E_4,ACT4_6,1408,12.5,10.5,27,M,3,
+K47,finclip,E_4,ACT4_6,1292,13.6,11.6,44,F,2,minor scale damage
+K48,cont,E_4,ACT4_6,NA,16,13.9,77,M,1,
