@@ -801,7 +801,7 @@ df.stats.df$text <- paste(df.stats.df$text, '%]', sep = '')
 
 #Supplementary analysis: mortality bias ----
 
-#_State and isotope effects ----
+# _ State and isotope effects ----
 
 #Combining phenotypic and isotopic data
 Pheno_working <- read.csv('~/trophic-personalities_2020/dat_fish/GULD_physdat_processed.csv')
@@ -910,7 +910,7 @@ GULD_SIA.suppplot
 #ggsave("./outputs_visualisations/Fig_S3.jpeg", width = 16, height = 8, units = "cm", GULD_SIA.suppplot, dpi = 600)
 
 
-#_Supplementary experiment_Karrebaek ----
+# _ Supplementary experiment_Karrebaek ----
 library(survival); library(survminer)
 #Fish monitored for survival over 10 weeks, from 10-11-2020 to 19-01-2020
 #   - When fish were found dead, time to death was set as the midpoint between the date found and the previous check date
