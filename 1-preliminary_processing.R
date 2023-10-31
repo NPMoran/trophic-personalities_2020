@@ -103,6 +103,19 @@ summary(GULD_physdat$CondManual) #mean 1.601 [range 1.31 - 1.87] (at tagging mea
 
 
 ## 1.2. Activity data preparation ----
+# - Variables of interest: 
+#           - avespeed_mob (average speed during times that fish is in motion)
+#           - dist (total distance moved)
+#           - timefrozen_tot (total time not moving)
+#           - centre_0_25	centre_25_50	centre_50_75	centre_75_100	centre_100_ (total time spent in each edge use zone)
+# - Additional variables recorded but not used in analysis: 
+#           - aveacceler
+#           - propmoving
+#           - frozenevents
+#           - timefrozen_ave
+#           - avespeed_tot
+# (Additional variables not used because they measure very similar behaviours to the variable selected for analysis,)
+
 
 #Loading required dataset-
 GULDact <- read.csv("~/trophic-personalities_2020/dat_behaviour/GULD_ACTdat.csv", strip.white = TRUE)
@@ -122,7 +135,7 @@ GULDact$UniqueID <- paste(GULDact$UniqueID, GULDact$ArenaID, sep = "")
 # - centrescore: calculated from the proportion of time spend in 25mm width zones from the edge of the arena
 GULDact$centrescore <- ((1*(GULDact$centre_0_25))+(2*GULDact$centre_25_50)+(3*GULDact$centre_50_75)+(4*GULDact$centre_75_100)+(5*GULDact$centre_100_))/
   (GULDact$centre_0_25+GULDact$centre_25_50+GULDact$centre_50_75+GULDact$centre_75_100+GULDact$centre_100_)
-# - centrescore2: recalculated centre score so that it is roughly proportional to the average distance from the wall
+# - centrescore2: recalculated centre score so that it is proportional to the average distance from the wall and has a natural unit which helps interpretability.
 # (for time spent in each 2.5cm edge zone, distance taken as minimum - maximum distance from edge in each zone)
 GULDact$centrescore2 <- ((1.25*(GULDact$centre_0_25))+(3.75*GULDact$centre_25_50)+(6.25*GULDact$centre_50_75)+(8.75*GULDact$centre_75_100)+(13.0625*GULDact$centre_100_))/
   (GULDact$centre_0_25+GULDact$centre_25_50+GULDact$centre_50_75+GULDact$centre_75_100+GULDact$centre_100_)
@@ -132,6 +145,10 @@ GULDact$centretime50 <- (GULDact$centre_50_75+GULDact$centre_75_100+GULDact$cent
 GULDact$centretime75 <- (GULDact$centre_75_100+GULDact$centre_100_)/30
 # - centretime100: time spent >50mm from the edge of the arena, calculated from the pixels visible in zones (75-100mm, 100+mm)
 GULDact$centretime100 <- (GULDact$centre_100_)/30
+
+#(Note, there was multiple options for centre use variables that were calculated from the rawdata. 
+# Centrescore was a version used in early drafts of this analysis, and produced very similar results to centrescore2. Centrescore2 was an updated version that is in a natural unit, to make it easier to interpret.
+# Centretime50, centretime75, centretime100 versions were simplified versions, but were not used in analysis due to non-normality issues.)
 
 
 
@@ -259,11 +276,12 @@ write.csv(GULDact_processed, "~/trophic-personalities_2020/dat_behaviour/GULD_AC
 
 
 ## 1.5. Exploration data preparation ----
-# Variables of interest
-# in: emergelat
-#     endpointlat
-#     endpointspeed
-#     refugereturnlat
+# - Variables of interest: 
+#           - emergelat (i.e., time to emerge from refuge, from time that barrier is removed) 
+#           - endpointlat (i.e., time to reach the end point of the arena, from time that barrier is removed) 
+# - Additional variables recorded but not used in analysis: 
+#           - endpointspeed (i.e., time to reach the end point of the arena, from time of first emergence) 
+#           - refugereturnlat (i.e., time to re-enter the refuge, from time of first emergence) 
 
 
 #Loading required dataset-

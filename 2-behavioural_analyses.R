@@ -98,7 +98,7 @@ load(file = "./outputs_visualisations/GULD_avespeed_mob.mod.rpt1.RData")
 load(file = "./outputs_visualisations/GULD_avespeed_mob.mod.rpt2.RData")
 
 
-# _Time frozen (s, 'timefrozen_tot') ----
+# _ Time frozen (s, 'timefrozen_tot') ----
 #ggplot(GULDact.processed) + aes(x = timefrozen_tot) + geom_histogram(color="black", fill="lightblue", binwidth = 85) + simpletheme 
 #ggqqplot(GULDact.processed$timefrozen_tot)
 #ggplot(GULDact.processed) + aes(x = log(timefrozen_tot)) + geom_histogram(color="black", fill="lightblue", binwidth = 0.3) + simpletheme 
@@ -133,7 +133,7 @@ load(file = "./outputs_visualisations/GULD_timefrozen_tot.mod.rpt1.RData")
 load(file = "./outputs_visualisations/GULD_timefrozen_tot.mod.rpt2.RData")
 
 
-# _ Edge use, (mm, 'centrescore') ---- 
+# _ Edge use, (mm, 'centrescore2') ---- 
 #ggplot(GULDact.processed) + aes(x = centrescore2) + geom_histogram(color="black", fill="lightblue", binwidth = 0.5) + simpletheme 
 #ggqqplot(GULDact.processed$centrescore2) #potential minimal positive skew
 #
@@ -142,7 +142,7 @@ load(file = "./outputs_visualisations/GULD_timefrozen_tot.mod.rpt2.RData")
 #summary(GULD_centrescore.mod)   #TankID and TrialRound resolve no variance
 #plot(GULD_centrescore.mod)  #No issues
 #
-#GULD_centrescore.mod.red <- lmer(centrescore ~ 
+#GULD_centrescore.mod.red <- lmer(centrescore2 ~ 
 #                                Sex + TL.C + CondManual.C + TrialDay.C + (1|ArenaID) + (1|FishID),  data=GULDact.processed)
 #summary(GULD_centrescore.mod.red)  #length effect
 #r2_nakagawa(GULD_centrescore.mod.red) 
