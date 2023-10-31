@@ -2,10 +2,10 @@
 
 This respository contains datasets and code relating to the experimental study "Quantification of among-individual behavioural and trophic variation the invasive round goby" Nicholas P. Moran, Jane Behrens
 
-THe main analysis scripts are :
+The main scripts are :
 - 1-preliminary_processing.R, including data preparation and checks.
-- 2-behavioural_analyses.R, analysis and visualization of behavioural data analyses.
-- 3-stable_isotope_analyses.R, analysis and visualization of SIA data analyses, including supplementary analyses. 
+- 2-behavioural_analyses.R, models and visualizations for behavioural data analyses.
+- 3-stable_isotope_analyses.R, models and visualizations for SIA data analyses, including supplementary analyses. 
 
 Additional files and records can be found on the Open Science Framework, https://osf.io/rnz7q/ (DOI 10.17605/OSF.IO/RNZ7Q)
 
