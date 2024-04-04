@@ -623,22 +623,22 @@ discr3 <- load_discr_data(filename="~/trophic-personalities_2020/dat_stableisoto
 
 
 ###Isospace plots
-isoplot1 <- plot_data(filename="isospace_plot", return_obj=TRUE,
-            plot_save_pdf=FALSE,
-            plot_save_png=FALSE,
-            mix,source,discr1)
-isoplot1 <- isoplot1 + theme(legend.position = 'right',
-                             legend.text = element_text(size=7),
-                             legend.spacing.x = unit(0.5, 'cm'))
-
-isoplot2 <- plot_data(filename="isospace_plot", return_obj=TRUE,
-            plot_save_pdf=FALSE,
-            plot_save_png=FALSE,
-            mix,source,discr2)
-isoplot2 <- isoplot2 + theme(legend.position = 'right',
-                             legend.text = element_text(size=7),
-                             legend.spacing.x = unit(0.5, 'cm'))
-
+#isoplot1 <- plot_data(filename="isospace_plot", return_obj=TRUE,
+#            plot_save_pdf=FALSE,
+#            plot_save_png=FALSE,
+#            mix,source,discr1)
+#isoplot1 <- isoplot1 + theme(legend.position = 'right',
+#                             legend.text = element_text(size=7),
+#                             legend.spacing.x = unit(0.5, 'cm'))
+#
+#isoplot2 <- plot_data(filename="isospace_plot", return_obj=TRUE,
+#            plot_save_pdf=FALSE,
+#            plot_save_png=FALSE,
+#            mix,source,discr2)
+#isoplot2 <- isoplot2 + theme(legend.position = 'right',
+#                             legend.text = element_text(size=7),
+#                             legend.spacing.x = unit(0.5, 'cm'))
+#
 isoplot3 <- plot_data(filename="isospace_plot", return_obj=TRUE,
                       plot_save_pdf=FALSE,
                       plot_save_png=FALSE,
@@ -675,7 +675,7 @@ load("./outputs_visualisations/GULD_jags_main.RData")
 load("./outputs_visualisations/GULD_jags_TDFpost.RData")
 
 #write_JAGS_model(model_filename, resid_err, process_err, mix, source2)
-#GULD_jags_expanded <- run_model(run="long", mix, source2, discr3, model_filename, 
+#GULD_jags_expanded <- run_model(run="very long", mix, source2, discr3, model_filename, 
 #                         alpha.prior = 1, resid_err, process_err)
 #save(GULD_jags_expanded, file = "./outputs_visualisations/GULD_jags_expanded.RData")
 #load("./outputs_visualisations/GULD_jags_expanded.RData")
