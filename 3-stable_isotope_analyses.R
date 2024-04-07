@@ -13,8 +13,8 @@ library(ggplot2); library(ggpubr); library(RColorBrewer)
 #install.packages("devtools")
 #remotes::install_github("brianstock/MixSIAR", dependencies=T)
 #install.packages('rjags')
-install.packages('simmr')
-install.packages('MixSIAR')
+#install.packages('simmr')
+#install.packages('MixSIAR')
 library(rjags) #need to install JAGS-4.x.y.exe (for any x >=0, y>=0) from http://www.sourceforge.net/projects/mcmc-jags/files
 library(simmr) #supposedly updated version of SIAR for running simple or lite versions of mixing models
 library(MixSIAR) #MixSIAR: A Bayesian stable isotope mixing model for characterizing intrapopulation niche variation
@@ -674,10 +674,10 @@ load("./outputs_visualisations/GULD_jags_main.RData")
 #save(GULD_jags_TDFpost, file = "./outputs_visualisations/GULD_jags_TDFpost.RData")
 load("./outputs_visualisations/GULD_jags_TDFpost.RData")
 
-#write_JAGS_model(model_filename, resid_err, process_err, mix, source2)
-#GULD_jags_expanded <- run_model(run="very long", mix, source2, discr3, model_filename, 
-#                         alpha.prior = 1, resid_err, process_err)
-#save(GULD_jags_expanded, file = "./outputs_visualisations/GULD_jags_expanded.RData")
+write_JAGS_model(model_filename, resid_err, process_err, mix, source2)
+GULD_jags_expanded <- run_model(run="very long", mix, source2, discr3, model_filename, 
+                         alpha.prior = 1, resid_err, process_err)
+save(GULD_jags_expanded, file = "./outputs_visualisations/GULD_jags_expanded.RData")
 #load("./outputs_visualisations/GULD_jags_expanded.RData")
 
 #output options
