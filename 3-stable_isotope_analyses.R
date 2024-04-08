@@ -748,7 +748,7 @@ load("./outputs_visualisations/GULD_jags_TDFpost.RData")
 #load("./outputs_visualisations/GULD_jags_expanded.RData")
 
 write_JAGS_model(model_filename, resid_err, process_err, mix, source3)
-GULD_jags_softbod <- run_model(run="short", mix, source3, discr4, model_filename, 
+GULD_jags_softbod <- run_model(run="long", mix, source3, discr4, model_filename, 
                     alpha.prior = 1, resid_err, process_err)
 save(GULD_jags_softbod, file = "./outputs_visualisations/GULD_jags_softbod.RData")
 #load("./outputs_visualisations/GULD_jags_softbod.RData")
