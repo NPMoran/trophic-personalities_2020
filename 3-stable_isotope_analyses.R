@@ -747,11 +747,11 @@ load("./outputs_visualisations/GULD_jags_TDFpost.RData")
 #save(GULD_jags_expanded, file = "./outputs_visualisations/GULD_jags_expanded.RData")
 #load("./outputs_visualisations/GULD_jags_expanded.RData")
 
-write_JAGS_model(model_filename, resid_err, process_err, mix, source3)
-GULD_jags_softbod <- run_model(run="long", mix, source3, discr4, model_filename, 
-                    alpha.prior = 1, resid_err, process_err)
-save(GULD_jags_softbod, file = "./outputs_visualisations/GULD_jags_softbod.RData")
-#load("./outputs_visualisations/GULD_jags_softbod.RData")
+#write_JAGS_model(model_filename, resid_err, process_err, mix, source3)
+#GULD_jags_softbod <- run_model(run="long", mix, source3, discr4, model_filename, 
+#                    alpha.prior = 1, resid_err, process_err)
+#save(GULD_jags_softbod, file = "./outputs_visualisations/GULD_jags_softbod.RData")
+load("./outputs_visualisations/GULD_jags_softbod.RData")
 
 
 #output options
@@ -886,7 +886,7 @@ Fig_global3 <- g.post$global + simpletheme +
                              "chartreuse3",
                              "lightblue3",
                              "yellow4",
-                             "orange"), 
+                             "orange"),
                     labels=c('Bivalvia', 'Gastropoda', 'Malacostraca (Decapoda)', 'Malacostraca (Other)', 'Actinopterygii', "Insecta", "Polychaeta")) +
   scale_color_manual(values=c("dodgerblue2", 
                               "plum3",
