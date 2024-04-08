@@ -557,6 +557,46 @@ GULD_sources2 <- as.data.frame(GULD_sources2)
 #write.csv(GULD_sources2, '~/trophic-personalities_2020/dat_stableisotope/GULD_sources2.csv', row.names = FALSE)
 
 
+#B.3- for potential prey items (i.e.,as initial plus soft bodies taxa identified in gut contents elsewhere)
+#Pooling by -
+#P01 = V01, V03, Bivalves (currently not including blue mussels V02)
+#P02 = V04, V05, Gastropods
+#P03 = V07, Malacostraca (decapods only, currently crangon V06 not included)
+#P04 = V08, V09, Malacostraca (isopods/amphipods)
+#P05 = V18; Actinopterygii (currently doesn't include V17)
+#P06 = V12, Insects
+#P07 = V15, V16 Polychaetes
+
+
+GULD_sources3 <- NULL
+GULD_sources3$source <- c("V01","V03","V04","V05","V07","V08","V09","V18","V12","V15","V16")
+GULD_SIAprey_working3 <- subset(GULD_SIAprey, taxaID %in% GULD_sources3$source)
+GULD_SIAprey_working3$taxaID <- case_when(
+  GULD_SIAprey_working3$taxaID %in% c("V01", "V03") ~ "P01",
+  GULD_SIAprey_working3$taxaID %in% c("V04", "V05") ~ "P02",
+  GULD_SIAprey_working3$taxaID %in% c("V07") ~ "P03",
+  GULD_SIAprey_working3$taxaID %in% c("V08", "V09") ~ "P04",
+  GULD_SIAprey_working3$taxaID %in% c("V18") ~ "P05",
+  GULD_SIAprey_working3$taxaID %in% c("V12") ~ "P06",
+  GULD_SIAprey_working3$taxaID %in% c("V15","V16") ~ "P07",
+  .default = GULD_SIAprey_working3$taxaID
+)
+GULD_SIAprey_working3$source <- GULD_SIAprey_working3$taxaID
+GULD_SIAprey_working3$n <- 1
+
+
+GULD_sources3 <- setDT(GULD_SIAprey_working3)[ , list(Meand15N = mean(d15N),
+                                                    SDd15N = sd(d15N),
+                                                    Meand13C = mean(d13C),
+                                                    SDd13C = sd(d13C),
+                                                    n = sum(n)),
+                                             by = .(source)]
+GULD_sources3 <- as.data.frame(GULD_sources3)
+
+#write.csv(GULD_sources3, '~/trophic-personalities_2020/dat_stableisotope/GULD_sources3.csv', row.names = FALSE)
+
+
+
 #C - for discrimination factors
 GULD_TDFs <- NULL #for main analysis
 working <- c(1,2,3,4,5)
@@ -575,7 +615,7 @@ GULD_TDFs2$SDd15N <- TDF_Post_N_sd
 GULD_TDFs2$Meand13C <- TDF_Post_C_mean
 GULD_TDFs2$SDd13C <- TDF_Post_C_sd
 #write.csv(GULD_TDFs2, '~/trophic-personalities_2020/dat_stableisotope/GULD_TDF2.csv', row.names = FALSE)
-GULD_TDFs3 <- NULL #for expaned prey analysis.
+GULD_TDFs3 <- NULL #for expanded prey analysis.
 working <- c(1,2,3,4,5,6,7,8)
 GULD_TDFs3$rownumber <- working
 GULD_TDFs3$source <- GULD_sources2$source
@@ -586,15 +626,28 @@ GULD_TDFs3$Meand13C <- TDF_Poslednik_C_mean
 GULD_TDFs3$SDd13C <- TDF_Poslednik_C_sd
 GULD_TDFs3 <- GULD_TDFs3[,-1]
 #write.csv(GULD_TDFs3, '~/trophic-personalities_2020/dat_stableisotope/GULD_TDF3.csv', row.names = FALSE)
+GULD_TDFs4 <- NULL #for soft prey analysis.
+working <- c(1,2,3,4,5,6,7)
+GULD_TDFs4$rownumber <- working
+GULD_TDFs4$source <- GULD_sources3$source
+GULD_TDFs4 <- as.data.frame(GULD_TDFs4)
+GULD_TDFs4$Meand15N <- TDF_Poslednik_N_mean
+GULD_TDFs4$SDd15N <- TDF_Poslednik_N_sd
+GULD_TDFs4$Meand13C <- TDF_Poslednik_C_mean
+GULD_TDFs4$SDd13C <- TDF_Poslednik_C_sd
+GULD_TDFs4 <- GULD_TDFs4[,-1]
+#write.csv(GULD_TDFs4, '~/trophic-personalities_2020/dat_stableisotope/GULD_TDF4.csv', row.names = FALSE)
 
 
 #Combinations for analysis
 # - Main model
 # mix (GULD_consumers), source (GULD_sources), discr1 (GULD_TDFs) 
 # - TDF Sensitivity model
-# mix (GULD_consumers), source (GULD_sources), discr1 (GULD_TDFs2)
+# mix (GULD_consumers), source (GULD_sources), discr2 (GULD_TDFs2)
 # - Expanded prey groups model
-# mix (GULD_consumers), source (GULD_sources2), discr1 (GULD_TDFs3)
+# mix (GULD_consumers), source (GULD_sources2), discr3 (GULD_TDFs3)
+# - Main model + softbodied taxa
+# mix (GULD_consumers), source (GULD_sources3), discr4 (GULD_TDFs4)
 
 
 # _ MixSIAR mods ----
@@ -615,11 +668,16 @@ source2 <- load_source_data(filename="~/trophic-personalities_2020/dat_stableiso
                            source_factors=NULL, 
                            conc_dep=FALSE, 
                            data_type="means", mix)
+source3 <- load_source_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_sources3.csv", 
+                            source_factors=NULL, 
+                            conc_dep=FALSE, 
+                            data_type="means", mix)
 
 #load discr data
 discr1 <- load_discr_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_TDF1.csv", mix)
 discr2 <- load_discr_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_TDF2.csv", mix)
 discr3 <- load_discr_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_TDF3.csv", mix)
+discr4 <- load_discr_data(filename="~/trophic-personalities_2020/dat_stableisotope/GULD_TDF4.csv", mix)
 
 
 ###Isospace plots
@@ -639,18 +697,27 @@ discr3 <- load_discr_data(filename="~/trophic-personalities_2020/dat_stableisoto
 #                             legend.text = element_text(size=7),
 #                             legend.spacing.x = unit(0.5, 'cm'))
 #
-isoplot3 <- plot_data(filename="isospace_plot", return_obj=TRUE,
-                      plot_save_pdf=FALSE,
-                      plot_save_png=FALSE,
-                      mix,source2,discr3)
-isoplot3 <- isoplot3 + theme(legend.position = 'right',
-                             legend.text = element_text(size=7),
-                             legend.spacing.x = unit(0.5, 'cm'))
-
+#isoplot3 <- plot_data(filename="isospace_plot", return_obj=TRUE,
+#                      plot_save_pdf=FALSE,
+#                      plot_save_png=FALSE,
+#                      mix,source2,discr3)
+#isoplot3 <- isoplot3 + theme(legend.position = 'right',
+#                             legend.text = element_text(size=7),
+#                             legend.spacing.x = unit(0.5, 'cm'))
+#
+#isoplot4 <- plot_data(filename="isospace_plot", return_obj=TRUE,
+#                      plot_save_pdf=FALSE,
+#                      plot_save_png=FALSE,
+#                      mix,source3,discr4)
+#isoplot4 <- isoplot3 + theme(legend.position = 'right',
+#                             legend.text = element_text(size=7),
+#                             legend.spacing.x = unit(0.5, 'cm'))
 
 #ggsave("./outputs_visualisations/Fig_isoplot1.jpeg", width = 20, height = 14, units = "cm", isoplot1, dpi = 600)
 #ggsave("./outputs_visualisations/Fig_isoplot2.jpeg", width = 20, height = 14, units = "cm", isoplot2, dpi = 600)
 #ggsave("./outputs_visualisations/Fig_isoplot3.jpeg", width = 20, height = 14, units = "cm", isoplot3, dpi = 600)
+#ggsave("./outputs_visualisations/Fig_isoplot4.jpeg", width = 20, height = 14, units = "cm", isoplot4, dpi = 600)
+
 
 
 ###Writing jags models
@@ -663,7 +730,7 @@ resid_err <- TRUE
 process_err <- TRUE
 write_JAGS_model(model_filename, resid_err, process_err, mix, source)
 
-#Running test
+#Running 4 models
 #GULD_jags_main <- run_model(run="long", mix, source, discr1, model_filename, 
 #                    alpha.prior = 1, resid_err, process_err)
 #save(GULD_jags_main, file = "./outputs_visualisations/GULD_jags_main.RData")
@@ -674,11 +741,18 @@ load("./outputs_visualisations/GULD_jags_main.RData")
 #save(GULD_jags_TDFpost, file = "./outputs_visualisations/GULD_jags_TDFpost.RData")
 load("./outputs_visualisations/GULD_jags_TDFpost.RData")
 
-write_JAGS_model(model_filename, resid_err, process_err, mix, source2)
-GULD_jags_expanded <- run_model(run="very long", mix, source2, discr3, model_filename, 
-                         alpha.prior = 1, resid_err, process_err)
-save(GULD_jags_expanded, file = "./outputs_visualisations/GULD_jags_expanded.RData")
+#write_JAGS_model(model_filename, resid_err, process_err, mix, source2)
+#GULD_jags_expanded <- run_model(run="very long", mix, source2, discr3, model_filename, 
+#                         alpha.prior = 1, resid_err, process_err)
+#save(GULD_jags_expanded, file = "./outputs_visualisations/GULD_jags_expanded.RData")
 #load("./outputs_visualisations/GULD_jags_expanded.RData")
+
+#write_JAGS_model(model_filename, resid_err, process_err, mix, source3)
+#GULD_jags_softbod <- run_model(run="very short", mix, source3, discr4, model_filename, 
+#                    alpha.prior = 1, resid_err, process_err)
+save(GULD_jags_softbod, file = "./outputs_visualisations/GULD_jags_softbod.RData")
+#load("./outputs_visualisations/GULD_jags_softbod.RData")
+
 
 #output options
 output_options <- list(summary_save = TRUE,                 
@@ -707,9 +781,9 @@ output_options <- list(summary_save = TRUE,
 #diagnostics, summary statistics, and posterior plots
 # - main model
 output_JAGS(GULD_jags_main, mix, source, output_options)
-diag <- output_diagnostics(GULD_jags_main, mix, source, output_options)
-df.stats <- output_stats(GULD_jags_main, mix, source, output_options)
-g.post <- output_posteriors(GULD_jags_main, mix, source, output_options)
+#diag <- output_diagnostics(GULD_jags_main, mix, source, output_options)
+#df.stats <- output_stats(GULD_jags_main, mix, source, output_options)
+#g.post <- output_posteriors(GULD_jags_main, mix, source, output_options)
 
 Fig_global <- g.post$global + simpletheme + 
   scale_x_continuous(limits = c(0,1), expand = c(0, 0)) +
@@ -789,12 +863,18 @@ df.stats.df$text <- paste(df.stats.df$text, '%]', sep = '')
 #write.csv(df.stats.df, '~/trophic-personalities_2020/outputs_visualisations/GULD_jags_TDFpost.df.stats.df.csv', row.names = TRUE)
 
 
-# - Expanded model (convergence issues)
+# - Expanded model (convergence issues, even with extremely long run time)
 #output_JAGS(GULD_jags_expanded, mix, source2, output_options)
 #diag <- output_diagnostics(GULD_jags_expanded, mix, source2, output_options)
 #df.stats <- output_stats(GULD_jags_expanded, mix, source2, output_options)
 #g.post <- output_posteriors(GULD_jags_expanded, mix, source2, output_options)
 
+
+# - Soft bodied model 
+output_JAGS(GULD_jags_softbod, mix, source3, output_options)
+#diag <- output_diagnostics(GULD_jags_softbod, mix, source3, output_options)
+#df.stats <- output_stats(GULD_jags_expanded, mix, source2, output_options)
+#g.post <- output_posteriors(GULD_jags_expanded, mix, source2, output_options)
 
 
 
