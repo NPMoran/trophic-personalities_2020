@@ -750,8 +750,8 @@ load("./outputs_visualisations/GULD_jags_TDFpost.RData")
 #write_JAGS_model(model_filename, resid_err, process_err, mix, source3)
 #GULD_jags_softbod <- run_model(run="very short", mix, source3, discr4, model_filename, 
 #                    alpha.prior = 1, resid_err, process_err)
-save(GULD_jags_softbod, file = "./outputs_visualisations/GULD_jags_softbod.RData")
-#load("./outputs_visualisations/GULD_jags_softbod.RData")
+#save(GULD_jags_softbod, file = "./outputs_visualisations/GULD_jags_softbod.RData")
+load("./outputs_visualisations/GULD_jags_softbod.RData")
 
 
 #output options
@@ -781,9 +781,9 @@ output_options <- list(summary_save = TRUE,
 #diagnostics, summary statistics, and posterior plots
 # - main model
 output_JAGS(GULD_jags_main, mix, source, output_options)
-#diag <- output_diagnostics(GULD_jags_main, mix, source, output_options)
-#df.stats <- output_stats(GULD_jags_main, mix, source, output_options)
-#g.post <- output_posteriors(GULD_jags_main, mix, source, output_options)
+diag <- output_diagnostics(GULD_jags_main, mix, source, output_options)
+df.stats <- output_stats(GULD_jags_main, mix, source, output_options)
+g.post <- output_posteriors(GULD_jags_main, mix, source, output_options)
 
 Fig_global <- g.post$global + simpletheme + 
   scale_x_continuous(limits = c(0,1), expand = c(0, 0)) +
@@ -830,18 +830,18 @@ g.post <- output_posteriors(GULD_jags_TDFpost, mix, source, output_options)
 Fig_global2 <- g.post$global + simpletheme + 
   scale_x_continuous(limits = c(0,1), expand = c(0, 0)) +
   scale_y_continuous(limits = c(0,1.05), expand = c(0, 0)) +
-  scale_fill_manual(values=c("dodgerblue2", 
-                             "plum3",
-                             "chartreuse2",
-                             "chartreuse3",
-                             "lightblue3"), 
-                    labels=c('Bivalvia', 'Gastropoda', 'Malacostraca (Decapoda)', 'Malacostraca (Other)', 'Actinopterygii')) +
-  scale_color_manual(values=c("dodgerblue2", 
-                              "plum3",
-                              "chartreuse2",
-                              "chartreuse3",
-                              "lightblue3"),
-                     labels=c('Bivalvia', 'Gastropoda', 'Malacostraca (Decapoda)', 'Malacostraca (Other)', 'Actinopterygii')) +
+#  scale_fill_manual(values=c("dodgerblue2", 
+#                             "plum3",
+#                             "chartreuse2",
+#                             "chartreuse3",
+#                             "lightblue3"), 
+#                    labels=c('Bivalvia', 'Gastropoda', 'Malacostraca (Decapoda)', 'Malacostraca (Other)', 'Actinopterygii')) +
+#  scale_color_manual(values=c("dodgerblue2", 
+#                              "plum3",
+#                              "chartreuse2",
+#                              "chartreuse3",
+#                              "lightblue3"),
+#                     labels=c('Bivalvia', 'Gastropoda', 'Malacostraca (Decapoda)', 'Malacostraca (Other)', 'Actinopterygii')) +
   theme(axis.text.y = element_text(size = 8, colour = "black"), 
         axis.text.x = element_text(size = 8, colour = "black"),  
         panel.background = element_rect(fill = "white"), 
@@ -872,10 +872,50 @@ df.stats.df$text <- paste(df.stats.df$text, '%]', sep = '')
 
 # - Soft bodied model 
 output_JAGS(GULD_jags_softbod, mix, source3, output_options)
-#diag <- output_diagnostics(GULD_jags_softbod, mix, source3, output_options)
-#df.stats <- output_stats(GULD_jags_expanded, mix, source2, output_options)
-#g.post <- output_posteriors(GULD_jags_expanded, mix, source2, output_options)
+diag <- output_diagnostics(GULD_jags_softbod, mix, source3, output_options)
+df.stats <- output_stats(GULD_jags_softbod, mix, source3, output_options)
+g.post <- output_posteriors(GULD_jags_softbod, mix, source3, output_options)
 
+
+Fig_global3 <- g.post$global + simpletheme + 
+  scale_x_continuous(limits = c(0,1), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0,1.05), expand = c(0, 0)) +
+  scale_fill_manual(values=c("dodgerblue2", 
+                             "plum3",
+                             "chartreuse2",
+                             "chartreuse3",
+                             "lightblue3",
+                             "yellow4",
+                             "orange"), 
+                    labels=c('Bivalvia', 'Gastropoda', 'Malacostraca (Decapoda)', 'Malacostraca (Other)', 'Actinopterygii', "Insecta", "Polychaeta")) +
+  scale_color_manual(values=c("dodgerblue2", 
+                              "plum3",
+                              "chartreuse2",
+                              "chartreuse3",
+                              "lightblue3",
+                              "yellow4",
+                              "orange"), 
+              labels=c('Bivalvia', 'Gastropoda', 'Malacostraca (Decapoda)', 'Malacostraca (Other)', 'Actinopterygii', "Insecta", "Polychaeta")) +
+  theme(axis.text.y = element_text(size = 8, colour = "black"), 
+        axis.text.x = element_text(size = 8, colour = "black"),  
+        panel.background = element_rect(fill = "white"), 
+        axis.title.y  = element_text(size=10, vjust = 2), 
+        axis.title.x  = element_text(size=10, vjust = 0.1), 
+        panel.border = element_rect(colour = "black", fill=NA, linewidth = 1),
+        title = element_blank(),
+        legend.background = element_blank()) +
+  ylab("Scaled posterior density") +
+  xlab("Diet proportion")
+Fig_global3
+
+
+#ggsave("./outputs_visualisations/Fig_global.jpeg", width = 18, height = 8, units = "cm", Fig_global, dpi = 600)
+
+df.stats.df <- as.data.frame(df.stats)
+df.stats.df$text <- paste(round((df.stats.df$Mean*100), digits = 2), round((df.stats.df$`2.5%`*100), digits = 2), sep = '% [')
+df.stats.df$text <- paste(df.stats.df$text, round((df.stats.df$`97.5%`*100), digits = 2), sep = '%, ')
+df.stats.df$text <- paste(df.stats.df$text, '%]', sep = '')
+#write.csv(df.stats.df, '~/trophic-personalities_2020/outputs_visualisations/GULD_jags_main/GULD_jags_main.df.csv', row.names = TRUE)
 
 
 
