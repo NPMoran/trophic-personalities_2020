@@ -1,6 +1,6 @@
 # trophic-personalities_2020
 
-This respository contains datasets and code relating to the experimental study "Quantification of among-individual behavioural and trophic variation the invasive round goby" Nicholas P. Moran, Jane Behrens
+This respository contains datasets and code relating to the experimental study "Quantification of among-individual behavioural and trophic variation the invasive round goby" [Anonymised]
 
 The main scripts are :
 - 1-preliminary_processing.R, including data preparation and checks.

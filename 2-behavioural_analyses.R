@@ -1,6 +1,6 @@
 # Title: Behavioural and trophic variation within a well-established invasive round goby population 
-# Author: Nicholas Moran
-# Date: March 2023
+# Author: [Anonymised]
+# Date: April 2024 
 
 
 
@@ -621,6 +621,26 @@ GULDbehav_phenotypes <- merge(GULDbehav_phenotypes, GULDbehav_phenotypes2F, by =
 
 #write.csv(GULDbehav_phenotypes, '~/trophic-personalities_2020/dat_behaviour/GULDbehav_phenotypes.csv', row.names =  FALSE)
 
+
+# 2.6. Supplmentary analysis, checking weights accross trials days ----
+
+GULD_trialweights <- read.csv("~/trophic-personalities_2020/dat_fish/GULD_weight at trial.csv")
+
+GULD_trialweights <- subset(GULD_trialweights, PITID != "NOFISH")
+GULD_trialweights_surv3 <- subset(GULD_trialweights, TrialDay==3)$PITID
+GULD_trialweights_surv3 <- subset(GULD_trialweights, PITID)
+
+
+GULD_trialweights_surv <- subset(GULD_trialweights, PITID %in% GULD_trialweights_surv3)
+
+
+GULD_trialweights_surv_wk1 <- subset(GULD_trialweights_surv, TrialDay==1)
+GULD_trialweights_surv_wk2 <- subset(GULD_trialweights_surv, TrialDay==2)
+GULD_trialweights_surv_wk3 <- subset(GULD_trialweights_surv, TrialDay==3)
+
+summary(as.numeric(GULD_trialweights_surv_wk1$Weight))
+summary(as.numeric(GULD_trialweights_surv_wk2$Weight))
+summary(as.numeric(GULD_trialweights_surv_wk3$Weight))
 
 #### ... #### 
 
