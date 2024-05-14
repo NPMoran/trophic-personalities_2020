@@ -807,7 +807,9 @@ Fig_global <- g.post$global + simpletheme +
         axis.title.x  = element_text(size=10, vjust = 0.1), 
         panel.border = element_rect(colour = "black", fill=NA, linewidth = 1),
         title = element_blank(),
-        legend.background = element_blank()) +
+        legend.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
  ylab("Scaled posterior density") +
  xlab("Diet proportion")
 Fig_global
@@ -849,7 +851,9 @@ Fig_global2 <- g.post$global + simpletheme +
         axis.title.x  = element_text(size=10, vjust = 0.1), 
         panel.border = element_rect(colour = "black", fill=NA, linewidth = 1),
         title = element_blank(),
-        legend.background = element_blank()) +
+        legend.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
   ylab("Scaled posterior density") +
   xlab("Diet proportion")
 Fig_global2
@@ -903,7 +907,9 @@ Fig_global3 <- g.post$global + simpletheme +
         axis.title.x  = element_text(size=10, vjust = 0.1), 
         panel.border = element_rect(colour = "black", fill=NA, linewidth = 1),
         title = element_blank(),
-        legend.background = element_blank()) +
+        legend.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank()) +
   ylab("Scaled posterior density") +
   xlab("Diet proportion")
 Fig_global3
@@ -1058,15 +1064,18 @@ Karr_surv_plot <- ggsurvplot(Karr_surv_fn, conf.int = FALSE,
                              xlab = "Days", 
                              ylab = "Overall survival probability")
 Karr_surv_plot <- Karr_surv_plot$plot + geom_vline(xintercept = 70, linetype = "longdash") 
-Karr_surv_plot <- Karr_surv_plot + theme(legend.title = element_blank(),
-                                         legend.text = element_text(size=10),
-                                         axis.title.y  = element_text(size=12, vjust = 0.1),
-                                         axis.title.x  = element_text(size=12, vjust = 0.1),
-                                         axis.text.y = element_text(size = 10, colour = "black"), 
-                                         axis.text.x = element_text(size = 10, colour = "black"))
+Karr_surv_plot <- Karr_surv_plot + simpletheme + theme(legend.position = c(0.3, 0.225),
+                                         legend.spacing.y = unit(0.4, 'cm'),
+                                         legend.key.size = unit(0.4, "cm"),
+                                         legend.title = element_blank(),
+                                         legend.text = element_text(size=7),
+                                         axis.title.y  = element_text(size=9, vjust = 0.1),
+                                         axis.title.x  = element_text(size=9, vjust = 0.1),
+                                         axis.text.y = element_text(size = 7, colour = "black"), 
+                                         axis.text.x = element_text(size = 7, colour = "black"))
 Karr_surv_plot
 
-#ggsave("./outputs_visualisations/Fig_S4.jpeg", width = 16, height = 9, units = "cm", Karr_surv_plot, dpi = 600)
+#ggsave("./outputs_visualisations/Fig_A3.jpeg", width = 8, height = 7, units = "cm", Karr_surv_plot, dpi = 600)
 
 
 # Testing for treatment effects
